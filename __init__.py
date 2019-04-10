@@ -1,6 +1,7 @@
 from lxml import etree
 import re
 import importlib
+import os
 
 
 class Parser:
@@ -20,9 +21,10 @@ class Parser:
                                  'datei:', 'verzeichnis:', 'kategorie:', 'reim:', 'modul:', 'fn:')
 
         # parse methods to apply on wikitext
-        method_names = ['get_syllables']
-        self.methods = {lib: importlib.import_module(
-            'wiktionary_de_parser.methods.' + lib) for lib in method_names}
+        method_names = [
+            'language', 'syllables',
+        ]
+        self.methods = [(lib, importlib.import_module('wiktionary_de_parser.methods.' + lib)) for lib in method_names]
 
     def parse_page(self):
         """
@@ -73,7 +75,7 @@ class Parser:
                 }
 
                 # apply parse methods
-                for module in self.methods.values():
-                    result.update(module.init(title, section_text))
+                for (name, module) in self.methods:
+                    result[name] = module.init(title, section_text, result)
 
                 yield result
