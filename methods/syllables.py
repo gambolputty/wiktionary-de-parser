@@ -1,24 +1,24 @@
 import re
-from hyphen import Hyphenator
+import pyphen
 
 
-def init(title, text, result):
+def init(title, text, record):
+    # find syllables in wikitext
+    # reference: https://de.wiktionary.org/wiki/Hilfe:Worttrennung
 
-    # PyHyphen
-    if result['language'] == 'de':
-        lang_code = 'de_DE'
-    elif result['language'] == 'en':
-        lang_code = 'en_US'
-    else:
-        lang_code = 'de_DE'
+    # match_test = re.search(r'({{Worttrennung}}\n:?[^\n]+)', text)
+    # if match_test:
+    #     print(match_test.group(1))
+    #     print()
 
-    h_de = Hyphenator(lang_code)
+    matched = re.findall(r'{{Worttrennung}}\n::?(?:{{[^}]+}},? )*([\w· ]+|[\w·]+)', text)
+    if matched:
+        return re.split(r' |·', matched[0])
+    elif 'language' in record and record['language'] in pyphen.LANGUAGES:
+        # get syllables with PyHyphen
+        dic = pyphen.Pyphen(lang=record['language'])
+        syl_string = dic.inserted(title)
+        # split by "-" and remove empty entries
+        return [x for x in re.split(r' |-', syl_string) if x]
 
-    match_wt = re.search(r'{{Worttrennung}}\n:?(?:{{.+}},? )*([^ \n]+)(?:, .+|\n)', text)
-    if match_wt:
-        syls = match_wt.group(1)
-        return syls.split('·')
-    else:
-        # Hole Sylben mit PyHyphen
-        syls_list = [x.strip() for x in h_de.syllables(title) if x != u'-']
-        return syls_list
+    return False

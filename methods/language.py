@@ -192,7 +192,7 @@ sprachcodes = {
 }
 
 
-def init(title, text, result):
+def init(title, text, record):
     match_lang = re.search(r'=== ?{{Wortart\|[^}|]+\|([^}]+)}}', text)
     if not match_lang:
         return False

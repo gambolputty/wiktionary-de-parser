@@ -1,4 +1,4 @@
-def init(title, text, result):
+def init(title, text, record):
     match_ipa_p = re.search(r'{{Aussprache}}((?:\n.+)+)', text)
     found_ipa = []
     if match_ipa_p:

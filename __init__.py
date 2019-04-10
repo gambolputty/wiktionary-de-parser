@@ -70,12 +70,12 @@ class Parser:
                 continue
 
             for section_text in self.parse_sections(wikitext):
-                result = {
+                record = {
                     'title': title
                 }
 
                 # apply parse methods
                 for (name, module) in self.methods:
-                    result[name] = module.init(title, section_text, result)
+                    record[name] = module.init(title, section_text, record)
 
-                yield result
+                yield record
