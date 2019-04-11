@@ -33,6 +33,7 @@ class Parser:
             'ipa',
             'part_of_speech',
             'flexion',
+            'lemma',
         ]
         self.methods = [(lib, importlib.import_module('wiktionary_de_parser.methods.' + lib)) for lib in method_names]
 
