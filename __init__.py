@@ -1,17 +1,15 @@
 from lxml import etree
-import re
 import importlib
 import os
 import sys
-from pprint import pprint
-from pdb import set_trace as bp
 
 # add parent dir to PATH
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
 
 class Parser:
-    def __init__(self, fh):
+    def __init__(self, fh, ignored_prefixes=('mediawiki:', 'vorlage:', 'wiktionary:', 'hilfe:', 'flexion:',
+                                             'datei:', 'verzeichnis:', 'kategorie:', 'reim:', 'modul:', 'fn:')):
         """
         Initialize 'iterparse' to only generate 'end' events on tag '<entity>'
         Credits: https://stackoverflow.com/a/55147982/5732518
@@ -23,15 +21,14 @@ class Parser:
         self.context = etree.iterparse(fh, events=("end",), tag=['{*}' + 'page'])
 
         # ignore page titles starting with these prefixes followed by ":"
-        self.ignored_prefixes = ('mediawiki:', 'vorlage:', 'wiktionary:', 'hilfe:', 'flexion:',
-                                 'datei:', 'verzeichnis:', 'kategorie:', 'reim:', 'modul:', 'fn:')
+        self.ignored_prefixes = ignored_prefixes
 
         # parse methods to apply on wikitext
         method_names = [
             'language',
             'syllables',
             'ipa',
-            'part_of_speech',
+            'pos',
             'flexion',
             'lemma',
         ]
@@ -83,6 +80,7 @@ class Parser:
             for section_text in self.parse_sections(wikitext):
                 record = {
                     'title': title
+                    'wikitext': section_text
                 }
 
                 # apply parse methods
