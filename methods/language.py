@@ -2,7 +2,7 @@ import re
 
 # sprachcodes
 # https://de.wiktionary.org/wiki/Hilfe:Sprachcodes
-sprachcodes = {
+langcodes_map = {
     'abchasisch': 'ab',
     'afar': 'aa',
     'afrikaans': 'af',
@@ -193,14 +193,14 @@ sprachcodes = {
 
 
 def init(title, text, record):
-    match_lang = re.search(r'=== ?{{Wortart\|[^}|]+\|([^}|]+)(?:\|[^}|]+)*}}', text)
-    if not match_lang:
+    match_lang_name = re.search(r'=== ?{{Wortart\|[^}|]+\|([^}|]+)(?:\|[^}|]+)*}}', text)
+    if not match_lang_name:
         return False
 
-    lang_lang = match_lang.group(1) if match_lang.group(1) else match_lang.group(2)
-    lang_lang = lang_lang.lower()
+    lang_name = match_lang_name.group(1) if match_lang_name.group(1) else match_lang_name.group(2)
+    lang_name = lang_name.lower()
 
-    if lang_lang not in sprachcodes:
+    if lang_name not in langcodes_map:
         return False
 
-    return sprachcodes[lang_lang]
+    return langcodes_map[lang_name]

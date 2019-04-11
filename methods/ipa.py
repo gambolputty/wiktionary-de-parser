@@ -1,8 +1,5 @@
 import re
 
-# erlaubte Trenner beim Parsen der IPAs
-allowed_sep = [', auch:', ',', 'oder', 'bzw.']
-
 
 def init(title, text, record):
     match_firstline = re.search(r'({{Aussprache}}\n[^\n]+)', text)
