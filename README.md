@@ -27,7 +27,7 @@ The methods to extract the data can be found in the `methods` folder:
 
 ## Usage
 
-Clone this repository into you project and import `wiktionary_de_parser` like this:
+Clone this repository to your project and import `wiktionary_de_parser` like this:
 
 ```python
 from bz2file import BZ2File
