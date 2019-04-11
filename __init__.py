@@ -2,6 +2,12 @@ from lxml import etree
 import re
 import importlib
 import os
+import sys
+from pprint import pprint
+from pdb import set_trace as bp
+
+# add parent dir to PATH
+sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
 
 class Parser:
@@ -22,7 +28,10 @@ class Parser:
 
         # parse methods to apply on wikitext
         method_names = [
-            'language', 'syllables',
+            'language',
+            'syllables',
+            'ipa',
+            'part_of_speech'
         ]
         self.methods = [(lib, importlib.import_module('wiktionary_de_parser.methods.' + lib)) for lib in method_names]
 
@@ -54,7 +63,7 @@ class Parser:
         Split page into sections. One page can have multiple word sections, for example:
             - https://de.wiktionary.org/wiki/instrument
         """
-        sections = re.findall(r'(^== (?:[\w\W](?!^== ))+)', wikitext, re.MULTILINE)
+        sections = re.findall(r'(=== {{Wortart(?:[\w\W](?!^=== ))+)', wikitext, re.MULTILINE)
         for entry in sections:
             yield entry
 
