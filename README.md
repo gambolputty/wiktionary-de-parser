@@ -24,3 +24,7 @@ The methods to extract the data can be found as files in the Methods folder:
 ## Requirements
 - Python 3+ (tested with 3.7)
 - [pyphen](https://pyphen.org)
+
+
+## License
+[MIT](https://github.com/gambolputty/wiktionary_de_parser/blob/master/LICENSE.md) © Gregor Weichbrodt
