@@ -9,6 +9,8 @@ wiktionary_de_parser is a Python module to parse and extract data from German Wi
 
 A word can have multiple meanings, which is why some Wiktionary entries have multiple definitions. wiktionary_de_parser takes this into account.
 
+Values are normalized and cleaned from obsolete Wikitext markup
+
 At the moment the following data is extracted per entry: 
 **flexion info, IPA, language, lemma, part of speech, syllables, raw Wikitext**
 
