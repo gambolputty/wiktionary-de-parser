@@ -44,13 +44,13 @@ The file is obtained from ([here](https://dumps.wikimedia.org/dewiktionary/))
 ### Adding new parsing methods
 To add a new method, create a Python file inside the `methods` folder and add the filename to the variable `method_names` inside the class constructor of `Parser` in the `__init__.py` file inside the root folder. Make sure the method file has an `init()` method like this:
 
-```
+```python
 def init(title, text, current_record):
   pass
 ```
 
 ## Sample data:
-```
+```python
 {'flexion': {'Akkusativ Plural': 'Trittbrettfahrer',
              'Akkusativ Singular': 'Trittbrettfahrer',
              'Dativ Plural': 'Trittbrettfahrern',
