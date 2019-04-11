@@ -42,12 +42,17 @@ Note: in this example we use [BZ2File](https://pypi.org/project/bz2file/) to rea
 The file is obtained from ([here](https://dumps.wikimedia.org/dewiktionary/))
 
 ### Adding new parsing methods
-To add a new method, create a Python file inside the `methods` folder and add the filename to the variable `method_names` inside the class constructor of `Parser` in the `__init__.py` file inside the root folder. Make sure the method file has an `init()` method like this:
+To add a new method, create a Python file inside the `methods` folder and add the filename to the variable `method_names` inside the class constructor of `Parser` in the `__init__.py` file inside the root folder. Make sure the method file has an `init()` method that returns a value:
 
 ```python
 def init(title, text, current_record):
-  pass
+  # do stuff
+  return some_value
 ```
+#### Parameters
+- `title`: the title of the Wiktionary page (_string_)
+- `text`: the [Wikitext](https://en.wikipedia.org/wiki/Wiki#Editing) (_string_)
+- `current_record`: a dictionary with all values for the current iteration (_Dict_)
 
 ## Sample data:
 ```python
