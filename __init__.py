@@ -2,6 +2,7 @@ from lxml import etree
 import importlib
 import os
 import sys
+import re
 
 # add parent dir to PATH
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
@@ -79,7 +80,7 @@ class Parser:
 
             for section_text in self.parse_sections(wikitext):
                 record = {
-                    'title': title
+                    'title': title,
                     'wikitext': section_text
                 }
 
