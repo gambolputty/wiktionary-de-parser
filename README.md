@@ -27,6 +27,20 @@ The methods to extract the data can be found in the `methods` folder:
 
 ## Usage
 
+Clone this repository into you project and import `wiktionary_de_parser` like this:
+
+```python
+from bz2file import BZ2File
+from wiktionary_de_parser import Parser
+
+bzfile_path = 'C:/Users/Gregor/Downloads/dewiktionary-latest-pages-articles-multistream.xml.bz2'
+bz = BZ2File(bzfile_path)
+for record in Parser(bz):
+    # do stuff with 'record'
+```
+Note: in this example we use [BZ2File](https://pypi.org/project/bz2file/) to read a compressed Wiktionary dump file.
+The file is obtained from ([here](https://dumps.wikimedia.org/dewiktionary/))
+
 ### Adding new parsing methods
 To add a new method, create a Python file inside the `methods` folder and add the filename to the variable `method_names` inside the class constructor of `Parser` in the `__init__.py` file inside the root folder. Make sure the method file has an `init()` method like this:
 
