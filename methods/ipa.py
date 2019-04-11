@@ -1,7 +1,7 @@
 import re
 
 
-def init(title, text, record):
+def init(title, text, current_record):
     match_firstline = re.search(r'({{Aussprache}}\n[^\n]+)', text)
     if not match_firstline:
         return False

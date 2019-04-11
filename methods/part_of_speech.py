@@ -158,7 +158,7 @@ def find_pos(title, pos_names):
     return result
 
 
-def init(title, text, record):
+def init(title, text, current_record):
 
     # multiple POS values
     found_pos = re.search(r'=== ?{{Wortart\|([^}|]+)(?:\|[^}|]+)*}}(?:, .+{{Wortart\|([^}|]+)(?:\|[^}|]+)*}})*', text)
