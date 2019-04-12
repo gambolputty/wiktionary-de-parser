@@ -7,10 +7,11 @@
 
 ## Features
 
-- Comes with preset extraction methods for: **flexion tables, genus, IPA, language, lemma, part of speech, syllables, raw Wikitext**
-- New extraction methods can easily be added (pass them as argument)
-- Data values are normalized and cleaned from obsolete Wikitext markup
-- Yields per entry, not per page (a word can have multiple meanings, which is why some Wiktionary pages have multiple entries, called 'sections')
+- comes with preset extraction methods for:
+  - flexion tables, genus, IPA, language, lemma, part of speech, syllables, raw Wikitext
+- allows you to add your own extraction methods (pass them as argument)
+- data values are normalized and cleaned from obsolete Wikitext markup
+- yields per entry, not per page (a word can have multiple meanings, which is why some Wiktionary pages have multiple entries, called 'sections')
 
 ## Usage
 
@@ -29,7 +30,7 @@ for record in Parser(bz):
     # do stuff with 'record'
 ```
 Note: in this example we use [BZ2File](https://pypi.org/project/bz2file/) to read a compressed Wiktionary dump file.
-The dump file is obtained from ([here](https://dumps.wikimedia.org/dewiktionary/))
+The dump file is obtained from [here](https://dumps.wikimedia.org/dewiktionary/).
 
 ### Adding new extraction methods
 
