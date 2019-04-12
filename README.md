@@ -34,9 +34,9 @@ The dump file is obtained from ([here](https://dumps.wikimedia.org/dewiktionary/
 ### Adding new extraction methods
 
 All extraction methods must return a `Dict()` and accept the following arguments:
-- `title` (_string_): the title of the current Wiktionary page
-- `text` (_string_): the [Wikitext](https://en.wikipedia.org/wiki/Wiki#Editing) of the current word entry/section
-- `current_record` (_Dict_): a dictionary with all values of the current iteration
+- `title` (_string_): The title of the current Wiktionary page
+- `text` (_string_): The [Wikitext](https://en.wikipedia.org/wiki/Wiki#Editing) of the current word entry/section
+- `current_record` (_Dict_): A dictionary with all values of the current iteration (e. g. `current_record['language']`)
 
 ```python
 # Create a new extraction method
