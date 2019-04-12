@@ -22,6 +22,7 @@ from wiktionary_de_parser import Parser
 
 bzfile_path = 'C:/Users/Gregor/Downloads/dewiktionary-latest-pages-articles-multistream.xml.bz2'
 bz = BZ2File(bzfile_path)
+
 for record in Parser(bz):
     if record['language'] != 'de':
       continue
