@@ -1,5 +1,5 @@
 # wiktionary_de_parser
-wiktionary_de_parser is a Python module to parse and extract data from German Wiktionary XML files. 
+`wiktionary_de_parser` is a Python module to extract data from German Wiktionary XML files. It allows you to add your own extraction methods.
 
 ## Requirements
 - Python 3+ (tested with 3.7)
@@ -7,7 +7,7 @@ wiktionary_de_parser is a Python module to parse and extract data from German Wi
 
 ## Features
 
-- Comes with predefined extraction methods for: **flexion tables, genus, IPA, language, lemma, part of speech, syllables, raw Wikitext**
+- Comes with preset extraction methods for: **flexion tables, genus, IPA, language, lemma, part of speech, syllables, raw Wikitext**
 - New extraction methods can easily be added (pass them as argument)
 - Data values are normalized and cleaned from obsolete Wikitext markup
 - Yields per entry, not per page (a word can have multiple meanings, which is why some Wiktionary pages have multiple entries, called 'sections')
