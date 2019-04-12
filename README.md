@@ -28,7 +28,7 @@ for record in Parser(bz):
     # do stuff with 'record'
 ```
 Note: in this example we use [BZ2File](https://pypi.org/project/bz2file/) to read a compressed Wiktionary dump file.
-The file is obtained from ([here](https://dumps.wikimedia.org/dewiktionary/))
+The dump file is obtained from ([here](https://dumps.wikimedia.org/dewiktionary/))
 
 ### Adding new extraction methods
 
@@ -45,9 +45,7 @@ def my_method(title, text, current_record):
 
 # Pass a list with all extraction methods to the class constructor:
 for record in Parser(bz, custom_methods=[my_method]):
-    if record['language'] != 'de':
-      continue
-    # do stuff with 'record'
+    print(record['my_field'])
 ```
 
 ## Sample data:
