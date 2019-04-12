@@ -15,7 +15,8 @@
 
 ## Usage
 
-Clone this repository to your project and import `wiktionary_de_parser` like this:
+1. Install [pyphen](https://pyphen.org) via `pip install pyphen`.
+2. Clone this repository to your project and import `wiktionary_de_parser` like this:
 
 ```python
 from bz2file import BZ2File
