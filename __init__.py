@@ -1,39 +1,47 @@
 from lxml import etree
-import importlib
+from importlib.machinery import SourceFileLoader
 import os
-import sys
 import re
-
-# add parent dir to PATH
-sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
 
 class Parser:
-    def __init__(self, fh, ignored_prefixes=('mediawiki:', 'vorlage:', 'wiktionary:', 'hilfe:', 'flexion:',
-                                             'datei:', 'verzeichnis:', 'kategorie:', 'reim:', 'modul:', 'fn:')):
-        """
-        Initialize 'iterparse' to only generate 'end' events on tag '<entity>'
-        Credits: https://stackoverflow.com/a/55147982/5732518
-
-        :param fh: File Handle from the XML File to parse
-        """
-
+    def __init__(self, fh, custom_methods=[], ignored_prefixes=('mediawiki:', 'vorlage:', 'wiktionary:', 'hilfe:', 'flexion:',
+                                                                'datei:', 'verzeichnis:', 'kategorie:', 'reim:', 'modul:', 'fn:')):
+        # Initialize 'iterparse' to only generate 'end' events on tag '<entity>'
+        # Credits: https: // stackoverflow.com/a/55147982/5732518
         # Prepend the default Namespace {*} to get anything.
         self.context = etree.iterparse(fh, events=("end",), tag=['{*}' + 'page'])
 
         # ignore page titles starting with these prefixes followed by ":"
         self.ignored_prefixes = ignored_prefixes
 
-        # parse methods to apply on wikitext
-        method_names = [
-            'language',
-            'syllables',
-            'ipa',
-            'pos',
-            'flexion',
-            'lemma',
-        ]
-        self.methods = [(lib, importlib.import_module('wiktionary_de_parser.methods.' + lib)) for lib in method_names]
+        # load default & custom methods
+        self.load_methods(custom_methods)
+
+    def load_methods(self, custom_methods):
+        self.extraction_methods = []
+
+        # load extraction methods from folder
+        methods_path = os.path.join(os.path.dirname(__file__), 'methods')
+        method_files = [f for f in os.listdir(methods_path) if not f.startswith('__') and f.endswith('.py')]
+        for idx, f in enumerate(method_files):
+            full_path = os.path.join(methods_path, f)
+            module = SourceFileLoader('method-' + str(idx), full_path).load_module()
+
+            if not hasattr(module, 'init'):
+                raise Exception(f'No init() method found in file "{f}"')
+            if not callable(module.init):
+                raise Exception(f'init() method in "{f}" is not callable')
+
+            # append method
+            self.extraction_methods.append(module.init)
+
+        # load custom exctraction methods
+        if isinstance(custom_methods, list) and custom_methods:
+            for method in custom_methods:
+                if not callable(method):
+                    raise Exception(f'Provided extraction method "{str(method)}" is not callable')
+                self.extraction_methods.append(method)
 
     def parse_page(self):
         """
@@ -79,13 +87,16 @@ class Parser:
                 continue
 
             for section_text in self.parse_sections(wikitext):
-                record = {
+                current_record = {
                     'title': title,
                     'wikitext': section_text
                 }
 
-                # apply parse methods
-                for (name, module) in self.methods:
-                    record[name] = module.init(title, section_text, record)
+                # execute parse methods & update current_record
+                for method in self.extraction_methods:
+                    data = method(title, section_text, current_record)
+                    if data is False:
+                        continue
+                    current_record.update(data)
 
-                yield record
+                yield current_record

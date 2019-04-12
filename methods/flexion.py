@@ -81,4 +81,16 @@ def init(title, text, current_record):
     table_string = find_table(text)
     if not table_string:
         return False
-    return find_table_values(table_string)
+
+    table_dict = find_table_values(table_string)
+    if table_dict is False:
+        return False
+
+    result = {}
+    if 'Genus' in table_dict:
+        result['genus'] = table_dict['Genus']
+        del table_dict['Genus']
+
+    result['flexion'] = table_dict
+
+    return result

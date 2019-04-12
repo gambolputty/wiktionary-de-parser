@@ -203,4 +203,4 @@ def init(title, text, current_record):
     if lang_name not in langcodes_map:
         return False
 
-    return langcodes_map[lang_name]
+    return {'language': langcodes_map[lang_name]}

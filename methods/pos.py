@@ -161,10 +161,16 @@ def find_pos(title, pos_names):
 def init(title, text, current_record):
 
     # multiple POS values
-    found_pos = re.search(r'=== ?{{Wortart\|([^}|]+)(?:\|[^}|]+)*}}(?:, .+{{Wortart\|([^}|]+)(?:\|[^}|]+)*}})*', text)
-    if not found_pos:
+    match_pos = re.search(r'=== ?{{Wortart\|([^}|]+)(?:\|[^}|]+)*}}(?:, .+{{Wortart\|([^}|]+)(?:\|[^}|]+)*}})*', text)
+    if not match_pos:
         return False
-    pos_names = [x.strip() for x in found_pos.groups() if x is not None]
+
+    pos_names = [x.strip() for x in match_pos.groups() if x is not None]
     if not pos_names:
         return False
-    return find_pos(title, pos_names)
+
+    found_pos = find_pos(title, pos_names)
+    if not found_pos.keys():
+        return False
+
+    return {'pos': found_pos}

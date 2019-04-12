@@ -7,23 +7,10 @@ wiktionary_de_parser is a Python module to parse and extract data from German Wi
 
 ## Features
 
-A word can have multiple meanings, which is why some Wiktionary entries have multiple definitions. wiktionary_de_parser takes this into account.
-
-Values are normalized and cleaned from obsolete Wikitext markup
-
-At the moment the following data is extracted per entry: 
-**flexion info, IPA, language, lemma, part of speech, syllables, raw Wikitext**
-
-The methods to extract the data can be found in the `methods` folder:
-```
-/methods
-  flexion.py
-  ipa.py
-  language.py
-  lemma.py
-  pos.py
-  syllables.py
-```
+- Comes with predefined extraction methods for: **flexion tables, genus, IPA, language, lemma, part of speech, syllables, raw Wikitext**
+- New extraction methods can easily be added (pass them as argument)
+- Data values are normalized and cleaned from obsolete Wikitext markup
+- Yields per entry, not per page (a word can have multiple meanings, which is why some Wiktionary pages have multiple entries, called 'sections')
 
 ## Usage
 
@@ -36,23 +23,32 @@ from wiktionary_de_parser import Parser
 bzfile_path = 'C:/Users/Gregor/Downloads/dewiktionary-latest-pages-articles-multistream.xml.bz2'
 bz = BZ2File(bzfile_path)
 for record in Parser(bz):
+    if record['language'] != 'de':
+      continue
     # do stuff with 'record'
 ```
 Note: in this example we use [BZ2File](https://pypi.org/project/bz2file/) to read a compressed Wiktionary dump file.
 The file is obtained from ([here](https://dumps.wikimedia.org/dewiktionary/))
 
-### Adding new parsing methods
-To add a new method, create a Python file inside the `methods` folder and add the filename to the variable `method_names` inside the class constructor of `Parser` in the `__init__.py` file inside the root folder. Make sure the method file has an `init()` method that returns a value:
+### Adding new extraction methods
+
+All extraction methods must return a `Dict()` and accept the following arguments:
+- `title` (_string_): the title of the current Wiktionary page
+- `text` (_string_): the [Wikitext](https://en.wikipedia.org/wiki/Wiki#Editing) of the current word entry/section
+- `current_record` (_Dict_): a dictionary with all values of the current iteration
 
 ```python
-def init(title, text, current_record):
+# Create a new extraction method
+def my_method(title, text, current_record):
   # do stuff
-  return some_value
+  return {'my_field': my_data}
+
+# Pass a list with all extraction methods to the class constructor:
+for record in Parser(bz, custom_methods=[my_method]):
+    if record['language'] != 'de':
+      continue
+    # do stuff with 'record'
 ```
-#### Parameters
-- `title`: the title of the Wiktionary page (_string_)
-- `text`: the [Wikitext](https://en.wikipedia.org/wiki/Wiki#Editing) (_string_)
-- `current_record`: a dictionary with all values for the current iteration (_Dict_)
 
 ## Sample data:
 ```python
@@ -62,9 +58,9 @@ def init(title, text, current_record):
              'Dativ Singular': 'Trittbrettfahrer',
              'Genitiv Plural': 'Trittbrettfahrer',
              'Genitiv Singular': 'Trittbrettfahrers',
-             'Genus': 'm',
              'Nominativ Plural': 'Trittbrettfahrer',
              'Nominativ Singular': 'Trittbrettfahrer'},
+ 'genus': 'm',
  'ipa': 'ˈtʁɪtbʁɛtˌfaːʁɐ',
  'language': 'de',
  'lemma': 'Trittbrettfahrer',

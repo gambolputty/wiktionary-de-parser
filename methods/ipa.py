@@ -11,6 +11,8 @@ def init(title, text, current_record):
     if not found_ipa:
         return False
 
+    result = found_ipa[0]
+
     # compare with ryme ipa field
     # prioritize ipa value that is part of a rhyme
     reim_match = re.search(r'{{Reim\|([^}|]+)(?:\|[^}]+)*}}', text)
@@ -18,6 +20,6 @@ def init(title, text, current_record):
         r = reim_match.group(1)
         m = [x for x in found_ipa if x.endswith(r)]
         if m:
-            return m[0]
+            result = m[0]
 
-    return found_ipa[0]
+    return {'ipa': result}
