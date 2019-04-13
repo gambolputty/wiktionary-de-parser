@@ -193,7 +193,7 @@ langcodes_map = {
 
 
 def init(title, text, current_record):
-    match_lang_name = re.search(r'=== ?{{Wortart\|[^}|]+\|([^}|]+)(?:\|[^}|]+)*}}', text)
+    match_lang_name = re.search(r'=== ?{{Wortart(?:-Test)?\|[^}|]+\|([^}|]+)(?:\|[^}|]+)*}}', text)
     if not match_lang_name:
         return False
 

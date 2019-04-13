@@ -78,6 +78,7 @@ pos_map = {
     'Redewendung': [],
     'Sprichwort': [],
     'Geflügeltes Wort': [],
+    'Merkspruch': [],
     'Formel': [],
     'Substantiv': [
         'Toponym',
@@ -161,7 +162,8 @@ def find_pos(title, pos_names):
 def init(title, text, current_record):
 
     # multiple POS values
-    match_pos = re.search(r'=== ?{{Wortart\|([^}|]+)(?:\|[^}|]+)*}}(?:, .+{{Wortart\|([^}|]+)(?:\|[^}|]+)*}})*', text)
+    match_pos = re.search(
+        r'=== ?{{Wortart(?:-Test)?\|([^}|]+)(?:\|[^}|]+)*}}(?:, .+{{Wortart(?:-Test)?\|([^}|]+)(?:\|[^}|]+)*}})*', text)
     if not match_pos:
         return False
 
