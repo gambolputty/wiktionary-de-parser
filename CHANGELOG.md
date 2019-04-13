@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - accept `Vorlage-Test` in regex pattern in `pos.py` & `language.py`
 - accept `Merkspruch` in `pos.py`
+### Fixed
+- improved regex for section splitting
+### Removed
+- language codes
 
 ## [0.6.0] - 2019-04-12
 ### Added

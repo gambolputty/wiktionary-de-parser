@@ -70,8 +70,13 @@ class Parser:
         """
         Split page into sections. One page can have multiple word sections, for example:
             - https://de.wiktionary.org/wiki/instrument
+
+        New sections begin at "==" and "===" (sometimes there is no "==")
+        Compare:
+            - https://de.wiktionary.org/wiki/instrument
+            - https://de.wiktionary.org/wiki/Becken
         """
-        sections = re.findall(r'(=== {{Wortart(?:[\w\W](?!^=== ))+)', wikitext, re.MULTILINE)
+        sections = re.findall(r'(=== {{Wortart(?:[\w\W](?!^===? ))+)', wikitext, re.MULTILINE)
         for entry in sections:
             yield entry
 
