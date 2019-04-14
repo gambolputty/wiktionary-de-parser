@@ -22,4 +22,6 @@ def init(title, text, current_record):
         if m:
             result = m[0]
 
+    result = result.strip()
+
     return {'ipa': result}

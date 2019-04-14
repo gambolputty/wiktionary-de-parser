@@ -20,7 +20,7 @@ def init(title, text, current_record):
     result = title
     match_lemma = re.search(r'{{Grundformverweis[^|]*\|(?:\w+=[^\|]+\|)*([^\|\#\}]+)', text)
     if match_lemma:
-        result = match_lemma.group(1)
+        result = match_lemma.group(1).strip()
 
     # title is lemma
     return {'lemma': result}

@@ -7,5 +7,6 @@ def init(title, text, current_record):
         return False
 
     lang_name = match_lang_name.group(1) if match_lang_name.group(1) else match_lang_name.group(2)
+    lang_name = lang_name.strip()
 
     return {'language': lang_name}
