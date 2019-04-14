@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [0.6.6] - 2019-04-14
+### Added
+- allow 'Genus 1' - 'Genus 4' in flexion dictionary
+
+### Changed
+- put 'Genus' back to to flexion dictionary
+
 ### Fixed
 - strip values in `lemma.py`, `language.py`, `ipa.py`
 

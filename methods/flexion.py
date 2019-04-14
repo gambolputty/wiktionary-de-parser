@@ -60,7 +60,7 @@ def find_table_values(table_string):
         text = clean_text(value)
 
         # genus
-        if key == 'Genus':
+        if key in ['Genus', 'Genus 1', 'Genus 2', 'Genus 3', 'Genus 4']:
             # the Genus of plural words is set to 0 (or other value)
             # reference: https://de.wiktionary.org/wiki/Wiktionary:Teestube/Archiv/2015/11#Genus_in_der_Flexionstabelle_bei_Pluralw%C3%B6rtern
             # -> normalize
@@ -86,11 +86,4 @@ def init(title, text, current_record):
     if table_dict is False:
         return False
 
-    result = {}
-    if 'Genus' in table_dict:
-        result['genus'] = table_dict['Genus']
-        del table_dict['Genus']
-
-    result['flexion'] = table_dict
-
-    return result
+    return {'flexion': table_dict}
