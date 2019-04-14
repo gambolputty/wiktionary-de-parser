@@ -137,9 +137,9 @@ def find_pos(title, pos_names, text):
     # fix POS when there is a certain POS template, but POS is not in pos_names
     # example "Substantiv": https://de.wiktionary.org/wiki/wei%C3%9Fes_Gold
     if 'Substantiv' not in result:
-        if '{{Deutsch adjektivisch Übersicht' in text
-        or '{{Deutsch Substantiv Übersicht - sch' in text
-        or '{{Deutsch Substantiv Übersicht' in text:
+        if '{{Deutsch adjektivisch Übersicht' in text \
+                or '{{Deutsch Substantiv Übersicht - sch' in text \
+                or '{{Deutsch Substantiv Übersicht' in text:
             result['Substantiv'] = []
     if 'Adjektiv' not in result:
         if '{{Deutsch Adjektiv Übersicht' in text:
