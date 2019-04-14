@@ -5,11 +5,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.6.5] - 2019-04-14
 ### Added
 - accept `Vorlage-Test` in regex pattern in `pos.py` & `language.py`
 - accept `Merkspruch` in `pos.py`
+
 ### Fixed
 - improved regex for section splitting
+- improved regex for POS matching
+- fix missing POS names when there is a POS template
+
 ### Removed
 - language codes
 

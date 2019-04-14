@@ -115,7 +115,7 @@ if debug is True:
     all_pos_names = [x.lower() for x in all_pos_names]
 
 
-def find_pos(title, pos_names):
+def find_pos(title, pos_names, text):
     result = {}
 
     # check for "Deklinierte Form" first
@@ -133,6 +133,25 @@ def find_pos(title, pos_names):
             result['Adjektiv'] = []
         # remove from names
         del pos_names[pos_names.index('Deklinierte Form')]
+
+    # fix POS when there is a certain POS template, but POS is not in pos_names
+    # example "Substantiv": https://de.wiktionary.org/wiki/wei%C3%9Fes_Gold
+    if 'Substantiv' not in result:
+        if '{{Deutsch adjektivisch Übersicht' in text
+        or '{{Deutsch Substantiv Übersicht - sch' in text
+        or '{{Deutsch Substantiv Übersicht' in text:
+            result['Substantiv'] = []
+    if 'Adjektiv' not in result:
+        if '{{Deutsch Adjektiv Übersicht' in text:
+            result['Adjektiv'] = []
+    if '{{Deutsch Adverb Übersicht' in text:
+        result['Adverb'] = []
+    if '{{Deutsch Pronomen Übersicht' in text:
+        result['Pronomen'] = []
+    if '{{Deutsch Toponym Übersicht' in text:
+        result['Toponym'] = []
+    if '{{Deutsch Verb Übersicht' in text:
+        result['Verb'] = []
 
     # map other pos names
     for key, values in pos_map.items():
@@ -160,19 +179,22 @@ def find_pos(title, pos_names):
 
 
 def init(title, text, current_record):
-
-    # multiple POS values
-    match_pos = re.search(
-        r'=== ?{{Wortart(?:-Test)?\|([^}|]+)(?:\|[^}|]+)*}}(?:, .+{{Wortart(?:-Test)?\|([^}|]+)(?:\|[^}|]+)*}})*', text)
-    if not match_pos:
+    # find line
+    match_line = re.search(r'(=== ?{{Wortart(?:-Test)?\|[^\n]+)', text)
+    if not match_line:
         return False
 
-    pos_names = [x.strip() for x in match_pos.groups() if x is not None]
+    # can have multiple POS values
+    line = match_line.group(1)
+    pos_names = re.findall(r'{{Wortart(?:-Test)?\|([^}|]+)(?:\|[^}|]+)*}}', line)
     if not pos_names:
         return False
 
-    found_pos = find_pos(title, pos_names)
-    if not found_pos.keys():
+    if not pos_names:
         return False
 
-    return {'pos': found_pos}
+    pos_normalized = find_pos(title, pos_names, text)
+    if not pos_normalized.keys():
+        return False
+
+    return {'pos': pos_normalized}

@@ -15,9 +15,9 @@ wanted_table_names = [
     'Deutsch Eigenname Übersicht',
     'Deutsch Nachname Übersicht',
     'Deutsch Pronomen Übersicht',
+    'Deutsch Substantiv Übersicht',
     'Deutsch Substantiv Übersicht - sch',
     'Deutsch adjektivisch Übersicht',
-    'Deutsch Substantiv Übersicht',
     'Deutsch Toponym Übersicht',
     'Deutsch Verb Übersicht',
 ]
