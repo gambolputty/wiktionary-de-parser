@@ -9,7 +9,9 @@ def init(title, text, current_record):
     von einer Konjugation beim Beugen eines Verbs (Verbalflexion).
 
     Reference:
+    https://de.wiktionary.org/wiki/Kategorie:Flektierte_Form_(Deutsch)
     https://de.wiktionary.org/wiki/Vorlage:Grundformverweis_Konj
+    https://de.wiktionary.org/wiki/Vorlage:Grundformverweis_Dekl
     """
 
     # match_test = re.search(r'({{Grundformverweis[^}]+}})', text)
@@ -17,10 +19,15 @@ def init(title, text, current_record):
     #     print(match_test.group(1))
     #     print()
 
-    result = title
+    found_lemma = title
+    inflected = False
     match_lemma = re.search(r'{{Grundformverweis[^|]*\|(?:\w+=[^\|]+\|)*([^\|\#\}]+)', text)
     if match_lemma:
-        result = match_lemma.group(1).strip()
+        found_lemma = match_lemma.group(1).strip()
+        inflected = True
 
     # title is lemma
-    return {'lemma': result}
+    return {
+        'lemma': found_lemma,
+        'inflected': inflected
+    }
