@@ -128,9 +128,9 @@ def find_pos(title, pos_names, text):
                 upper_chars.append(char)
                 break
         if upper_chars:
-            result['Substantiv'] = []
+            result['Substantiv'] = ['Deklinierte Form']
         else:
-            result['Adjektiv'] = []
+            result['Adjektiv'] = ['Deklinierte Form']
         # remove from names
         del pos_names[pos_names.index('Deklinierte Form')]
 
@@ -159,7 +159,7 @@ def find_pos(title, pos_names, text):
         key_low = key.lower()
         for name in pos_names:
             name_low = name.lower()
-            if name_low == key_low:
+            if name_low == key_low and key not in result:
                 result[key] = []
             values_low = [x.lower() for x in values]
             if name_low in values_low:

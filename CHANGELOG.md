@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.6.6] - 2019-04-14
 ### Added
 - allow 'Genus 1' - 'Genus 4' in flexion dictionary
+- added `inflected` field to indicate whether entry is for inflected word
 
 ### Changed
 - put 'Genus' back to to flexion dictionary
