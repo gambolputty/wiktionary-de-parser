@@ -26,7 +26,7 @@ bzfile_path = 'C:/Users/Gregor/Downloads/dewiktionary-latest-pages-articles-mult
 bz = BZ2File(bzfile_path)
 
 for record in Parser(bz):
-    if record['language'] != 'de':
+    if record['language'] != 'Deutsch':
       continue
     # do stuff with 'record'
 ```
