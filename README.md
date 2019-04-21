@@ -2,7 +2,8 @@
 `wiktionary_de_parser` is a Python module to extract data from German Wiktionary XML files. It allows you to add your own extraction methods.
 
 ## Requirements
-- Python 3+ (tested with 3.7)
+- Python 3.7 (might work with other 3.+ versions, but not tested)
+- [lxml](https://lxml.de)
 - [pyphen](https://pyphen.org)
 
 ## Features
@@ -15,7 +16,7 @@
 
 ## Usage
 
-1. Install [pyphen](https://pyphen.org) via `pip install pyphen`.
+1. Install [pyphen](https://pyphen.org) and [lxml](https://lxml.de) via `pip install pyphen lxml`.
 2. Clone this repository to your project and import `wiktionary_de_parser` like this:
 
 ```python
