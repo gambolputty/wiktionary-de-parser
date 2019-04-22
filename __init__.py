@@ -82,9 +82,9 @@ class Parser:
 
     def __iter__(self):
         """
-        Iterate all '<tag>...</tag>' Element Trees yielded from self._parse()
+        Iterate all pages yielded from self.parse_page() and all word sections yielded from self.parse_sections()
 
-        :return: Dict var 'entity' {tag1, value, tag2, value, ... ,tagn, value}}
+        :return: Dict with final result
         """
         for title, wikitext in self.parse_page():
             # check for ignored titles
