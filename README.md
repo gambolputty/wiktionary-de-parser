@@ -3,21 +3,17 @@
 
 ## Requirements
 - Python 3.7 (might work with other 3.+ versions, but not tested)
-- [lxml](https://lxml.de)
-- [pyphen](https://pyphen.org)
 
 ## Features
-
 - comes with preset extraction methods for:
   - flexion tables, genus, IPA, language, lemma, part of speech, syllables, raw Wikitext
 - allows you to add your own extraction methods (pass them as argument)
 - data values are normalized and cleaned from obsolete Wikitext markup
-- yields per entry, not per page (a word can have multiple meanings, which is why some Wiktionary pages have multiple entries, called 'sections')
+- yields per section, not per page (a word can have multiple meanings, which is why some Wiktionary pages have multiple 'sections')
 
 ## Usage
-
-1. Install [pyphen](https://pyphen.org) and [lxml](https://lxml.de) via `pip install pyphen lxml`.
-2. Clone this repository to your project and import `wiktionary_de_parser` like this:
+1. Install via `pip3 install wiktionary_de_parser`.
+2. Import `wiktionary_de_parser` like this:
 
 ```python
 from bz2file import BZ2File
@@ -27,15 +23,14 @@ bzfile_path = 'C:/Users/Gregor/Downloads/dewiktionary-latest-pages-articles-mult
 bz = BZ2File(bzfile_path)
 
 for record in Parser(bz):
-    if record['language'] != 'Deutsch':
+    if 'language' not in record or record['language'] != 'Deutsch':
       continue
     # do stuff with 'record'
 ```
 Note: in this example we use [BZ2File](https://pypi.org/project/bz2file/) to read a compressed Wiktionary dump file.
-The dump file is obtained from [here](https://dumps.wikimedia.org/dewiktionary/).
+The Wiktionary dump file is obtained from [here](https://dumps.wikimedia.org/dewiktionary/).
 
 ### Adding new extraction methods
-
 All extraction methods must return a `Dict()` and accept the following arguments:
 - `title` (_string_): The title of the current Wiktionary page
 - `text` (_string_): The [Wikitext](https://en.wikipedia.org/wiki/Wiki#Editing) of the current word entry/section
@@ -132,6 +127,10 @@ for record in Parser(bz, custom_methods=[my_method]):
              '\n'
              '{{Quellen}}'}
 ```
+
+## Vendor packages
+- [lxml](https://lxml.de)
+- [pyphen](https://pyphen.org)
 
 ## License
 [MIT](https://github.com/gambolputty/wiktionary_de_parser/blob/master/LICENSE.md) © Gregor Weichbrodt

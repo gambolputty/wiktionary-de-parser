@@ -25,8 +25,9 @@ class Parser:
         methods_path = os.path.join(os.path.dirname(__file__), 'methods')
         method_files = [f for f in os.listdir(methods_path) if not f.startswith('__') and f.endswith('.py')]
         for idx, f in enumerate(method_files):
-            full_path = os.path.join(methods_path, f)
-            module = SourceFileLoader('method-' + str(idx), full_path).load_module()
+            fullpath = os.path.join(methods_path, f)
+            fullname = 'method-' + str(idx)
+            module = SourceFileLoader(fullname=fullname, path=fullpath).load_module()
 
             if not hasattr(module, 'init'):
                 raise Exception(f'No init() method found in file "{f}"')
