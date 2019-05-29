@@ -139,15 +139,15 @@ def find_pos(title, pos_names, text):
 
     # Substantiv
     if '{{Deutsch adjektivisch Übersicht' in text \
-        or '{{Deutsch Substantiv Übersicht - sch' in text \
-        or '{{Deutsch Substantiv Übersicht' in text \
-        or '{{Deutsch Toponym Übersicht' in text:
+            or '{{Deutsch Substantiv Übersicht - sch' in text \
+            or '{{Deutsch Substantiv Übersicht' in text \
+            or '{{Deutsch Toponym Übersicht' in text:
         if 'Substantiv' not in result:
             result['Substantiv'] = []
     if '{{Deutsch adjektivisch Übersicht' in text and 'adjektivische Deklination' not in result['Substantiv']:
         result['Substantiv'].append('adjektivische Deklination')
     if '{{Deutsch Toponym Übersicht' in text and 'Toponym' not in result['Substantiv']:
-        result['Substantiv'].append('Toponym')    
+        result['Substantiv'].append('Toponym')
     # Adjektiv
     if '{{Deutsch Adjektiv Übersicht' in text and 'Adjektiv' not in result:
         result['Adjektiv'] = []
@@ -171,10 +171,12 @@ def find_pos(title, pos_names, text):
                 result[key] = []
             values_low = [x.lower() for x in values]
             if name_low in values_low:
-                name_idx = values_low.index(name_low)
                 if key not in result:
                     result[key] = []
-                result[key].append(values[name_idx])
+                name_idx = values_low.index(name_low)
+                value = values[name_idx]
+                if value not in result[key]:
+                    result[key].append(value)
 
     if debug is True:
         not_found_names = [x for x in pos_names if x.lower() not in all_pos_names and x not in not_in_map]
