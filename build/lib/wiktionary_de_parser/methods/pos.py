@@ -136,21 +136,29 @@ def find_pos(title, pos_names, text):
 
     # fix POS when there is a certain POS template, but POS is not in pos_names
     # example "Substantiv": https://de.wiktionary.org/wiki/wei%C3%9Fes_Gold
-    if 'Substantiv' not in result:
-        if '{{Deutsch adjektivisch Übersicht' in text \
-                or '{{Deutsch Substantiv Übersicht - sch' in text \
-                or '{{Deutsch Substantiv Übersicht' in text:
+
+    # Substantiv
+    if '{{Deutsch adjektivisch Übersicht' in text \
+        or '{{Deutsch Substantiv Übersicht - sch' in text \
+        or '{{Deutsch Substantiv Übersicht' in text \
+        or '{{Deutsch Toponym Übersicht' in text:
+        if 'Substantiv' not in result:
             result['Substantiv'] = []
-    if 'Adjektiv' not in result:
-        if '{{Deutsch Adjektiv Übersicht' in text:
-            result['Adjektiv'] = []
-    if '{{Deutsch Adverb Übersicht' in text:
+    if '{{Deutsch adjektivisch Übersicht' in text and 'adjektivische Deklination' not in result['Substantiv']:
+        result['Substantiv'].append('adjektivische Deklination')
+    if '{{Deutsch Toponym Übersicht' in text and 'Toponym' not in result['Substantiv']:
+        result['Substantiv'].append('Toponym')    
+    # Adjektiv
+    if '{{Deutsch Adjektiv Übersicht' in text and 'Adjektiv' not in result:
+        result['Adjektiv'] = []
+    # Adverb
+    if '{{Deutsch Adverb Übersicht' in text and 'Adverb' not in result:
         result['Adverb'] = []
-    if '{{Deutsch Pronomen Übersicht' in text:
+    # Pronomen
+    if '{{Deutsch Pronomen Übersicht' in text and 'Pronomen' not in result:
         result['Pronomen'] = []
-    if '{{Deutsch Toponym Übersicht' in text:
-        result['Toponym'] = []
-    if '{{Deutsch Verb Übersicht' in text:
+    # Verb
+    if '{{Deutsch Verb Übersicht' in text and 'Verb' not in result:
         result['Verb'] = []
 
     # map other pos names

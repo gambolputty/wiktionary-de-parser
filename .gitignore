@@ -1,11 +1,24 @@
 *.pyc
 __pycache__/
+build/
 
 .DS_Store
 
-# Setuptools distribution folder.
-/dist/
-
-# Python egg metadata, regenerated from source files by setuptools.
-/*.egg-info
-/*.egg
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
