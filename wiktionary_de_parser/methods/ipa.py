@@ -30,7 +30,18 @@ ipa_letters_re = re.compile(r'(' + vowels + '|' + consonants + ')')
 
 
 def init(title, text, current_record):
-    match_ipa = re.findall(r'{{Lautschrift\|([^}]+)}}', text)
+    # find paragraph
+    paragraphs = text.split('\n\n')
+    wanted_paragraph = ''
+    for p in paragraphs:
+        p = p.strip()
+        if p.startswith('{{Aussprache}}'):
+            wanted_paragraph = p
+            break
+    if wanted_paragraph == '':
+        return False
+
+    match_ipa = re.findall(r'{{Lautschrift\|([^}]+)}}', wanted_paragraph)
     found_ipa = [x.strip() for x in match_ipa if x != '…' and x.strip() != '']
     if not found_ipa:
         return False
