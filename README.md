@@ -59,7 +59,7 @@ for record in Parser(bz, custom_methods=[my_method]):
              'Nominativ Plural': 'Trittbrettfahrer',
              'Nominativ Singular': 'Trittbrettfahrer'},
  'inflected': False,
- 'ipa': 'ˈtʁɪtbʁɛtˌfaːʁɐ',
+ 'ipa': ['ˈtʁɪtbʁɛtˌfaːʁɐ'],
  'language': 'Deutsch',
  'lemma': 'Trittbrettfahrer',
  'pos': {'Substantiv': []},

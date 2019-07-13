@@ -32,10 +32,8 @@ def find_table(text):
 
 
 def clean_text(text):
-    # remove <!-- --> comments
-    text = re.sub(r'(<!--.+(?=-->)-->)', ' ', text)
-    # remove <ref></ref> tags
-    text = re.sub(r'(<ref>.+(?=</ref>)</ref>)', ' ', text)
+    # strip comments, <ref>-tags etc.
+    text = re.sub(r'<[^>]+>', ' ', text)
 
     # trim
     text = text.strip()
