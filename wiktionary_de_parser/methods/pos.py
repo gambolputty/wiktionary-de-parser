@@ -105,8 +105,7 @@ pos_map = {
         'Hilfsverb',
         'Erweiterter Infinitiv',
     ],
-    'Wortverbindung': [],
-    'Flektierte Form': [],
+    'Wortverbindung': []
 }
 
 if debug is True:
@@ -197,9 +196,6 @@ def init(title, text, current_record):
     # can have multiple POS values
     line = match_line.group(1)
     pos_names = re.findall(r'{{Wortart(?:-Test)?\|([^}|]+)(?:\|[^}|]+)*}}', line)
-    if not pos_names:
-        return False
-
     if not pos_names:
         return False
 

@@ -1,6 +1,8 @@
 import os
 import sys
 from bz2file import BZ2File
+from pdb import set_trace as bp
+from pprint import pprint
 from __init__ import Parser
 
 # add parent dir to PATH
@@ -10,4 +12,8 @@ bzfile_path = 'C:/Users/Gregor/Downloads/dewiktionary-latest-pages-articles-mult
 bz = BZ2File(bzfile_path)
 collection = set()
 for record in Parser(bz):
-    pass
+    if 'pos' not in record:
+        continue
+    if 'Flektierte Form' in record['pos']:
+        pprint(record)
+        bp()
