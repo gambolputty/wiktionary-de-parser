@@ -114,24 +114,35 @@ if debug is True:
     all_pos_names = [x.lower() for x in all_pos_names]
 
 
-def find_pos(title, pos_names, text):
+def find_pos(title, pos_names, text, current_record):
     result = {}
 
     # check for "Deklinierte Form" first
-    # can be both: Substantiv/Adjektiv
+    # can be: Substantiv, Adjektiv, Artikel, Pronomen
     if 'Deklinierte Form' in pos_names:
-        # get first uppercase letter
-        upper_chars = []
-        for char in title:
-            if char.isupper():
-                upper_chars.append(char)
-                break
-        if upper_chars:
-            result['Substantiv'] = ['Deklinierte Form']
+        # if German word, check for uppercase letter
+        if 'language' in current_record and current_record['language'] == 'Deutsch':
+            # get first uppercase letter
+            hasUpperChars = False
+            for char in title:
+                if char.isupper():
+                    hasUpperChars = True
+                    break
+            if hasUpperChars is True:
+                result['Substantiv'] = ['Deklinierte Form']
         else:
-            result['Adjektiv'] = ['Deklinierte Form']
-        # remove from names
-        del pos_names[pos_names.index('Deklinierte Form')]
+            # check for template "Grammatische Merkmale"
+            match_paragraph = re.search(r'{{Grammatische Merkmale}}((?:(?!^{{).)+)', text, re.DOTALL | re.MULTILINE)
+            if match_paragraph is not None:
+                print(match_paragraph.group(1).strip())
+
+            # if upper_chars:
+            #     result['Substantiv'] = ['Deklinierte Form']
+            # else:
+            #     result['Adjektiv'] = ['Deklinierte Form']
+            # # remove from names
+            # del pos_names[pos_names.index('Deklinierte Form')]
+            # break
 
     # fix POS when there is a certain POS template, but POS is not in pos_names
     # example "Substantiv": https://de.wiktionary.org/wiki/wei%C3%9Fes_Gold
@@ -199,7 +210,7 @@ def init(title, text, current_record):
     if not pos_names:
         return False
 
-    pos_normalized = find_pos(title, pos_names, text)
+    pos_normalized = find_pos(title, pos_names, text, current_record)
     if not pos_normalized.keys():
         return False
 
