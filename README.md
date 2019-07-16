@@ -6,7 +6,7 @@
 
 ## Features
 - comes with preset extraction methods for:
-  - flexion tables, genus, IPA, language, lemma, part of speech, syllables, raw Wikitext
+  - flexion tables, genus, IPA, language, lemma, part of speech (basic), syllables, raw Wikitext
 - allows you to add your own extraction methods (pass them as argument)
 - data values are normalized and cleaned from obsolete Wikitext markup
 - yields per section, not per page (a word can have multiple meanings, which is why some Wiktionary pages have multiple 'sections')
