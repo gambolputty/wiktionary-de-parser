@@ -30,13 +30,13 @@ ipa_letters_re = re.compile(r'(' + vowels + '|' + consonants + ')')
 
 
 def init(title, text, current_record):
-    # search line by line, headline {{Aussprache}} must come first
+    # search line by line
+    # headline {{Aussprache}} must come first
+    # break at empty newline
     lines = text.split('\n')
     found_head = False
     found_ipa = []
     for line in lines:
-        if title == 'Dosenfisch':
-            print(line)
         if line.startswith('{{Aussprache}}'):
             found_head = True
             continue
@@ -55,11 +55,6 @@ def init(title, text, current_record):
     
     if not found_ipa:
         return False
-
-
-    
-    # if title == 'Dosenfisch':
-    #     print(found_ipa)
 
     # workaround for problem described above
     # keep IPA strings, that have the same ending as the first one in the row
