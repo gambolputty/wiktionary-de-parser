@@ -23,7 +23,7 @@ bzfile_path = 'C:/Users/Gregor/Downloads/dewiktionary-latest-pages-articles-mult
 bz = BZ2File(bzfile_path)
 
 for record in Parser(bz):
-    if 'language' not in record or record['language'] != 'Deutsch':
+    if 'langCode' not in record or record['langCode'] != 'de':
       continue
     # do stuff with 'record'
 ```
@@ -34,7 +34,7 @@ The Wiktionary dump file is obtained from [here](https://dumps.wikimedia.org/dew
 All extraction methods must return a `Dict()` and accept the following arguments:
 - `title` (_string_): The title of the current Wiktionary page
 - `text` (_string_): The [Wikitext](https://en.wikipedia.org/wiki/Wiki#Editing) of the current word entry/section
-- `current_record` (_Dict_): A dictionary with all values of the current iteration (e. g. `current_record['language']`)
+- `current_record` (_Dict_): A dictionary with all values of the current iteration (e. g. `current_record['langCode']`)
 
 ```python
 # Create a new extraction method
@@ -60,7 +60,8 @@ for record in Parser(bz, custom_methods=[my_method]):
              'Nominativ Singular': 'Trittbrettfahrer'},
  'inflected': False,
  'ipa': ['ˈtʁɪtbʁɛtˌfaːʁɐ'],
- 'language': 'Deutsch',
+ 'lang': 'Deutsch',
+ 'langCode': 'de',
  'lemma': 'Trittbrettfahrer',
  'pos': {'Substantiv': []},
  'syllables': ['Tritt', 'brett', 'fah', 'rer'],

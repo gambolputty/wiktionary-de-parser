@@ -18,10 +18,27 @@ collection = set()
 for record in Parser(bz):
 
     # German entries missig IPA:
-    if record['title'] not in collection and \
-        'language' in record and record['language'] == 'Deutsch' and \
-        'pos' in record and 'Abkürzung' not in record['pos'] and \
-        'ipa' not in record:
-        print(record['title'])
+    # if record['title'] not in collection and \
+    #     'langCode' in record and record['langCode'] == 'de' and \
+    #     'pos' in record and 'Abkürzung' not in record['pos'] and \
+    #     'ipa' not in record:
+    #     print(record['title'])
+
+    # if 'langCode' in record:
+    #     print(record['langCode'])
+
+    if record['title'] == 'Drittes Reich':
+        pprint(record)
+    # if 'syllables' in record:
+    #     print(record['title'])
+    #     print(record['syllables'])
+    #     print()
+
+    # # German entries missig syls:
+    # if record['title'] not in collection and \
+    #     'langCode' in record and record['langCode'] == 'de' and \
+    #     'pos' in record and 'Abkürzung' not in record['pos'] and \
+    #     'syllables' not in record:
+    #     print(record['title'])
 
     collection.add(record['title'])

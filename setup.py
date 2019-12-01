@@ -4,7 +4,7 @@ with open('README.md', 'r', encoding='utf-8') as fh:
     readme = fh.read()
 
 setup(name='wiktionary_de_parser',
-    version='0.7.8',
+    version='0.7.9',
     author='Gregor Weichbrodt',
     author_email='gregorweichbrodt@gmail.com',
     description='Extracts data from German Wiktionary dump files. Allows you to add your own extraction methods 🚀',

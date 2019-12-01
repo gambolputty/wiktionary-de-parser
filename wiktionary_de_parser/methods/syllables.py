@@ -1,5 +1,6 @@
 import re
 import pyphen
+from pdb import set_trace as bp
 
 """
 Test strings: 
@@ -85,6 +86,14 @@ Test strings:
 
 {{Worttrennung}}
 :Pflan·ze, {{Pl.}} Pflan·zen
+
+{{Worttrennung}}
+:, {{Pl.}}
+
+{{Worttrennung}}
+:
+:ein·wir·ken, {{Prät.}} wirk·te ein, {{Part.}} ein·ge·wirkt
+
 """
 
 
@@ -96,28 +105,56 @@ def init(title, text, current_record):
     # strip comments, <ref>-tags etc.
     text = re.sub(r'<[^>]+>', ' ', text)
 
-    matched = re.search(r"{{Worttrennung}}\n::?(?:''[^']+'' )?(?:{{[^}]+}}, )?((?:(?!,? {{|,? ''| \().)+)", text)
-    if matched is not None:
-        found_string = matched.group(1)
+    # find paragraph
+    match_p = re.search(r'{{Worttrennung}}\n(?::?\n)?([^\n]+)', text)
+    if match_p is not None:
+        paragraph = match_p.group(1)
 
         """
-        check if comma found and string, check if comma is part of title
+        Find title in wikitext under "{{Worttrennung}}".
+        Keep characters, that are also part of title.
+        Find start and end index.
+        Paragraph can have commas/semicolons, but we don't know if they are part of title.
         valid:
             ge·sagt, ge·tan
         invalid (inflected form):
             zwan·zig, zwan·zi·ge
+            In·tel·li·genz·quo·ti·ent; In·tel·li·genz·quo·ti·en·ten
+
         """
-        if ',' in found_string:
-            found_string_split = found_string.split(',')
-            if found_string_split[0].replace('·', '') == title:
-                # comma does not belong to title, take first chunk
-                found_string = found_string_split[0]
+        title_index = 0
+        start_index = -1
+        end_index = -1
+        last_title_index = len(title) - 1
+        last_paragraph_index = len(paragraph) - 1
+        for index, char in enumerate(paragraph):
+            # get start index
+            # test if title can be inserted from current index
+            # remove mid dots for testing
+            if start_index == -1:
+                if paragraph[index:].replace('·', '').startswith(title):
+                    start_index = index
+                    end_index = index
+                continue
+
+            end_index += 1
+            if char == '·':
+                continue
+
+            title_index += 1
+            if title_index >= last_title_index or char != title[title_index] or index == last_paragraph_index:
+                end_index += 1
+                break
+
+        # remove everything after actual_index
+        clean_string = paragraph[start_index:end_index]
 
         # split syllables, remove empty strings (ugly side effect of re.split)
-        result = list(filter(None, re.split(r' |·|-', found_string)))
-    elif 'language' in current_record and current_record['language'] in pyphen.LANGUAGES:
+        result = list(filter(None, re.split(r' |·|-', clean_string)))
+
+    if not result and 'langCode' in current_record and current_record['langCode'] in pyphen.LANGUAGES:
         # get syllables with PyHyphen
-        dic = pyphen.Pyphen(lang=current_record['language'])
+        dic = pyphen.Pyphen(lang=current_record['langCode'])
         syl_string = dic.inserted(title)
         # split by "-" and remove empty entries
         result = [x for x in re.split(r' |-', syl_string) if x]

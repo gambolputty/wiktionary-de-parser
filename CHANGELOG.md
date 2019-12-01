@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.9] - 2019-12-01
+### Fixed
+- `syllables.py` improvemed syllables parsing
+### Added
+- `language.py` added field `langCode` (providing ISO639-1 language code)
+### Changed
+- `language.py` renamed field `language` to `lang`
+- `README.md` updated readme
+
 ## [0.7.8] - 2019-12-01
 ### Fixed
 - `ipa.py` IPA parsing improvement
