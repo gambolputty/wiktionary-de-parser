@@ -14,8 +14,8 @@ Sometimes they are just seperated by comma and no additional info about the gram
     Example "Aserbaidschanisch" and Singular 2 "(das) Aserbaidschanische":
     - :{{IPA}} {{Lautschrift|ˌazɐbaɪ̯ˈd͡ʒaːnɪʃ}}, {{Lautschrift|ˌazɐbaɪ̯ˈd͡ʒaːnɪʃə}}
 
-In the last example we can't say whether these are just two different IPA
-transcriptions for the same word or for two different words. 
+In the last example we can't say whether the two entries are just two different IPA
+transcriptions for the same word or for two different words (lemma & inflected form). 
 
 Temporary solution:
 Keep the first entry. Check if the last IPA letter of every other entry is the same
@@ -31,21 +31,18 @@ ipa_letters_re = re.compile(r'(' + vowels + '|' + consonants + ')')
 
 def init(title, text, current_record):
     # find paragraph
-    paragraphs = text.split('\n\n')
-    wanted_paragraph = ''
-    for p in paragraphs:
-        p = p.strip()
-        if p.startswith('{{Aussprache}}'):
-            wanted_paragraph = p
-            break
-    if wanted_paragraph == '':
+    match_p = re.search(r'({{Aussprache}}\n.+{{Lautschrift[^\n]+)', text)
+    if match_p is None:
         return False
+    paragraph = match_p.group(1)
 
-    match_ipa = re.findall(r'{{Lautschrift\|([^}]+)}}', wanted_paragraph)
+    match_ipa = re.findall(r'{{Lautschrift\|([^}]+)}}', paragraph)
     found_ipa = [x.strip() for x in match_ipa if x != '…' and x.strip() != '']
     if not found_ipa:
         return False
 
+    # workaround for problem described above
+    # keep IPA strings, that have the same ending as the first one in the row
     wanted_last_ipa_char = None
     result = [found_ipa[0]]
     for idx, ipa_str in enumerate(found_ipa):
