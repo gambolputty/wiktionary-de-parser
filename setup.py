@@ -4,12 +4,13 @@ with open('README.md', 'r', encoding='utf-8') as fh:
     readme = fh.read()
 
 setup(name='wiktionary_de_parser',
-    version='0.7.9',
+    version='0.8.0',
     author='Gregor Weichbrodt',
     author_email='gregorweichbrodt@gmail.com',
     description='Extracts data from German Wiktionary dump files. Allows you to add your own extraction methods 🚀',
     long_description=readme,
     long_description_content_type='text/markdown',
+    include_package_data= True,
     classifiers=[
         'Programming Language :: Python :: 3.7',
         'License :: OSI Approved :: MIT License',
