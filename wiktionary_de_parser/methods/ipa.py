@@ -30,16 +30,37 @@ ipa_letters_re = re.compile(r'(' + vowels + '|' + consonants + ')')
 
 
 def init(title, text, current_record):
-    # find paragraph
-    match_p = re.search(r'({{Aussprache}}\n.+{{Lautschrift[^\n]+)', text)
-    if match_p is None:
-        return False
-    paragraph = match_p.group(1)
-
-    match_ipa = re.findall(r'{{Lautschrift\|([^}]+)}}', paragraph)
-    found_ipa = [x.strip() for x in match_ipa if x != '…' and x.strip() != '']
+    # search line by line, headline {{Aussprache}} must come first
+    lines = text.split('\n')
+    found_head = False
+    found_ipa = []
+    for line in lines:
+        if line.startswith('{{Aussprache}}'):
+            found_head = True
+            continue
+        if found_head is False:
+            continue
+        # break on empty newline
+        if line.strip() == '':
+            break
+        # find IPA string(s)
+        match_ipa = re.findall(r'{{Lautschrift\|([^}]+)}}', line)
+        if not match_ipa:
+            continue
+        found_ipa = [x.strip() for x in match_ipa if x != '…' and x.strip() != '']
+        if found_ipa:
+           break
+    
+    if title == 'Dosenfisch':
+        print(found_ipa)
+    
     if not found_ipa:
         return False
+
+
+    
+    # if title == 'Dosenfisch':
+    #     print(found_ipa)
 
     # workaround for problem described above
     # keep IPA strings, that have the same ending as the first one in the row
