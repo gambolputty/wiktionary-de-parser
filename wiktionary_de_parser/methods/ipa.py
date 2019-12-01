@@ -35,6 +35,8 @@ def init(title, text, current_record):
     found_head = False
     found_ipa = []
     for line in lines:
+        if title == 'Dosenfisch':
+            print(line)
         if line.startswith('{{Aussprache}}'):
             found_head = True
             continue
@@ -50,9 +52,6 @@ def init(title, text, current_record):
         found_ipa = [x.strip() for x in match_ipa if x != '…' and x.strip() != '']
         if found_ipa:
            break
-    
-    if title == 'Dosenfisch':
-        print(found_ipa)
     
     if not found_ipa:
         return False
