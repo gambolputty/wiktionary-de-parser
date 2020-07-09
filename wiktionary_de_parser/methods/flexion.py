@@ -67,7 +67,7 @@ def find_table_values(table_string):
                 text = None
 
         # none dash to None type
-        if text in ('—', '-'):
+        if text in ('—', '-', '–'):
             text = None
 
         result[key] = text
