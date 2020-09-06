@@ -16,7 +16,7 @@
 2. Import `wiktionary_de_parser` like this:
 
 ```python
-from bz2file import BZ2File
+from bz2 import BZ2File
 from wiktionary_de_parser import Parser
 
 bzfile_path = 'C:/Users/Gregor/Downloads/dewiktionary-latest-pages-articles-multistream.xml.bz2'
