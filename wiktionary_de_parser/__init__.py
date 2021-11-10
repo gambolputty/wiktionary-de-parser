@@ -1,50 +1,57 @@
-from lxml import etree
-from importlib.machinery import SourceFileLoader
 import os
 import re
+from pathlib import Path
+from importlib.machinery import SourceFileLoader
+from typing import Any, Callable, Iterator, List, Tuple
+
+from lxml import etree
 
 
 class Parser:
-    def __init__(self, fh, custom_methods=[], ignored_prefixes=('mediawiki:', 'vorlage:', 'wiktionary:', 'hilfe:', 'flexion:',
-                                                                'datei:', 'verzeichnis:', 'kategorie:', 'reim:', 'modul:', 'fn:')):
+    def __init__(
+        self,
+        source: Any,
+        custom_methods: List[Callable] = [],
+        ignored_prefixes: Tuple[str, ...] = ('mediawiki:', 'vorlage:', 'wiktionary:', 'hilfe:', 'flexion:',
+                                             'datei:', 'verzeichnis:', 'kategorie:', 'reim:', 'modul:', 'fn:')
+    ) -> None:
         # Initialize 'iterparse' to only generate 'end' events on tag '<entity>'
         # Credits: https: // stackoverflow.com/a/55147982/5732518
         # Prepend the default Namespace {*} to get anything.
-        self.context = etree.iterparse(fh, events=("end",), tag=['{*}' + 'page'])
+        self.context = etree.iterparse(source, events=("end",), tag=['{*}' + 'page'])
 
         # ignore page titles starting with these prefixes followed by ":"
         self.ignored_prefixes = ignored_prefixes
 
         # load default & custom methods
+        self.extraction_methods: List[Callable] = []
         self.load_methods(custom_methods)
 
-    def load_methods(self, custom_methods):
-        self.extraction_methods = []
-
+    def load_methods(self, custom_methods: List[Callable]) -> None:
         # load extraction methods from folder
-        methods_path = os.path.join(os.path.dirname(__file__), 'methods')
-        method_files = [f for f in os.listdir(methods_path) if not f.startswith('__') and f.endswith('.py')]
-        for idx, f in enumerate(method_files):
-            fullpath = os.path.join(methods_path, f)
+        methods_path = Path(__file__).parent.absolute().joinpath('methods')
+        method_files = [f for f in methods_path.iterdir() if not f.name.startswith('__') and f.name.endswith('.py')]
+
+        for idx, file_path in enumerate(method_files):
             fullname = 'method-' + str(idx)
-            module = SourceFileLoader(fullname=fullname, path=fullpath).load_module()
+            module: Any = SourceFileLoader(fullname=fullname, path=str(file_path)).load_module()
 
             if not hasattr(module, 'init'):
-                raise Exception(f'No init() method found in file "{f}"')
+                raise Exception(f'No init() method found in file "{file_path.name}"')
             if not callable(module.init):
-                raise Exception(f'init() method in "{f}" is not callable')
+                raise Exception(f'init() method in "{file_path.name}" is not callable')
 
             # append method
             self.extraction_methods.append(module.init)
 
         # load custom exctraction methods
-        if isinstance(custom_methods, list) and custom_methods:
+        if custom_methods and isinstance(custom_methods, list):
             for method in custom_methods:
                 if not callable(method):
                     raise Exception(f'Provided extraction method "{str(method)}" is not callable')
                 self.extraction_methods.append(method)
 
-    def parse_page(self):
+    def parse_page(self) -> Iterator[Tuple[str, str]]:
         """
         Parse the XML File for title and revision tag
         Clear/Delete the Element Tree after processing
@@ -53,13 +60,14 @@ class Parser:
         """
         for event, elem in self.context:
             # Assign the 'elem.namespace' to the 'xpath'
-            elem_namespace = etree.QName(elem).namespace
+            elem_namespace: str = etree.QName(elem).namespace
 
-            title = elem.xpath('./xmlns:title/text( )', namespaces={'xmlns': elem_namespace})
-            wikitext = elem.xpath('./xmlns:revision/xmlns:text/text( )', namespaces={'xmlns': elem_namespace})
+            _title: List[str] = elem.xpath('./xmlns:title/text( )', namespaces={'xmlns': elem_namespace})
+            _wikitext: List[str] = elem.xpath('./xmlns:revision/xmlns:text/text( )',
+                                              namespaces={'xmlns': elem_namespace})
 
-            title = title[0] if title else ''
-            wikitext = wikitext[0] if wikitext else ''
+            title = _title[0] if _title else ''
+            wikitext = _wikitext[0] if _wikitext else ''
 
             yield title, wikitext
 
@@ -67,7 +75,7 @@ class Parser:
             while elem.getprevious() is not None:
                 del elem.getparent()[0]
 
-    def parse_sections(self, wikitext):
+    def parse_sections(self, wikitext: str) -> List[str]:
         """
         Split page into sections. One page can have multiple word sections, for example:
             - https://de.wiktionary.org/wiki/instrument
@@ -77,7 +85,8 @@ class Parser:
             - https://de.wiktionary.org/wiki/instrument
             - https://de.wiktionary.org/wiki/Becken
         """
-        sections = re.findall(r'(=== {{Wortart(?:[\w\W](?!^===? ))+)', wikitext, re.MULTILINE)
+        sections: List[str] = re.findall(r'(=== {{Wortart(?:[\w\W](?!^===? ))+)', wikitext, re.MULTILINE)
+
         for entry in sections:
             yield entry
 

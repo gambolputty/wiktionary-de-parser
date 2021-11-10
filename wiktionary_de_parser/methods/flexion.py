@@ -1,9 +1,7 @@
 import re
-from pprint import pprint
-# from pdb import set_trace as bp
 
 """
-reference:
+Reference:
 https://de.wiktionary.org/wiki/Kategorie:Wiktionary:Flexionstabelle_(Deutsch)
 https://de.wiktionary.org/wiki/Hilfe:Flexionstabellen
 """
@@ -16,7 +14,7 @@ wanted_table_names = [
     'Deutsch Nachname Übersicht',
     'Deutsch Pronomen Übersicht',
     'Deutsch Substantiv Übersicht',
-    'Deutsch Substantiv Übersicht - sch',
+    'Deutsch Substantiv Übersicht -sch',
     'Deutsch adjektivisch Übersicht',
     'Deutsch Toponym Übersicht',
     'Deutsch Verb Übersicht',
