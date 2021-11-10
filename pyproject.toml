@@ -1,0 +1,37 @@
+[tool.poetry]
+name = "wiktionary_de_parser"
+version = "0.8.2"
+description = "Extracts data from German Wiktionary dump files. Allows you to add your own extraction methods 🚀"
+authors = ["Gregor Weichbrodt <gregorweichbrodt@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/gambolputty/wiktionary_de_parser"
+repository = "https://github.com/gambolputty/wiktionary_de_parser"
+keywords = ["wiktionary", "xml", "parser", "data-extraction", "german", "nlp"]
+classifiers = [
+    "Programming Language :: Python :: 3.7",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Natural Language :: German",
+    "Topic :: Text Processing :: Markup :: XML"
+]
+include = [
+    "CHANGELOG.md",
+    "LICENSE.txt",
+]
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/gambolputty/wiktionary_de_parser/issues"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+lxml = "^4.6.4"
+pyphen = "^0.11.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+autopep8 = "^1.6.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

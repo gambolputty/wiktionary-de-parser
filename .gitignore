@@ -1,8 +1,9 @@
 *.pyc
 __pycache__/
 build/
-
 .DS_Store
+
+.venv
 
 # Distribution / packaging
 .Python
