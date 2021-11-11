@@ -5,7 +5,12 @@ Reference:
 https://de.wiktionary.org/wiki/Kategorie:Wiktionary:Flexionstabelle_(Deutsch)
 https://de.wiktionary.org/wiki/Hilfe:Flexionstabellen
 """
-
+# TODO: find values:
+# "}" - Frauenzimmer
+# "&nbsp" - Fischer Random Chess
+# Tausendfache|kein Plural=jas
+# Wissenswerte|kein Plural=ja
+# ? - Alf
 
 wanted_table_names = [
     'Deutsch Adjektiv Übersicht',
@@ -29,17 +34,7 @@ def find_table(text):
     return match_table.group(1)
 
 
-def clean_text(text):
-    # strip comments, <ref>-tags etc.
-    text = re.sub(r'<[^>]+>', ' ', text)
-
-    # trim
-    text = text.strip()
-
-    return text
-
-
-def find_table_values(table_string):
+def parse_table_values(table_string):
     table_tuples = re.findall(r'(?:^\|([^=]+)=([^\n]+)$)+', table_string, re.MULTILINE)
     if not table_tuples:
         return False
@@ -49,11 +44,16 @@ def find_table_values(table_string):
     for (key, value) in table_tuples:
         if key.startswith('Bild'):
             continue
+
         if key in ('Flexion', 'Weitere Konjugationen'):
             continue
 
         # clean text
-        text = clean_text(value)
+
+        # strip comments, <ref>-tags etc.
+        text = re.sub(r'<[^>]+>', ' ', text)
+        # trim
+        text = text.strip()
 
         # genus
         if key in ['Genus', 'Genus 1', 'Genus 2', 'Genus 3', 'Genus 4']:
@@ -78,7 +78,7 @@ def init(title, text, current_record):
     if not table_string:
         return False
 
-    table_dict = find_table_values(table_string)
+    table_dict = parse_table_values(table_string)
     if table_dict is False:
         return False
 
