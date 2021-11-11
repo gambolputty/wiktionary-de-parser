@@ -16,7 +16,7 @@ class Parser:
                                              'datei:', 'verzeichnis:', 'kategorie:', 'reim:', 'modul:', 'fn:')
     ) -> None:
         # Initialize 'iterparse' to only generate 'end' events on tag '<entity>'
-        # Credits: https: // stackoverflow.com/a/55147982/5732518
+        # Credits: https://stackoverflow.com/a/55147982/5732518
         # Prepend the default Namespace {*} to get anything.
         self.context = etree.iterparse(source, events=("end",), tag=['{*}' + 'page'])
 
