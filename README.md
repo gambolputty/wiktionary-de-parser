@@ -1,10 +1,13 @@
 # wiktionary_de_parser
-`wiktionary_de_parser` is a Python module to extract data from German Wiktionary XML files. It allows you to add your own extraction methods.
 
-## Requirements
-- Python 3.7 (might work with other 3.+ versions, but not tested)
+`wiktionary_de_parser` is a Python module to extract data from German Wiktionary XML files (for Python 3.7+). It allows you to add your own extraction methods.
+
+## Installation
+
+`pip3 install wiktionary_de_parser`
 
 ## Features
+
 - comes with preset extraction methods for:
   - flexion tables, genus, IPA, language, lemma, part of speech (basic), syllables, raw Wikitext
 - allows you to add your own extraction methods (pass them as argument)
@@ -12,14 +15,14 @@
 - yields per section, not per page (a word can have multiple meanings, which is why some Wiktionary pages have multiple 'sections')
 
 ## Usage
-1. Install via `pip3 install wiktionary_de_parser`.
-2. Import `wiktionary_de_parser` like this:
+
+Import `wiktionary_de_parser` like this:
 
 ```python
 from bz2 import BZ2File
 from wiktionary_de_parser import Parser
 
-bzfile_path = 'C:/Users/Gregor/Downloads/dewiktionary-latest-pages-articles-multistream.xml.bz2'
+bzfile_path = '/tmp/dewiktionary-latest-pages-articles-multistream.xml.bz2'
 bz = BZ2File(bzfile_path)
 
 for record in Parser(bz):
@@ -27,11 +30,14 @@ for record in Parser(bz):
       continue
     # do stuff with 'record'
 ```
+
 Note: in this example we use [BZ2File](https://pypi.org/project/bz2file/) to read a compressed Wiktionary dump file.
 The Wiktionary dump file is obtained from [here](https://dumps.wikimedia.org/dewiktionary/).
 
 ### Adding new extraction methods
+
 All extraction methods must return a `Dict()` and accept the following arguments:
+
 - `title` (_string_): The title of the current Wiktionary page
 - `text` (_string_): The [Wikitext](https://en.wikipedia.org/wiki/Wiki#Editing) of the current word entry/section
 - `current_record` (_Dict_): A dictionary with all values of the current iteration (e. g. `current_record['langCode']`)
@@ -48,6 +54,7 @@ for record in Parser(bz, custom_methods=[my_method]):
 ```
 
 ## Sample data:
+
 ```python
 {'flexion': {'Akkusativ Plural': 'Trittbrettfahrer',
              'Akkusativ Singular': 'Trittbrettfahrer',
@@ -130,8 +137,10 @@ for record in Parser(bz, custom_methods=[my_method]):
 ```
 
 ## Vendor packages
+
 - [lxml](https://lxml.de)
 - [pyphen](https://pyphen.org)
 
 ## License
+
 [MIT](https://github.com/gambolputty/wiktionary_de_parser/blob/master/LICENSE.md) © Gregor Weichbrodt
