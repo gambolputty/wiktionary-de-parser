@@ -136,11 +136,6 @@ for record in Parser(bz, custom_methods=[my_method]):
              '{{Quellen}}'}
 ```
 
-## Vendor packages
-
-- [lxml](https://lxml.de)
-- [pyphen](https://pyphen.org)
-
 ## License
 
 [MIT](https://github.com/gambolputty/wiktionary_de_parser/blob/master/LICENSE.md) © Gregor Weichbrodt
