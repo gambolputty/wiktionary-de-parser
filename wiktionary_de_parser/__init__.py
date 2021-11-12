@@ -1,13 +1,13 @@
 import re
 from pathlib import Path
 from importlib.machinery import SourceFileLoader
-from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, TypedDict
+from typing import Any, Callable, Iterator, List, Tuple, TypedDict
+from typing_extensions import Required
 
 from lxml import etree
 
 from wiktionary_de_parser.methods.flexion import FlexionInfo
 from wiktionary_de_parser.methods.ipa import IPAInfo
-from wiktionary_de_parser.methods.lemma import LemmaInfo
 from wiktionary_de_parser.methods.pos import POSInfo
 from wiktionary_de_parser.methods.syllables import SyllablesInfo
 
@@ -15,14 +15,14 @@ PACKAGE_PATH = Path(__file__).parent.absolute()
 
 
 class Record(TypedDict, total=False):
-    title: str
-    wikitext: str
+    title: Required[str]
+    wikitext: Required[str]
+    lemma: Required[str]
+    inflected: Required[bool]
     flexion: FlexionInfo
     ipa: IPAInfo
     lang: str
     lang_code: str
-    lemma: LemmaInfo
-    inflected: bool
     pos: POSInfo
     syllables: SyllablesInfo
 

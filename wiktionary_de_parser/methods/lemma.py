@@ -2,12 +2,12 @@ import re
 from typing import Literal, Optional, TypedDict, Union
 
 
-class LemmaInfo(TypedDict, total=False):
+class LemmaInfo(TypedDict):
     lemma: str
     inflected: bool
 
 
-LemmaResult = Union[Literal[False], LemmaInfo]
+LemmaResult = LemmaInfo
 
 
 def init(
