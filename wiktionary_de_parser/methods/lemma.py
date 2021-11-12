@@ -1,7 +1,20 @@
 import re
+from typing import Literal, Optional, TypedDict, Union
 
 
-def init(title, text, current_record):
+class LemmaInfo(TypedDict, total=False):
+    lemma: str
+    inflected: bool
+
+
+LemmaResult = Union[Literal[False], LemmaInfo]
+
+
+def init(
+    title: str,
+    text: str,
+    current_record
+) -> LemmaResult:
     """
     Grundformverweis
     Von einer Deklination spricht man beim Beugen von Substantiven und den

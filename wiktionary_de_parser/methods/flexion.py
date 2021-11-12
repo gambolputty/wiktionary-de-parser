@@ -1,10 +1,13 @@
 import re
+from typing import Dict, Literal, Union
 
 """
 Reference:
 https://de.wiktionary.org/wiki/Kategorie:Wiktionary:Flexionstabelle_(Deutsch)
 https://de.wiktionary.org/wiki/Hilfe:Flexionstabellen
 """
+FlexionInfo = Dict[Literal['flexion'], Dict[str, str]]
+FlexionResult = Union[Literal[False], FlexionInfo]
 
 wanted_table_names = [
     'Deutsch Adjektiv Übersicht',
@@ -67,7 +70,11 @@ def parse_table_values(table_string):
     return result if result.keys() else False
 
 
-def init(title, text, current_record):
+def init(
+    title: str,
+    text: str,
+    current_record
+) -> FlexionResult:
     table_string = find_table(text)
     if not table_string:
         return False

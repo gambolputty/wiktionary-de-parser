@@ -1,6 +1,9 @@
 import re
+from typing import Dict, List, Literal, Union
 import pyphen
-from pdb import set_trace as bp
+
+SyllablesInfo = Dict[Literal['syllables'], List[str]]
+SyllablesResult = Union[Literal[False], SyllablesInfo]
 
 """
 Test strings:
@@ -97,7 +100,11 @@ Test strings:
 """
 
 
-def init(title, text, current_record):
+def init(
+    title: str,
+    text: str,
+    current_record
+) -> SyllablesResult:
     # find syllables in wikitext
     # reference: https://de.wiktionary.org/wiki/Hilfe:Worttrennung
     result = False

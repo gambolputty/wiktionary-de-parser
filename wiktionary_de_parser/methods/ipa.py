@@ -1,5 +1,5 @@
 import re
-from pdb import set_trace as bp
+from typing import Dict, List, Literal, Union
 
 """
 Reference: https://de.wiktionary.org/wiki/Hilfe:Aussprache
@@ -15,7 +15,7 @@ Sometimes they are just seperated by comma and no additional info about the gram
     - :{{IPA}} {{Lautschrift|ˌazɐbaɪ̯ˈd͡ʒaːnɪʃ}}, {{Lautschrift|ˌazɐbaɪ̯ˈd͡ʒaːnɪʃə}}
 
 In the last example we can't say whether the two entries are just two different IPA
-transcriptions for the same word or for two different words (lemma & inflected form). 
+transcriptions for the same word or for two different words (lemma & inflected form).
 
 Temporary solution:
 Keep the first entry. Check if the last IPA letter of every other entry is the same
@@ -23,13 +23,15 @@ as the one in the first match (because it's likely that the last character doesn
 change in different IPA transcriptions for the same word)
 
 """
+IPAInfo = Dict[Literal['ipa'], List[str]]
+IPAResult = Union[Literal[False], IPAInfo]
 
 vowels = r'aɪ̯|aʊ̯|ɛɪ̯|ɔɪ̯|ʊɪ̯|aː|eː|ɛː|iː|oː|øː|õː|uː|yː|ɨ|i̯|ʉ|ɯ|ɪ|ʏ|ʊ|ø|ɑ|ɘ|ɵ|ɤ|ə|ɛ|œ|ɜ|ɞ|ʌ|ɔ|æ|ɐ|ɶ|ɒ|ã|ɐ̯|a|e|i|o|u|y'
 consonants = r'ʈ|ɖ|ɟ|ɢ|ʔ|ɸ|β|v|θ|ð|ʃ|ʒ|ʂ|ʐ|ç|ʝ|l̩|ɣ|χ|ʁ|ħ|ʕ|ɦ|ɬ|ɮ|ɱ|m̩|ɱ̍|ɱ̩|n̩|ɳ|ɲ|ŋ|ŋ̍|ŋ̩|ɴ|ʙ|ʀ|ⱱ|ɾ|ʦ|ʧ|ʤ|ɽ|ɺ|ʋ|ɹ|ɻ|ɰ|ɭ|ʎ|ʟ|p|b|t|d|c|k|ɡ|q|f|s|z|x|h|m|n|r|l|j|ɫ'
 ipa_letters_re = re.compile(r'(' + vowels + '|' + consonants + ')')
 
 
-def init(title, text, current_record):
+def init(title: str, text: str, current_record) -> IPAResult:
     # search line by line
     # headline {{Aussprache}} must come first
     # break at empty newline
@@ -51,8 +53,8 @@ def init(title, text, current_record):
             continue
         found_ipa = [x.strip() for x in match_ipa if x != '…' and x.strip() != '']
         if found_ipa:
-           break
-    
+            break
+
     if not found_ipa:
         return False
 

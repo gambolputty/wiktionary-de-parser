@@ -1,9 +1,12 @@
 import re
 import itertools
+from typing import Dict, List, Literal, Union
 
 """
 reference: https://de.wiktionary.org/wiki/Hilfe:Wortart
 """
+POSInfo = Dict[Literal['pos'], Dict[str, List[str]]]
+POSResult = Union[Literal[False], POSInfo]
 debug = False
 
 pos_map = {
@@ -174,7 +177,11 @@ def find_pos(title, pos_names, text, current_record):
     return result
 
 
-def init(title, text, current_record):
+def init(
+    title: str,
+    text: str,
+    current_record
+) -> POSResult:
     # find line
     match_line = re.search(r'(=== ?{{Wortart(?:-Test)?\|[^\n]+)', text)
     if not match_line:
