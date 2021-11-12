@@ -18,11 +18,11 @@ class _Record(TypedDict):
     # https://www.python.org/dev/peps/pep-0655/#motivation
     title: str
     wikitext: str
+    lemma: str
+    inflected: bool
 
 
 class Record(_Record, total=False):
-    lemma: str
-    inflected: bool
     flexion: FlexionInfo
     ipa: IPAInfo
     lang: str
@@ -128,7 +128,9 @@ class Parser:
             for section_text in self.parse_sections(wikitext):
                 current_record: Record = {
                     'title': title,
-                    'wikitext': section_text
+                    'wikitext': section_text,
+                    'lemma': '', # to be overwritten
+                    'inflected': False # might be overwritten
                 }
 
                 # execute parse methods & update current_record
