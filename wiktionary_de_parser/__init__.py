@@ -2,7 +2,6 @@ import re
 from pathlib import Path
 from importlib.machinery import SourceFileLoader
 from typing import Any, Callable, Iterator, List, Tuple, TypedDict
-from typing_extensions import Required
 
 from lxml import etree
 
@@ -14,11 +13,16 @@ from wiktionary_de_parser.methods.syllables import SyllablesInfo
 PACKAGE_PATH = Path(__file__).parent.absolute()
 
 
-class Record(TypedDict, total=False):
-    title: Required[str]
-    wikitext: Required[str]
-    lemma: Required[str]
-    inflected: Required[bool]
+class _Record(TypedDict):
+    # following this cumbersome example to make some fields required:
+    # https://www.python.org/dev/peps/pep-0655/#motivation
+    title: str
+    wikitext: str
+
+
+class Record(_Record, total=False):
+    lemma: str
+    inflected: bool
     flexion: FlexionInfo
     ipa: IPAInfo
     lang: str
