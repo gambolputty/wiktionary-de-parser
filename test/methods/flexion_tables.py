@@ -170,14 +170,10 @@ tables = [
 }}""", {
         'Genus': 'm',
         'Nominativ Singular': 'Alf',
-        'Nominativ Plural': None,
         'Genitiv Singular': 'Alfs',
         'Genitiv Singular*': 'Alfes',
-        'Genitiv Plural': None,
         'Dativ Singular': 'Alf',
         'Dativ Singular*': 'Alfe',
-        'Dativ Plural': None,
         'Akkusativ Singular': 'Alf',
-        'Akkusativ Plural': None,
     })
 ]

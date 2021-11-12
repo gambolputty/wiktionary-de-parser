@@ -1,13 +1,10 @@
-import os
 import re
-import sys
-from os.path import dirname, abspath
 
-parent_path = dirname(dirname(abspath(__file__)))
+from wiktionary_de_parser import PACKAGE_PATH
 
 # https://de.wiktionary.org/wiki/Hilfe:Sprachcodes
 langcodes = {}
-with open(f'{parent_path}/assets/sprachcodes_iso639-1.txt', encoding='utf-8') as f:
+with open(PACKAGE_PATH.joinpath('assets/sprachcodes_iso639-1.txt'), encoding='utf-8') as f:
     lines = f.read().split('\n')
     for line in lines:
         x = line.split(',')

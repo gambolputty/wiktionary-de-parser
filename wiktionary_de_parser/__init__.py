@@ -2,9 +2,24 @@ import os
 import re
 from pathlib import Path
 from importlib.machinery import SourceFileLoader
-from typing import Any, Callable, Iterator, List, Tuple
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, TypedDict
 
 from lxml import etree
+
+PACKAGE_PATH = Path(__file__).parent.absolute()
+
+
+class Record(TypedDict, total=False):
+    title: str
+    wikitext: str
+    flexion: Optional[Dict[str, str]]
+    ipa: Optional[List[str]]
+    lang: Optional[str]
+    lang_code: Optional[str]
+    lemma: Optional[str]
+    inflected: Optional[bool]
+    pos: Optional[Dict[str, List[str]]]
+    syllables: Optional[List[str]]
 
 
 class Parser:
@@ -29,7 +44,7 @@ class Parser:
 
     def load_methods(self, custom_methods: List[Callable]) -> None:
         # load extraction methods from folder
-        methods_path = Path(__file__).parent.absolute().joinpath('methods')
+        methods_path = PACKAGE_PATH.joinpath('methods')
         method_files = [f for f in methods_path.iterdir() if not f.name.startswith('__') and f.name.endswith('.py')]
 
         for idx, file_path in enumerate(method_files):
@@ -90,7 +105,7 @@ class Parser:
         for entry in sections:
             yield entry
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Record]:
         """
         Iterate all pages yielded from self.parse_page() and all word sections yielded from self.parse_sections()
 
@@ -102,7 +117,7 @@ class Parser:
                 continue
 
             for section_text in self.parse_sections(wikitext):
-                current_record = {
+                current_record: Record = {
                     'title': title,
                     'wikitext': section_text
                 }

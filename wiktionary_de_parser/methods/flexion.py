@@ -31,7 +31,7 @@ def find_table(text):
 
 
 def parse_table_values(table_string):
-    table_values = re.findall(r'(?:\|([^=]+)=([^\n|}]+))+?', table_string, re.MULTILINE)
+    table_values = re.findall(r'(?:\|([^=\n]+)=([^\n|}]+))+?', table_string, re.MULTILINE)
 
     if not table_values:
         return False
@@ -57,10 +57,10 @@ def parse_table_values(table_string):
             # -> normalize
             text = text.lower()
             if text not in ['f', 'm', 'n']:
-                text = None
+                continue
 
         if not text or text in ('—', '-', '–', '−', '?'):
-            text = None
+            continue
 
         result[key] = text
 
