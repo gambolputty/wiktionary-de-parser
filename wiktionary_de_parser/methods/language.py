@@ -23,10 +23,10 @@ def init(title, text, current_record):
     lang_name = lang_name.strip()
 
     # get lang code
-    result = { 'lang': lang_name }
+    result = {'lang': lang_name}
 
     lang_name_low = lang_name.lower()
     if lang_name_low in langcodes:
-        result['langCode'] = langcodes[lang_name_low]
+        result['lang_code'] = langcodes[lang_name_low]
 
     return result

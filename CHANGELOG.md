@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.8.3] - 2021-11-12
 ### Changed
 - Converted repository to [Poetry](https://python-poetry.org/) project
+- Renamed `langCode` to `lang_code`
 ### Added
 - Started to implement tests and type hints
 ### Fixed

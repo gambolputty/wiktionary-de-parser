@@ -3,7 +3,7 @@ import pyphen
 from pdb import set_trace as bp
 
 """
-Test strings: 
+Test strings:
 
 {{Worttrennung}}
 :ge·sagt, ge·tan
@@ -152,9 +152,9 @@ def init(title, text, current_record):
         # split syllables, remove empty strings (ugly side effect of re.split)
         result = list(filter(None, re.split(r' |·|-', clean_string)))
 
-    if not result and 'langCode' in current_record and current_record['langCode'] in pyphen.LANGUAGES:
+    if not result and 'lang_code' in current_record and current_record['lang_code'] in pyphen.LANGUAGES:
         # get syllables with PyHyphen
-        dic = pyphen.Pyphen(lang=current_record['langCode'])
+        dic = pyphen.Pyphen(lang=current_record['lang_code'])
         syl_string = dic.inserted(title)
         # split by "-" and remove empty entries
         result = [x for x in re.split(r' |-', syl_string) if x]

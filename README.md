@@ -26,7 +26,7 @@ bzfile_path = '/tmp/dewiktionary-latest-pages-articles-multistream.xml.bz2'
 bz = BZ2File(bzfile_path)
 
 for record in Parser(bz):
-    if 'langCode' not in record or record['langCode'] != 'de':
+    if 'lang_code' not in record or record['lang_code'] != 'de':
       continue
     # do stuff with 'record'
 ```
@@ -40,7 +40,7 @@ All extraction methods must return a `Dict()` and accept the following arguments
 
 - `title` (_string_): The title of the current Wiktionary page
 - `text` (_string_): The [Wikitext](https://en.wikipedia.org/wiki/Wiki#Editing) of the current word entry/section
-- `current_record` (_Dict_): A dictionary with all values of the current iteration (e. g. `current_record['langCode']`)
+- `current_record` (_Dict_): A dictionary with all values of the current iteration (e. g. `current_record['lang_code']`)
 
 ```python
 # Create a new extraction method
@@ -68,7 +68,7 @@ for record in Parser(bz, custom_methods=[my_method]):
  'inflected': False,
  'ipa': ['ˈtʁɪtbʁɛtˌfaːʁɐ'],
  'lang': 'Deutsch',
- 'langCode': 'de',
+ 'lang_code': 'de',
  'lemma': 'Trittbrettfahrer',
  'pos': {'Substantiv': []},
  'syllables': ['Tritt', 'brett', 'fah', 'rer'],
