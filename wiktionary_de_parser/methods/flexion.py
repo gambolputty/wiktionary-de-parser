@@ -5,12 +5,6 @@ Reference:
 https://de.wiktionary.org/wiki/Kategorie:Wiktionary:Flexionstabelle_(Deutsch)
 https://de.wiktionary.org/wiki/Hilfe:Flexionstabellen
 """
-# TODO: find values:
-# "}" - Frauenzimmer
-# "&nbsp" - Fischer Random Chess
-# Tausendfache|kein Plural=jas
-# Wissenswerte|kein Plural=ja
-# ? - Alf
 
 wanted_table_names = [
     'Deutsch Adjektiv Übersicht',
@@ -29,19 +23,22 @@ wanted_table_names = [
 def find_table(text):
     re_string = '({{(' + '|'.join(wanted_table_names) + ')[^}]+}})'
     match_table = re.search(re_string, text)
+
     if not match_table:
         return False
+
     return match_table.group(1)
 
 
 def parse_table_values(table_string):
-    table_tuples = re.findall(r'(?:^\|([^=]+)=([^\n]+)$)+', table_string, re.MULTILINE)
-    if not table_tuples:
+    table_values = re.findall(r'(?:\|([^=]+)=([^\n|}]+))+?', table_string, re.MULTILINE)
+
+    if not table_values:
         return False
 
     # normalize values
     result = {}
-    for (key, value) in table_tuples:
+    for key, text in table_values:
         if key.startswith('Bild'):
             continue
 
@@ -49,11 +46,9 @@ def parse_table_values(table_string):
             continue
 
         # clean text
-
-        # strip comments, <ref>-tags etc.
-        text = re.sub(r'<[^>]+>', ' ', text)
-        # trim
         text = text.strip()
+        text = text.replace('&nbsp', ' ')
+        text = re.sub(r'<[^>]+>', ' ', text)  # strip comments, <ref>-tags etc.
 
         # genus
         if key in ['Genus', 'Genus 1', 'Genus 2', 'Genus 3', 'Genus 4']:
@@ -64,8 +59,7 @@ def parse_table_values(table_string):
             if text not in ['f', 'm', 'n']:
                 text = None
 
-        # none dash to None type
-        if text in ('—', '-', '–'):
+        if not text or text in ('—', '-', '–', '−', '?'):
             text = None
 
         result[key] = text

@@ -5,6 +5,8 @@ build/
 
 .venv
 
+.pytest_cache
+
 # Distribution / packaging
 .Python
 build/
