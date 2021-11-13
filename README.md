@@ -34,7 +34,7 @@ The Wiktionary dump file is obtained from [here](https://dumps.wikimedia.org/dew
 
 ### Adding new extraction methods
 
-All extraction methods must return a `Dict()` and accept the following arguments:
+An extraction method must return a `Dict()` and takes the following arguments:
 
 - `title` (_string_): The title of the current Wiktionary page
 - `text` (_string_): The [Wikitext](https://en.wikipedia.org/wiki/Wiki#Editing) of the current word entry/section
