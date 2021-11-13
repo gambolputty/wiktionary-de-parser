@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "wiktionary_de_parser"
-version = "0.8.8"
+name = "wiktionary-de-parser"
+version = "0.8.9"
 description = "Extracts data from German Wiktionary dump files. Allows you to add your own extraction methods 🚀"
 authors = ["Gregor Weichbrodt <gregorweichbrodt@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-homepage = "https://github.com/gambolputty/wiktionary_de_parser"
-repository = "https://github.com/gambolputty/wiktionary_de_parser"
+homepage = "https://github.com/gambolputty/wiktionary-de-parser"
+repository = "https://github.com/gambolputty/wiktionary-de-parser"
 keywords = ["wiktionary", "xml", "parser", "data-extraction", "german", "nlp"]
 classifiers = [
     "Programming Language :: Python :: 3.7",
@@ -21,7 +21,7 @@ include = [
 ]
 
 [tool.poetry.urls]
-"Bug Tracker" = "https://github.com/gambolputty/wiktionary_de_parser/issues"
+"Bug Tracker" = "https://github.com/gambolputty/wiktionary-de-parser/issues"
 
 [tool.poetry.dependencies]
 python = "^3.7"
