@@ -25,12 +25,12 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.7"
-lxml = "^4.6.4"
-pyphen = "^0.11.0"
+lxml = "^4.9.1"
+pyphen = "^0.12.0"
 
 [tool.poetry.dev-dependencies]
-pytest = "^5.2"
-autopep8 = "^1.6.0"
+pytest = "^7.1.2"
+black = "*"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

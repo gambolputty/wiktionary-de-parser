@@ -30,7 +30,7 @@ for record in Parser(bz):
 ```
 
 Note: in this example we use [BZ2File](https://pypi.org/project/bz2file/) to read a compressed Wiktionary dump file.
-The Wiktionary dump file is obtained from [here](https://dumps.wikimedia.org/dewiktionary/).
+The latest Wiktionary dump file is obtained from [here](https://dumps.wikimedia.org/dewiktionary/latest/dewiktionary-latest-pages-articles-multistream.xml.bz2).
 
 ### Adding new extraction methods
 
@@ -133,6 +133,13 @@ for record in Parser(bz, custom_methods=[my_method]):
              '\n'
              '{{Quellen}}'}
 ```
+
+## Development
+1. Install [Poetry](https://python-poetry.org/)
+2. Clone this repository
+3. Run `poetry install` inside of the project folder to install dependencies.
+
+Run `poetry run python wiktionary_de_parser/test.py` to run the test file. Or `poetry run pytest` to run tests.
 
 ## License
 

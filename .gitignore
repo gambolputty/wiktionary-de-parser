@@ -5,6 +5,8 @@ build/
 
 .venv
 
+tmp
+
 .pytest_cache
 
 # Distribution / packaging
