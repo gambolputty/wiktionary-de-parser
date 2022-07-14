@@ -21,33 +21,34 @@ from bz2 import BZ2File
 from wiktionary_de_parser import Parser
 
 bzfile_path = '/tmp/dewiktionary-latest-pages-articles-multistream.xml.bz2'
-bz = BZ2File(bzfile_path)
+bz_file = BZ2File(bzfile_path)
 
-for record in Parser(bz):
+for record in Parser(bz_file):
     if 'lang_code' not in record or record['lang_code'] != 'de':
       continue
     # do stuff with 'record'
 ```
 
-Note: in this example we use [BZ2File](https://pypi.org/project/bz2file/) to read a compressed Wiktionary dump file.
-The latest Wiktionary dump file is obtained from [here](https://dumps.wikimedia.org/dewiktionary/latest/dewiktionary-latest-pages-articles-multistream.xml.bz2).
+Note: In this example we load a compressed Wiktionary dump file that was [obtained from here](https://dumps.wikimedia.org/dewiktionary/latest/dewiktionary-latest-pages-articles-multistream.xml.bz2).
 
 ### Adding new extraction methods
 
-An extraction method must return a `Dict()` and takes the following arguments:
+An extraction method takes the following arguments:
 
 - `title` (_string_): The title of the current Wiktionary page
 - `text` (_string_): The [Wikitext](https://en.wikipedia.org/wiki/Wiki#Editing) of the current word entry/section
 - `current_record` (_Dict_): A dictionary with all values of the current iteration (e. g. `current_record['lang_code']`)
 
+It returns a `Dict` with the results or `False` if the record was processed unsuccesfully.
+
 ```python
 # Create a new extraction method
 def my_method(title, text, current_record):
   # do stuff
-  return {'my_field': my_data}
+  return {'my_field': my_data} if my_data else False
 
 # Pass a list with all extraction methods to the class constructor:
-for record in Parser(bz, custom_methods=[my_method]):
+for record in Parser(bz_file, custom_methods=[my_method]):
     print(record['my_field'])
 ```
 
@@ -135,11 +136,13 @@ for record in Parser(bz, custom_methods=[my_method]):
 ```
 
 ## Development
-1. Install [Poetry](https://python-poetry.org/) and get familiar with it.
+This project uses [Poetry](https://python-poetry.org/).
+
+1. Install [Poetry](https://python-poetry.org/).
 2. Clone this repository
 3. Run `poetry install` inside of the project folder to install dependencies.
 4. Check out `run.py` and edit it.
-5. Run `poetry run python wiktionary_de_parser/run.py` to run it. Or `poetry run pytest` to run tests.
+5. Run `poetry run python wiktionary_de_parser/run.py` or `poetry run pytest` to run tests.
 
 ## License
 
