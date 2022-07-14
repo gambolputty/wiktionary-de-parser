@@ -8,3 +8,4 @@ bz = BZ2File(bzfile_path)
 
 for record in Parser(bz):
     pass
+    # print(record["title"])
