@@ -17,7 +17,7 @@ def parse_ipa_strings(text: str):
     Parse IPA-strings inside "{{Lautschrift}}"-template
 
     Only allow the first list of comma separated {{Lautschrift}}-templates.
-    Stop parsing when other node types follow (ignore infelcted forms, regional slang, Austrian/Swiss dialect etc.)
+    Stop parsing when other node types follow (ignore inflected forms, regional slang, Austrian/Swiss dialect etc.)
 
     For example, only the first {{Lautschrift}}-template is parsed here:
         :{{IPA}} {{Lautschrift|ˈdʏsəlˌdɔʁfɐ}}, ''regional:'' {{Lautschrift|ˈdʏsəlˌdɔχfɔʶ}}
