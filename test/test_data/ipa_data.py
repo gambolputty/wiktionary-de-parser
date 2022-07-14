@@ -109,4 +109,12 @@ data = [
             "bizɛksuˈʔɛl",
         ],
     ),
+    (
+        """
+{{Aussprache}}
+:{{IPA}} {{brit.|:}} {{Lautschrift|ɪɡˈzaːmpl}}, {{amer.|:}} {{Lautschrift|ɪɡˈzæmpl}}
+:{{Hörbeispiele}} {{Audio|En-us-example.ogg|spr=us}}
+        """,
+        ["ɪɡˈzaːmpl"],
+    ),
 ]
