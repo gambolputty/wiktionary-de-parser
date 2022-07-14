@@ -135,11 +135,11 @@ for record in Parser(bz, custom_methods=[my_method]):
 ```
 
 ## Development
-1. Install [Poetry](https://python-poetry.org/)
+1. Install [Poetry](https://python-poetry.org/) and get familiar with it.
 2. Clone this repository
 3. Run `poetry install` inside of the project folder to install dependencies.
-
-Run `poetry run python wiktionary_de_parser/test.py` to run the test file. Or `poetry run pytest` to run tests.
+4. Check out `run.py` and edit it.
+5. Run `poetry run python wiktionary_de_parser/run.py` to run it. Or `poetry run pytest` to run tests.
 
 ## License
 
