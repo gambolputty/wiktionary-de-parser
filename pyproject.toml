@@ -27,6 +27,7 @@ include = [
 python = "^3.7"
 lxml = "^4.9.1"
 pyphen = "^0.12.0"
+mwparserfromhell = "^0.6.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"
