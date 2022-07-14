@@ -8,11 +8,9 @@ This is a Python module to extract data from German Wiktionary XML files (for Py
 
 ## Features
 
-- comes with preset extraction methods for:
-  - flexion tables, genus, IPA, language, lemma, part of speech (basic), syllables, raw Wikitext
-- allows you to add your own extraction methods (pass them as argument)
-- data values are normalized and cleaned from obsolete Wikitext markup
-- yields per section, not per page (a word can have multiple meanings, which is why some Wiktionary pages have multiple 'sections')
+- Extracts: flexion tables, genus, IPA, language, lemma, part of speech (basic), syllables, raw Wikitext
+- Allows you to add your own extraction methods (pass them as argument)
+- Yields per section, not per page (a word can have multiple meanings --> multiple sections of a Wiktionary pages)
 
 ## Usage
 
