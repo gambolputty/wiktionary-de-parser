@@ -1,4 +1,3 @@
-import re
 from typing import Dict, List, Literal, Union
 import mwparserfromhell
 from mwparserfromhell.nodes.template import Template
