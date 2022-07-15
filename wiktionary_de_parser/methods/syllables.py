@@ -1,6 +1,5 @@
 import re
 from typing import Dict, List, Literal, Union
-import pyphen
 
 from wiktionary_de_parser.helper import find_paragraph, strip_html_tags
 
@@ -76,24 +75,7 @@ def parse_syllables(title: str, text: str):
     return result if result else False
 
 
-def parse_syllables_fallback(title: str, current_record):
-    if (
-        "lang_code" in current_record
-        and current_record["lang_code"] in pyphen.LANGUAGES
-    ):
-        # get syllables with PyHyphen
-        dic = pyphen.Pyphen(lang=current_record["lang_code"])
-        syl_string = dic.inserted(title)
-        # split by "-" and remove empty entries
-        return [x for x in re.split(r" |-", syl_string) if x]
-
-    return False
-
-
 def init(title: str, text: str, current_record) -> SyllablesResult:
     result = parse_syllables(title, text)
-
-    if not result:
-        result = parse_syllables_fallback(title, current_record)
 
     return {"syllables": result} if result else False

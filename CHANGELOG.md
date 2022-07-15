@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Improve syllable parsing
 - Improve IPA parsing
+### Removed
+- `pyphen` as fallback for syllables parsing
 
 ## [0.8.9] - 2021-11-13
 ### Changed
