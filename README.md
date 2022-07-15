@@ -78,7 +78,7 @@ This project uses [Poetry](https://python-poetry.org/).
 1. Install [Poetry](https://python-poetry.org/).
 2. Clone this repository
 3. Run `poetry install` inside of the project folder to install dependencies.
-4. Edit `wiktionary_de_parser/run.py` to your needs.
+4. Change `wiktionary_de_parser/run.py` to your needs.
 5. Run `poetry run python wiktionary_de_parser/run.py` to run the parser. Or `poetry run pytest` to run tests.
 
 ## License
