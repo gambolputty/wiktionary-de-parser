@@ -12,19 +12,20 @@ def parse_syllables(title: str, text: str):
     """
     Parse syllables below "{{Worttrennung}}"-template.
 
-    Keep non-word-characters that are part of the title:
-    Paragraph can have commas/semicolons, but we don't know if they are part of title.
-    Find start and end index and extract string with middle dots.
-    valid (with comma):
+    Problem:
+    Commas can be part of the title, but we don't know when they are and are not.
+
+    Commas are part of title:
         ge·sagt, ge·tan
-    invalid (with comma):
+    Commas are not part of title:
         zwan·zig, zwan·zi·ge
         In·tel·li·genz·quo·ti·ent; In·tel·li·genz·quo·ti·en·ten
 
+    Solution:
+    Find title inside paragraph by determing start- and end-index and extract it with middle dots.
+
     Reference: https://de.wiktionary.org/wiki/Hilfe:Worttrennung
     """
-
-    # find syllables in wikitext
 
     text = strip_html_tags(text)
     paragraph = find_paragraph("Worttrennung", text)
@@ -41,7 +42,7 @@ def parse_syllables(title: str, text: str):
     last_title_index = len(title) - 1
     last_paragraph_index = len(paragraph) - 1
     for index, char in enumerate(paragraph):
-        # get start index
+        # find index to start parsing from
         # test if title can be inserted from current index
         # remove mid dots for testing
         if start_index == -1:

@@ -178,4 +178,28 @@ data = [
         """,
         ["X"],
     ),
+    (
+        "Intelligenzquotient",
+        """
+{{Worttrennung}}
+:In·tel·li·genz·quo·ti·ent; {{Pl.}} In·tel·li·genz·quo·ti·en·ten
+        """,
+        ["In", "tel", "li", "genz", "quo", "ti", "ent"],
+    ),
+    (
+        "bisexuell",
+        """
+{{Worttrennung}}
+:bi·se·xu·ell, {{kSt.}}
+        """,
+        ["bi", "se", "xu", "ell"],
+    ),
+    (
+        "ziehen",
+        """
+{{Worttrennung}}
+:zie·hen, {{Prät.}} zog, {{Part.}} ge·zo·gen
+        """,
+        ["zie", "hen"],
+    ),
 ]
