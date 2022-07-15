@@ -48,7 +48,7 @@ def parse_ipa_strings(text: str):
                 found_ipa_tmpl = True
 
         # allow "Lautschrift"-templates to follow
-        elif isinstance(node, Template) and node.name == "Lautschrift":
+        elif isinstance(node, Template) and node.name == "Lautschrift" and node.params:
             ipa_text = str(node.params[0]).replace("…", "").strip()
 
             if ipa_text and ipa_text not in found_ipa:
