@@ -14,7 +14,7 @@ from wiktionary_de_parser.methods.syllables import SyllablesInfo
 PACKAGE_PATH = Path(__file__).parent.absolute()
 
 
-class Config(TypedDict):
+class Config(TypedDict, total=False):
     ignored_prefixes: tuple[str, ...]
     include_wikitext: bool
 
