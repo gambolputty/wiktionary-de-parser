@@ -50,8 +50,8 @@ for record in Parser(bz_file, custom_methods=[my_method]):
     print(record['my_field'])
 ```
 
-## Sample data:
-
+## Output:
+Example output for the word "Trittbrettfahrer":
 ```python
 {'flexion': {'Akkusativ Plural': 'Trittbrettfahrer',
              'Akkusativ Singular': 'Trittbrettfahrer',
