@@ -1,7 +1,8 @@
+from copy import deepcopy
 import re
 from pathlib import Path
 from importlib.machinery import SourceFileLoader
-from typing import Any, Callable, Iterable, Iterator, List, Tuple, TypedDict
+from typing import Any, Callable, Iterable, Iterator, List, TypedDict, Union
 
 from lxml import etree
 
@@ -13,11 +14,15 @@ from wiktionary_de_parser.methods.syllables import SyllablesInfo
 PACKAGE_PATH = Path(__file__).parent.absolute()
 
 
+class Config(TypedDict):
+    ignored_prefixes: tuple[str, ...]
+    include_wikitext: bool
+
+
 class _Record(TypedDict):
     # following this cumbersome example to make some fields required:
     # https://www.python.org/dev/peps/pep-0655/#motivation
     title: str
-    wikitext: str
     lemma: str
     inflected: bool
 
@@ -29,6 +34,27 @@ class Record(_Record, total=False):
     lang_code: str
     pos: POSInfo
     syllables: SyllablesInfo
+    wikitext: str
+
+
+default_config: Config = {
+    # Ignore page titles starting with these prefixes followed by ":"
+    "ignored_prefixes": (
+        "mediawiki:",
+        "vorlage:",
+        "wiktionary:",
+        "hilfe:",
+        "flexion:",
+        "datei:",
+        "verzeichnis:",
+        "kategorie:",
+        "reim:",
+        "modul:",
+        "fn:",
+    ),
+    # Option to make wikitext available in output
+    "include_wikitext": False,
+}
 
 
 class Parser:
@@ -36,27 +62,18 @@ class Parser:
         self,
         source: Any,
         custom_methods: List[Callable] = [],
-        ignored_prefixes: Tuple[str, ...] = (
-            "mediawiki:",
-            "vorlage:",
-            "wiktionary:",
-            "hilfe:",
-            "flexion:",
-            "datei:",
-            "verzeichnis:",
-            "kategorie:",
-            "reim:",
-            "modul:",
-            "fn:",
-        ),
+        config: Union[Config, None] = None,
     ) -> None:
         # Initialize 'iterparse' to only generate 'end' events on tag '<entity>'
         # Credits: https://stackoverflow.com/a/55147982/5732518
         # Prepend the default Namespace {*} to get anything.
         self.context = etree.iterparse(source, events=("end",), tag=["{*}" + "page"])
 
-        # ignore page titles starting with these prefixes followed by ":"
-        self.ignored_prefixes = ignored_prefixes
+        # Create config
+        user_config = deepcopy(default_config)
+        if config:
+            user_config.update(config)
+        self.config = user_config
 
         # load default & custom methods
         self.extraction_methods: List[Callable] = []
@@ -94,7 +111,7 @@ class Parser:
                     )
                 self.extraction_methods.append(method)
 
-    def parse_page(self) -> Iterator[Tuple[str, str]]:
+    def parse_page(self) -> Iterator[tuple[str, str]]:
         """
         Parse the XML File for title and revision tag
         Clear/Delete the Element Tree after processing
@@ -147,16 +164,18 @@ class Parser:
         """
         for title, wikitext in self.parse_page():
             # check for ignored titles
-            if title.lower().startswith(self.ignored_prefixes):
+            if title.lower().startswith(self.config["ignored_prefixes"]):
                 continue
 
             for section_text in self.parse_sections(wikitext):
                 current_record: Record = {
                     "title": title,
-                    "wikitext": section_text,
                     "lemma": "",  # to be overwritten
                     "inflected": False,  # might be overwritten
                 }
+
+                if self.config["include_wikitext"]:
+                    current_record["wikitext"] = section_text
 
                 # execute parse methods & update current_record
                 for method in self.extraction_methods:
