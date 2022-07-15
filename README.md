@@ -37,7 +37,7 @@ An extraction method takes the following arguments:
 - `text` (_string_): The [Wikitext](https://en.wikipedia.org/wiki/Wiki#Editing) of the current word entry/section
 - `current_record` (_Dict_): A dictionary with all values of the current iteration (e. g. `current_record['lang_code']`)
 
-It returns a `Dict` with the results or `False` if the record was processed unsuccesfully.
+It must return a `Dict` with the results or `False` if the record was processed unsuccesfully.
 
 ```python
 # Create a new extraction method
@@ -78,8 +78,8 @@ This project uses [Poetry](https://python-poetry.org/).
 1. Install [Poetry](https://python-poetry.org/).
 2. Clone this repository
 3. Run `poetry install` inside of the project folder to install dependencies.
-4. Check out `run.py` and edit it.
-5. Run `poetry run python wiktionary_de_parser/run.py` or `poetry run pytest` to run tests.
+4. Edit `wiktionary_de_parser/run.py` to your needs.
+5. Run `poetry run python wiktionary_de_parser/run.py` to run the parser. Or `poetry run pytest` to run tests.
 
 ## License
 
