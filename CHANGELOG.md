@@ -10,15 +10,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add tests for syllable parsing
 - Add tests for IPA parsing
 - Add VSCode launch.json
+- Add config dict
+- Add config option to optionally include wikitext in output (disabled by default)
 ### Changed
 - Update dependencies
 - Replace Autopep with black
 - Ignore inflected forms, regional slang, Austrian/Swiss dialect etc. when parsing IPA-templates from now on
+- `ignored_prefixes` is now part of a config dict
 ### Fixed
 - Improve syllable parsing
 - Improve IPA parsing
 ### Removed
 - `pyphen` as fallback for syllables parsing
+
 
 ## [0.8.9] - 2021-11-13
 ### Changed
