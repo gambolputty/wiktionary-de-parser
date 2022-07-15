@@ -12,31 +12,37 @@ class LangInfo(TypedDict, total=False):
 LanguageResult = Union[Literal[False], LangInfo]
 
 # https://de.wiktionary.org/wiki/Hilfe:Sprachcodes
-langcodes = {}
-with open(PACKAGE_PATH.joinpath('assets/sprachcodes_iso639-1.txt'), encoding='utf-8') as f:
-    lines = f.read().split('\n')
+lang_codes = {}
+with open(
+    PACKAGE_PATH.joinpath("assets/sprachcodes_iso639-1.txt"), encoding="utf-8"
+) as f:
+    lines = f.read().split("\n")
     for line in lines:
-        x = line.split(',')
-        langcodes[x[0]] = x[1]
+        x = line.split(",")
+        lang_codes[x[0]] = x[1]
 
 
-def init(
-    title: str,
-    text: str,
-    current_record
-) -> LanguageResult:
-    match_lang_name = re.search(r'=== ?{{Wortart(?:-Test)?\|[^}|]+\|([^}|]+)(?:\|[^}|]+)*}}', text)
-    if not match_lang_name:
+def parse_language(text: str):
+    match_lang = re.search(r"=== ?{{Wortart\|[^}|]+\|([^}|]+)(?:\|[^}|]+)*}}", text)
+
+    if not match_lang:
         return False
 
-    lang_name: str = match_lang_name.group(1) if match_lang_name.group(1) else match_lang_name.group(2)
-    lang_name = lang_name.strip()
+    lang_name: str = match_lang.group(1).strip()
 
-    # get lang code
-    result: LangInfo = {'lang': lang_name}
+    return lang_name
 
-    lang_name_low = lang_name.lower()
-    if lang_name_low in langcodes:
-        result['lang_code'] = langcodes[lang_name_low]
 
-    return result
+def init(title: str, text: str, current_record) -> LanguageResult:
+    result: LangInfo = {}
+    lang = parse_language(text)
+
+    if lang:
+        result["lang"] = lang
+
+        # get language code
+        lang_lower = lang.lower()
+        if lang_lower in lang_codes:
+            result["lang_code"] = lang_codes[lang_lower]
+
+    return result if result else False

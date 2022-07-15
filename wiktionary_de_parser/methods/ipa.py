@@ -1,81 +1,78 @@
-import re
 from typing import Dict, List, Literal, Union
+import mwparserfromhell
+from mwparserfromhell.nodes.template import Template
+from mwparserfromhell.nodes.text import Text
+from mwparserfromhell.nodes.tag import Tag
 
-"""
-Reference: https://de.wiktionary.org/wiki/Hilfe:Aussprache
+from wiktionary_de_parser.helper import find_paragraph
 
-The WiktionaryDe community decided in 2015 to only add IPA transcriptions
-for the lemma (and not for inflected forms; these are on a seperate page).
-Unfortunately there are still many pages with inflected forms.
-For example: "Schweizerdeutsch" and Singular 2 "(das) Schweizerdeutsche":
-    - :{{IPA}} {{Lautschrift|ˈʃvaɪ̯t͡sɐˌdɔɪ̯t͡ʃ}}, {{Sg.2}} {{Lautschrift|ˈʃvaɪ̯t͡sɐˌdɔɪ̯t͡ʃə}}
 
-Sometimes they are just seperated by comma and no additional info about the grammatical form is present:
-    Example "Aserbaidschanisch" and Singular 2 "(das) Aserbaidschanische":
-    - :{{IPA}} {{Lautschrift|ˌazɐbaɪ̯ˈd͡ʒaːnɪʃ}}, {{Lautschrift|ˌazɐbaɪ̯ˈd͡ʒaːnɪʃə}}
-
-In the last example we can't say whether the two entries are just two different IPA
-transcriptions for the same word or for two different words (lemma & inflected form).
-
-Temporary solution:
-Keep the first entry. Check if the last IPA letter of every other entry is the same
-as the one in the first match (because it's likely that the last character doesn't
-change in different IPA transcriptions for the same word)
-
-"""
-IPAInfo = Dict[Literal['ipa'], List[str]]
+IPAInfo = Dict[Literal["ipa"], List[str]]
 IPAResult = Union[Literal[False], IPAInfo]
 
-vowels = r'aɪ̯|aʊ̯|ɛɪ̯|ɔɪ̯|ʊɪ̯|aː|eː|ɛː|iː|oː|øː|õː|uː|yː|ɨ|i̯|ʉ|ɯ|ɪ|ʏ|ʊ|ø|ɑ|ɘ|ɵ|ɤ|ə|ɛ|œ|ɜ|ɞ|ʌ|ɔ|æ|ɐ|ɶ|ɒ|ã|ɐ̯|a|e|i|o|u|y'
-consonants = r'ʈ|ɖ|ɟ|ɢ|ʔ|ɸ|β|v|θ|ð|ʃ|ʒ|ʂ|ʐ|ç|ʝ|l̩|ɣ|χ|ʁ|ħ|ʕ|ɦ|ɬ|ɮ|ɱ|m̩|ɱ̍|ɱ̩|n̩|ɳ|ɲ|ŋ|ŋ̍|ŋ̩|ɴ|ʙ|ʀ|ⱱ|ɾ|ʦ|ʧ|ʤ|ɽ|ɺ|ʋ|ɹ|ɻ|ɰ|ɭ|ʎ|ʟ|p|b|t|d|c|k|ɡ|q|f|s|z|x|h|m|n|r|l|j|ɫ'
-ipa_letters_re = re.compile(r'(' + vowels + '|' + consonants + ')')
+
+def parse_ipa_strings(text: str):
+    """
+    Parse IPA-strings inside "{{Lautschrift}}"-template
+
+    Only allow the first list of comma separated {{Lautschrift}}-templates.
+    Stop parsing when other node types follow (ignore inflected forms, regional slang, Austrian/Swiss dialect etc.)
+
+    For example, only the first {{Lautschrift}}-template is parsed here:
+        :{{IPA}} {{Lautschrift|ˈdʏsəlˌdɔʁfɐ}}, ''regional:'' {{Lautschrift|ˈdʏsəlˌdɔχfɔʶ}}
+        :{{IPA}} {{Lautschrift|veːk}}, ''norddeutsch:'' {{Lautschrift|veːç}}, ''mitteldeutsch:'' {{Lautschrift|veːɕ}},
+        :{{IPA}} {{Lautschrift|ˈçeːmɪʃ}}, ''[[süddeutsch]], [[österreichisch]], [[schweizerisch]]'' {{Lautschrift|ˈkeːmɪʃ}}, ''[[norddeutsch]]'' {{Lautschrift|ˈʃeːmɪʃ}}
+    But all templates are parsed in this example:
+        :{{IPA}} {{Lautschrift|ˈkøːnɪç}}, {{Lautschrift|ˈkøːnɪk}}
+        :{{IPA}} {{Lautschrift|ʃtipuˈliːʁən}}, {{Lautschrift|stipuˈliːʁən}}
+    Only the first two templates are parsed in this example:
+        :{{IPA}} {{Lautschrift|kʁɪˈtiːk}}, {{Lautschrift|kʁiˈtiːk}}, ''mitteldeutsch, süddeutsch, österreichisch, schweizerisch vorwiegend:'' {{Lautschrift|-ˈtɪk}}<ref>Nach: {{Lit-Duden: Aussprachewörterbuch|A=7}}, Stichwort: ''Kritik''.</ref>
+
+    Reference: https://de.wiktionary.org/wiki/Hilfe:Aussprache
+    """
+
+    paragraph = find_paragraph("Aussprache", text)
+
+    if not paragraph:
+        return False
+
+    found_ipa = []
+    found_ipa_tmpl = False
+    parsed = mwparserfromhell.parse(paragraph)
+
+    for node in parsed.nodes:
+        # IPA-template must be present to start parsing Lautschrift-template
+        if found_ipa_tmpl is False:
+            if isinstance(node, Template) and node.name == "IPA":
+                found_ipa_tmpl = True
+
+        # allow "Lautschrift"-templates to follow
+        elif isinstance(node, Template) and node.name == "Lautschrift" and node.params:
+            ipa_text = str(node.params[0]).replace("…", "").strip()
+
+            if ipa_text and ipa_text not in found_ipa:
+                found_ipa.append(ipa_text)
+
+        # allow commas between "Lautschrift"-template to follow
+        elif isinstance(node, Text) and node.value == ", ":
+            continue
+
+        # allow "<ref>"-tags to follow
+        elif isinstance(node, Tag) and node.tag == "ref":
+            continue
+
+        else:
+            # skip if no IPA-string has been found yet
+            if not found_ipa:
+                continue
+            # break if another not supported node follows
+            else:
+                break
+
+    return found_ipa if found_ipa else False
 
 
 def init(title: str, text: str, current_record) -> IPAResult:
-    # search line by line
-    # headline {{Aussprache}} must come first
-    # break at empty newline
-    lines = text.split('\n')
-    found_head = False
-    found_ipa = []
-    for line in lines:
-        if line.startswith('{{Aussprache}}'):
-            found_head = True
-            continue
-        if found_head is False:
-            continue
-        # break on empty newline
-        if line.strip() == '':
-            break
-        # find IPA string(s)
-        match_ipa = re.findall(r'{{Lautschrift\|([^}]+)}}', line)
-        if not match_ipa:
-            continue
-        found_ipa = [x.strip() for x in match_ipa if x != '…' and x.strip() != '']
-        if found_ipa:
-            break
+    result = parse_ipa_strings(text)
 
-    if not found_ipa:
-        return False
-
-    # workaround for problem described above
-    # keep IPA strings, that have the same ending as the first one in the row
-    wanted_last_ipa_char = None
-    result = [found_ipa[0]]
-    for idx, ipa_str in enumerate(found_ipa):
-        try:
-            last_ipa_char = ipa_letters_re.findall(ipa_str)[-1]
-        except IndexError:
-            if idx == 0:
-                return False
-            else:
-                break
-        if idx == 0:
-            wanted_last_ipa_char = last_ipa_char
-            continue
-        if last_ipa_char == wanted_last_ipa_char and ipa_str not in result:
-            result.append(ipa_str)
-        else:
-            break
-
-    return {'ipa': result}
+    return {"ipa": result} if result else False
