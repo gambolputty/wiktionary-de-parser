@@ -25,6 +25,9 @@ def parse_ipa_strings(text: str):
         :{{IPA}} {{Lautschrift|ˈçeːmɪʃ}}, ''[[süddeutsch]], [[österreichisch]], [[schweizerisch]]'' {{Lautschrift|ˈkeːmɪʃ}}, ''[[norddeutsch]]'' {{Lautschrift|ˈʃeːmɪʃ}}
     But all templates are parsed in this example:
         :{{IPA}} {{Lautschrift|ˈkøːnɪç}}, {{Lautschrift|ˈkøːnɪk}}
+        :{{IPA}} {{Lautschrift|ʃtipuˈliːʁən}}, {{Lautschrift|stipuˈliːʁən}}
+    Only the first two templates are parsed in this example:
+        :{{IPA}} {{Lautschrift|kʁɪˈtiːk}}, {{Lautschrift|kʁiˈtiːk}}, ''mitteldeutsch, süddeutsch, österreichisch, schweizerisch vorwiegend:'' {{Lautschrift|-ˈtɪk}}<ref>Nach: {{Lit-Duden: Aussprachewörterbuch|A=7}}, Stichwort: ''Kritik''.</ref>
 
     Reference: https://de.wiktionary.org/wiki/Hilfe:Aussprache
     """
