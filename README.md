@@ -8,7 +8,7 @@ This is a Python module to extract data from German Wiktionary XML files (for Py
 
 ## Features
 
-- Extracts: flexion tables, genus, IPA, language, lemma, part of speech (basic), syllables, raw Wikitext
+- Extracts flexion tables, genus, IPA, language, lemma, part of speech (basic), syllables, raw Wikitext
 - Allows you to add your own extraction methods (pass them as argument)
 - Yields per section, not per page (a word can have multiple meanings --> multiple sections of a Wiktionary pages)
 
@@ -27,7 +27,7 @@ for record in Parser(bz_file):
     # do stuff with 'record'
 ```
 
-Note: In this example we load a compressed Wiktionary dump file that was [obtained from here](https://dumps.wikimedia.org/dewiktionary/latest/dewiktionary-latest-pages-articles-multistream.xml.bz2).
+Note: In this example we load a compressed Wiktionary dump file that was [obtained from here](https://dumps.wikimedia.org/dewiktionary/latest).
 
 ### Adding new extraction methods
 
