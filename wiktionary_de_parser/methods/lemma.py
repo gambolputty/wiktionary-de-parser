@@ -1,5 +1,7 @@
 import re
-from typing import Literal, Optional, TypedDict, Union
+from typing import TypedDict
+import mwparserfromhell
+from mwparserfromhell.nodes.template import Template
 
 
 class LemmaInfo(TypedDict):
@@ -10,11 +12,30 @@ class LemmaInfo(TypedDict):
 LemmaResult = LemmaInfo
 
 
-def init(
-    title: str,
-    text: str,
-    current_record
-) -> LemmaResult:
+def parse_lemma(text):
+    match_template = re.search(r"({{Grundformverweis.+)", text)
+
+    if not match_template:
+        return False
+
+    template_text = match_template.group(1)
+    parsed = mwparserfromhell.parse(template_text)
+    template = parsed.nodes[0] if parsed.nodes else None
+
+    if (
+        template
+        and isinstance(template, Template)
+        and template.name.startswith("Grundformverweis")
+    ):
+        attribute = template.get(1, None)
+        if attribute:
+            # remove "#" and everything after
+            return re.sub(r"\#.+", "", str(attribute.value))
+
+    return False
+
+
+def init(title: str, text: str, current_record) -> LemmaResult:
     """
     Grundformverweis
     Von einer Deklination spricht man beim Beugen von Substantiven und den
@@ -25,22 +46,15 @@ def init(
     https://de.wiktionary.org/wiki/Kategorie:Flektierte_Form_(Deutsch)
     https://de.wiktionary.org/wiki/Vorlage:Grundformverweis_Konj
     https://de.wiktionary.org/wiki/Vorlage:Grundformverweis_Dekl
+    https://de.wiktionary.org/wiki/Vorlage:Grundformverweis (deprecated)
     """
-
-    # match_test = re.search(r'({{Grundformverweis[^}]+}})', text)
-    # if match_test:
-    #     print(match_test.group(1))
-    #     print()
 
     found_lemma = title
     inflected = False
-    match_lemma = re.search(r'{{Grundformverweis[^|]*\|(?:\w+=[^\|]+\|)*([^\|\#\}]+)', text)
-    if match_lemma:
-        found_lemma = match_lemma.group(1).strip()
+
+    parsed = parse_lemma(text)
+    if parsed:
+        found_lemma = parsed
         inflected = True
 
-    # title is lemma
-    return {
-        'lemma': found_lemma,
-        'inflected': inflected
-    }
+    return {"lemma": found_lemma, "inflected": inflected}

@@ -9,6 +9,6 @@ class TestIPAParsing:
         assert init("test", "test", {}) == False
 
     @pytest.mark.parametrize("test_input,expected", data)
-    def test_parsing_syllables(self, test_input, expected):
+    def test_parsing_ipa_strings(self, test_input, expected):
         parse_result = parse_ipa_strings(test_input)
         assert parse_result == expected
