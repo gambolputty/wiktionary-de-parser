@@ -1,17 +1,16 @@
 from copy import deepcopy
 import re
-from pathlib import Path
 from importlib.machinery import SourceFileLoader
 from typing import Any, Callable, Iterable, Iterator, List, Tuple, TypedDict, Union
 
 from lxml import etree
 
-from wiktionary_de_parser.methods.flexion import FlexionInfo
-from wiktionary_de_parser.methods.ipa import IPAInfo
-from wiktionary_de_parser.methods.pos import POSInfo
-from wiktionary_de_parser.methods.syllables import SyllablesInfo
-
-PACKAGE_PATH = Path(__file__).parent.absolute()
+from wiktionary_de_parser.config import PACKAGE_PATH
+from wiktionary_de_parser.methods.flexion import FlexionType
+from wiktionary_de_parser.methods.ipa import IPAType
+from wiktionary_de_parser.methods.language import LangType
+from wiktionary_de_parser.methods.pos import POSType
+from wiktionary_de_parser.methods.syllables import SyllablesType
 
 
 class Config(TypedDict, total=False):
@@ -27,13 +26,9 @@ class _Record(TypedDict):
     inflected: bool
 
 
-class Record(_Record, total=False):
-    flexion: FlexionInfo
-    ipa: IPAInfo
-    lang: str
-    lang_code: str
-    pos: POSInfo
-    syllables: SyllablesInfo
+class Record(
+    _Record, FlexionType, LangType, POSType, IPAType, SyllablesType, total=False
+):
     wikitext: str
 
 

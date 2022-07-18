@@ -8,12 +8,12 @@ from mwparserfromhell.wikicode import Wikicode
 from wiktionary_de_parser.helper import find_paragraph
 
 
-class IPAInfo(TypedDict, total=False):
+class IPAType(TypedDict, total=False):
     ipa: List[str]
     rhymes: List[str]
 
 
-IPAResult = Union[Literal[False], IPAInfo]
+IPAResult = Union[Literal[False], IPAType]
 
 
 def parse_paragraph(text: str):

@@ -1,15 +1,16 @@
+from pathlib import Path
 import re
 from typing import Literal, TypedDict, Union
 
-from wiktionary_de_parser import PACKAGE_PATH
+from wiktionary_de_parser.config import PACKAGE_PATH
 
 
-class LangInfo(TypedDict, total=False):
+class LangType(TypedDict, total=False):
     lang: str
     lang_code: str
 
 
-LanguageResult = Union[Literal[False], LangInfo]
+LanguageResult = Union[Literal[False], LangType]
 
 # https://de.wiktionary.org/wiki/Hilfe:Sprachcodes
 lang_codes = {}
@@ -34,7 +35,7 @@ def parse_language(text: str):
 
 
 def init(title: str, text: str, current_record) -> LanguageResult:
-    result: LangInfo = {}
+    result: LangType = {}
     lang = parse_language(text)
 
     if lang:
