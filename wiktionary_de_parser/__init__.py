@@ -117,16 +117,16 @@ class Parser:
             # Assign the 'elem.namespace' to the 'xpath'
             elem_namespace: str = etree.QName(elem).namespace
 
-            _title: List[str] = elem.xpath(
+            _title: List[etree._ElementUnicodeResult] = elem.xpath(
                 "./xmlns:title/text( )", namespaces={"xmlns": elem_namespace}
             )
-            _wikitext: List[str] = elem.xpath(
+            _wikitext: List[etree._ElementUnicodeResult] = elem.xpath(
                 "./xmlns:revision/xmlns:text/text( )",
                 namespaces={"xmlns": elem_namespace},
             )
 
-            title = _title[0] if _title else ""
-            wikitext = _wikitext[0] if _wikitext else ""
+            title = _title[0].__str__() if _title else ""
+            wikitext = _wikitext[0].__str__() if _wikitext else ""
 
             yield title, wikitext
 
