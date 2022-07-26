@@ -1,12 +1,17 @@
 import re
 import itertools
-from typing import Dict, List, Literal, Union
+from typing import Dict, List, Literal, TypedDict, Union
 
 """
-reference: https://de.wiktionary.org/wiki/Hilfe:Wortart
+Reference: https://de.wiktionary.org/wiki/Hilfe:Wortart
 """
-POSInfo = Dict[Literal["pos"], Dict[str, List[str]]]
-POSResult = Union[Literal[False], POSInfo]
+
+
+class POSType(TypedDict, total=False):
+    pos: Dict[str, List[str]]
+
+
+POSResult = Union[Literal[False], POSType]
 debug = False
 
 pos_map = {

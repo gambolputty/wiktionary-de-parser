@@ -1,10 +1,14 @@
 import re
-from typing import Dict, List, Literal, Union
+from typing import Dict, List, Literal, TypedDict, Union
 
 from wiktionary_de_parser.helper import find_paragraph, strip_html_tags
 
-SyllablesInfo = Dict[Literal["syllables"], List[str]]
-SyllablesResult = Union[Literal[False], SyllablesInfo]
+
+class SyllablesType(TypedDict, total=False):
+    syllables: List[str]
+
+
+SyllablesResult = Union[Literal[False], SyllablesType]
 
 
 def parse_syllables(title: str, text: str):

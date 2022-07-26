@@ -51,25 +51,26 @@ for record in Parser(bz_file, custom_methods=[my_method]):
 ```
 
 ## Output
-Example output for the word "Trittbrettfahrer":
+Example output for the word "Abend":
 ```python
-{'flexion': {'Akkusativ Plural': 'Trittbrettfahrer',
-             'Akkusativ Singular': 'Trittbrettfahrer',
-             'Dativ Plural': 'Trittbrettfahrern',
-             'Dativ Singular': 'Trittbrettfahrer',
-             'Genitiv Plural': 'Trittbrettfahrer',
-             'Genitiv Singular': 'Trittbrettfahrers',
+{'flexion': {'Akkusativ Plural': 'Abende',
+             'Akkusativ Singular': 'Abend',
+             'Dativ Plural': 'Abenden',
+             'Dativ Singular': 'Abend',
+             'Genitiv Plural': 'Abende',
+             'Genitiv Singular': 'Abends',
              'Genus': 'm',
-             'Nominativ Plural': 'Trittbrettfahrer',
-             'Nominativ Singular': 'Trittbrettfahrer'},
+             'Nominativ Plural': 'Abende',
+             'Nominativ Singular': 'Abend'},
  'inflected': False,
- 'ipa': ['ˈtʁɪtbʁɛtˌfaːʁɐ'],
+ 'ipa': ['ˈaːbn̩t', 'ˈaːbm̩t'],
  'lang': 'Deutsch',
  'lang_code': 'de',
- 'lemma': 'Trittbrettfahrer',
+ 'lemma': 'Abend',
  'pos': {'Substantiv': []},
- 'syllables': ['Tritt', 'brett', 'fah', 'rer'],
- 'title': 'Trittbrettfahrer'}
+ 'rhymes': ['aːbn̩t'],
+ 'syllables': ['Abend'],
+ 'title': 'Abend'}
 ```
 
 ## Development
