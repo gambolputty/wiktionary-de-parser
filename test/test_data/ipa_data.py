@@ -14,7 +14,7 @@ ipa_test_data = [
 :{{IPA}} {{Lautschrift||spr=la}}
 :{{Hörbeispiele}} {{Audio|La-cls-species.ogg|spr=cls}} und {{Audio|La-ecc-species.ogg|spr=ecc}}
         """,
-        False,
+        None,
     ),
     (
         """

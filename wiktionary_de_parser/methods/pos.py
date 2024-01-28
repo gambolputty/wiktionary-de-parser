@@ -1,20 +1,20 @@
-import re
 import itertools
-from typing import Dict, List, Literal, TypedDict, Union
+import re
+from dataclasses import dataclass
 
 """
 Reference: https://de.wiktionary.org/wiki/Hilfe:Wortart
 """
 
 
-class POSType(TypedDict, total=False):
-    pos: Dict[str, List[str]]
+@dataclass
+class POSType:
+    pos: dict[str, list[str]] | None
 
 
-POSResult = Union[Literal[False], POSType]
-debug = False
+DEBUG = False
 
-pos_map = {
+POS_MAP = {
     "Abkürzung": ["Kurzwort"],
     "Adjektiv": [
         "Partizip",
@@ -114,16 +114,17 @@ pos_map = {
     "Deklinierte Form": [],
 }
 
-if debug is True:
-    not_in_map = set()
-    all_pos_names = list(pos_map.keys()) + list(
-        itertools.chain.from_iterable(list(pos_map.values()))
+NOT_IN_MAP = set()
+
+if DEBUG is True:
+    all_pos_names = list(POS_MAP.keys()) + list(
+        itertools.chain.from_iterable(list(POS_MAP.values()))
     )
     all_pos_names = [x.lower() for x in all_pos_names]
 
 
-def find_pos(title, pos_names, text, current_record):
-    result = {}
+def find_pos(pos_names, text, current_record):
+    result: dict[str, list[str]] = {}
 
     # fix POS when there is a certain POS template, but POS is not in pos_names
     # example "Substantiv": https://de.wiktionary.org/wiki/wei%C3%9Fes_Gold
@@ -157,7 +158,7 @@ def find_pos(title, pos_names, text, current_record):
         result["Verb"] = []
 
     # map other pos names
-    for key, values in pos_map.items():
+    for key, values in POS_MAP.items():
         # maintain letter case of position map
         key_low = key.lower()
         for name in pos_names:
@@ -173,14 +174,14 @@ def find_pos(title, pos_names, text, current_record):
                 if value not in result[key]:
                     result[key].append(value)
 
-    if debug is True:
+    if DEBUG is True:
         not_found_names = [
             x
             for x in pos_names
-            if x.lower() not in all_pos_names and x not in not_in_map
+            if x.lower() not in all_pos_names and x not in NOT_IN_MAP
         ]
         if not_found_names:
-            not_in_map.update(not_found_names)
+            NOT_IN_MAP.update(not_found_names)
             for name in not_found_names:
                 print(
                     '"{}" not in POS-map (all: {})'.format(name, ", ".join(pos_names))
@@ -189,24 +190,23 @@ def find_pos(title, pos_names, text, current_record):
     return result
 
 
-def init(title: str, text: str, current_record) -> POSResult:
+def init(title: str, text: str, current_record) -> POSType:
     # find line
     match_line = re.search(r"(=== ?{{Wortart(?:-Test)?\|[^\n]+)", text)
-    if not match_line:
-        return False
 
-    # can have multiple POS values
-    line = match_line.group(1)
-    pos_names = re.findall(r"{{Wortart(?:-Test)?\|([^}|]+)(?:\|[^}|]+)*}}", line)
-    if not pos_names:
-        return False
+    if match_line:
+        # can have multiple POS values
+        line = match_line.group(1)
+        pos_names = re.findall(r"{{Wortart(?:-Test)?\|([^}|]+)(?:\|[^}|]+)*}}", line)
 
-    # strip
-    pos_names = [name.strip() for name in pos_names]
+        if pos_names:
+            # strip
+            pos_names = [name.strip() for name in pos_names]
 
-    # find in map
-    pos_normalized = find_pos(title, pos_names, text, current_record)
-    if not pos_normalized.keys():
-        return False
+            # find in map
+            pos_normalized = find_pos(pos_names, text, current_record)
 
-    return {"pos": pos_normalized}
+            if pos_normalized.keys():
+                return POSType(pos=pos_normalized)
+
+    return POSType(pos=None)

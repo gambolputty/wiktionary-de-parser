@@ -135,7 +135,7 @@ data = [
 {{Worttrennung}}
 :, {{Pl.}}
         """,
-        False,
+        None,
     ),
     (
         "einwirken",

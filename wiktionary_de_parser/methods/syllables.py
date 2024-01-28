@@ -1,14 +1,12 @@
 import re
-from typing import Dict, List, Literal, TypedDict, Union
+from dataclasses import dataclass
 
 from wiktionary_de_parser.helper import find_paragraph, strip_html_tags
 
 
-class SyllablesType(TypedDict, total=False):
-    syllables: List[str]
-
-
-SyllablesResult = Union[Literal[False], SyllablesType]
+@dataclass
+class SyllablesType:
+    syllables: list[str] | None
 
 
 def parse_syllables(title: str, text: str):
@@ -34,7 +32,7 @@ def parse_syllables(title: str, text: str):
     paragraph = find_paragraph("Worttrennung", text)
 
     if not paragraph:
-        return False
+        return
 
     # remove false mid dot at the beginning that breaks the parser (":·nutz·lo·se")
     paragraph = paragraph.lstrip(":·")
@@ -76,10 +74,11 @@ def parse_syllables(title: str, text: str):
     # split syllables, remove empty strings (ugly side effect of re.split)
     result = list(filter(None, re.split(r" |·|-", clean_string)))
 
-    return result if result else False
+    if result:
+        return result
 
 
-def init(title: str, text: str, current_record) -> SyllablesResult:
+def init(title: str, text: str, current_record) -> SyllablesType:
     result = parse_syllables(title, text)
 
-    return {"syllables": result} if result else False
+    return SyllablesType(syllables=result)

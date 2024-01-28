@@ -1,5 +1,5 @@
 import re
-from typing import Dict, Literal, TypedDict, Union
+from dataclasses import dataclass
 
 """
 Reference:
@@ -8,11 +8,10 @@ https://de.wiktionary.org/wiki/Hilfe:Flexionstabellen
 """
 
 
-class FlexionType(TypedDict, total=False):
-    flexion: Dict[str, str]
+@dataclass
+class FlexionType:
+    flexion: dict[str, str] | None
 
-
-FlexionResult = Union[Literal[False], FlexionType]
 
 wanted_table_names = [
     "Deutsch Adjektiv Übersicht",
@@ -33,7 +32,7 @@ def find_table(text):
     match_table = re.search(re_string, text)
 
     if not match_table:
-        return False
+        return
 
     return match_table.group(1)
 
@@ -44,7 +43,7 @@ def parse_table_values(table_string):
     )
 
     if not table_values:
-        return False
+        return
 
     # normalize values
     result = {}
@@ -74,16 +73,17 @@ def parse_table_values(table_string):
 
         result[key] = text
 
-    return result if result.keys() else False
+    if result.keys():
+        return result
 
 
-def init(title: str, text: str, current_record) -> FlexionResult:
+def init(title: str, text: str, current_record) -> FlexionType:
     table_string = find_table(text)
-    if not table_string:
-        return False
+    result = None
 
-    table_dict = parse_table_values(table_string)
-    if table_dict is False:
-        return False
+    if table_string:
+        table_dict = parse_table_values(table_string)
+        if table_dict:
+            result = table_dict
 
-    return {"flexion": table_dict}
+    return FlexionType(flexion=result)

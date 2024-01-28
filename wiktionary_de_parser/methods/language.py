@@ -1,16 +1,14 @@
-from pathlib import Path
 import re
-from typing import Literal, TypedDict, Union
+from dataclasses import dataclass
 
 from wiktionary_de_parser.config import PACKAGE_PATH
 
 
-class LangType(TypedDict, total=False):
-    lang: str
-    lang_code: str
+@dataclass
+class LangType:
+    lang: str | None
+    lang_code: str | None
 
-
-LanguageResult = Union[Literal[False], LangType]
 
 # https://de.wiktionary.org/wiki/Hilfe:Sprachcodes
 lang_codes = {}
@@ -27,23 +25,22 @@ def parse_language(text: str):
     match_lang = re.search(r"=== ?{{Wortart\|[^}|]+\|([^}|]+)(?:\|[^}|]+)*}}", text)
 
     if not match_lang:
-        return False
+        return
 
     lang_name: str = match_lang.group(1).strip()
 
     return lang_name
 
 
-def init(title: str, text: str, current_record) -> LanguageResult:
-    result: LangType = {}
-    lang = parse_language(text)
-
-    if lang:
-        result["lang"] = lang
-
+def init(title: str, text: str, current_record) -> LangType:
+    result = {
+        "lang": parse_language(text),
+        "lang_code": None,
+    }
+    if result["lang"]:
         # get language code
-        lang_lower = lang.lower()
+        lang_lower = result["lang"].lower()
         if lang_lower in lang_codes:
             result["lang_code"] = lang_codes[lang_lower]
 
-    return result if result else False
+    return LangType(**result)

@@ -1,12 +1,18 @@
+from test.test_data.ipa_data import ipa_test_data, rhymes_test_data
+
 import pytest
 
-from wiktionary_de_parser.methods.ipa import init, parse_ipa_strings, parse_rhymes
-from test.test_data.ipa_data import ipa_test_data, rhymes_test_data
+from wiktionary_de_parser.methods.ipa import (
+    IPAType,
+    init,
+    parse_ipa_strings,
+    parse_rhymes,
+)
 
 
 class TestIPAParsing:
     def test_returns_false(self):
-        assert init("test", "test", {}) == False
+        assert init("test", "test", {}) == IPAType(ipa=None, rhymes=None)
 
     @pytest.mark.parametrize("test_input,expected", ipa_test_data)
     def test_parsing_ipa_strings(self, test_input, expected):

@@ -1,19 +1,19 @@
-from typing import Dict, List, Literal, TypedDict, Union
+from dataclasses import dataclass
+from typing import Union
+
 import mwparserfromhell
+from mwparserfromhell.nodes.tag import Tag
 from mwparserfromhell.nodes.template import Template
 from mwparserfromhell.nodes.text import Text
-from mwparserfromhell.nodes.tag import Tag
 from mwparserfromhell.wikicode import Wikicode
 
 from wiktionary_de_parser.helper import find_paragraph
 
 
-class IPAType(TypedDict, total=False):
-    ipa: List[str]
-    rhymes: List[str]
-
-
-IPAResult = Union[Literal[False], IPAType]
+@dataclass
+class IPAType:
+    ipa: list[str] | None
+    rhymes: list[str] | None
 
 
 def parse_paragraph(text: str):
@@ -48,9 +48,9 @@ def parse_ipa_strings(text: Union[str, Wikicode]):
     parsed = parse_paragraph(text) if isinstance(text, str) else text
 
     if not parsed:
-        return False
+        return
 
-    found_ipa = []
+    found_ipa: list[str] = []
     found_ipa_tmpl = False
 
     for node in parsed.nodes:
@@ -82,16 +82,17 @@ def parse_ipa_strings(text: Union[str, Wikicode]):
             else:
                 break
 
-    return found_ipa if found_ipa else False
+    if found_ipa:
+        return found_ipa
 
 
 def parse_rhymes(text: Union[str, Wikicode]):
     parsed = parse_paragraph(text) if isinstance(text, str) else text
 
     if not parsed:
-        return False
+        return
 
-    found_rhymes = []
+    found_rhymes: list[str] = []
     found_rhyme_tmpl = False
 
     for node in parsed.nodes:
@@ -123,20 +124,24 @@ def parse_rhymes(text: Union[str, Wikicode]):
             else:
                 break
 
-    return found_rhymes if found_rhymes else False
+    if found_rhymes:
+        return found_rhymes
 
 
-def init(title: str, text: str, current_record) -> IPAResult:
-    result: IPAResult = {}
+def init(title: str, text: str, current_record) -> IPAType:
+    result = {
+        "ipa": None,
+        "rhymes": None,
+    }
     parsed = parse_paragraph(text)
 
     if parsed:
         ipa = parse_ipa_strings(parsed)
         if ipa:
-            result["ipa"] = ipa
+            result["ipa"] = ipa  # type: ignore
 
         rhymes = parse_rhymes(parsed)
         if rhymes:
-            result["rhymes"] = rhymes
+            result["rhymes"] = rhymes  # type: ignore
 
-    return result if result else False
+    return IPAType(**result)

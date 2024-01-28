@@ -1,22 +1,21 @@
 import re
-from typing import TypedDict
+from dataclasses import dataclass
+
 import mwparserfromhell
 from mwparserfromhell.nodes.template import Template
 
 
-class LemmaInfo(TypedDict):
+@dataclass
+class LemmaInfo:
     lemma: str
     inflected: bool
-
-
-LemmaResult = LemmaInfo
 
 
 def parse_lemma(text):
     match_template = re.search(r"({{Grundformverweis.+)", text)
 
     if not match_template:
-        return False
+        return
 
     template_text = match_template.group(1)
     parsed = mwparserfromhell.parse(template_text)
@@ -32,10 +31,8 @@ def parse_lemma(text):
             # remove "#" and everything after
             return re.sub(r"\#.+", "", str(attribute.value))
 
-    return False
 
-
-def init(title: str, text: str, current_record) -> LemmaResult:
+def init(title: str, text: str, current_record) -> LemmaInfo:
     """
     Grundformverweis
     Von einer Deklination spricht man beim Beugen von Substantiven und den
@@ -57,4 +54,4 @@ def init(title: str, text: str, current_record) -> LemmaResult:
         found_lemma = parsed
         inflected = True
 
-    return {"lemma": found_lemma, "inflected": inflected}
+    return LemmaInfo(lemma=found_lemma, inflected=inflected)

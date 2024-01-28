@@ -1,7 +1,8 @@
-from copy import deepcopy
 import re
+from copy import deepcopy
+from dataclasses import dataclass
 from importlib.machinery import SourceFileLoader
-from typing import Any, Callable, Iterable, Iterator, List, Tuple, TypedDict, Union
+from typing import Any, Callable, Iterable, Iterator, Tuple, TypedDict, Union
 
 from lxml import etree
 
@@ -9,6 +10,7 @@ from wiktionary_de_parser.config import PACKAGE_PATH
 from wiktionary_de_parser.methods.flexion import FlexionType
 from wiktionary_de_parser.methods.ipa import IPAType
 from wiktionary_de_parser.methods.language import LangType
+from wiktionary_de_parser.methods.lemma import LemmaInfo
 from wiktionary_de_parser.methods.pos import POSType
 from wiktionary_de_parser.methods.syllables import SyllablesType
 
@@ -18,18 +20,12 @@ class Config(TypedDict, total=False):
     include_wikitext: bool
 
 
-class _Record(TypedDict):
-    # following this cumbersome example to make some fields required:
-    # https://www.python.org/dev/peps/pep-0655/#motivation
+@dataclass
+class Record(FlexionType, LangType, POSType, IPAType, SyllablesType, LemmaInfo):
+    page_id: int
+    index: int
     title: str
-    lemma: str
-    inflected: bool
-
-
-class Record(
-    _Record, FlexionType, LangType, POSType, IPAType, SyllablesType, total=False
-):
-    wikitext: str
+    wikitext: str | None = None
 
 
 default_config: Config = {
@@ -56,7 +52,7 @@ class Parser:
     def __init__(
         self,
         source: Any,
-        custom_methods: List[Callable] = [],
+        custom_methods: list[Callable] = [],
         config: Union[Config, None] = None,
     ) -> None:
         # Initialize 'iterparse' to only generate 'end' events on tag '<entity>'
@@ -71,10 +67,10 @@ class Parser:
         self.config = user_config
 
         # load default & custom methods
-        self.extraction_methods: List[Callable] = []
+        self.extraction_methods: list[Callable] = []
         self.load_methods(custom_methods)
 
-    def load_methods(self, custom_methods: List[Callable]) -> None:
+    def load_methods(self, custom_methods: list[Callable]) -> None:
         # load extraction methods from folder
         methods_path = PACKAGE_PATH.joinpath("methods")
         method_files = [
@@ -106,7 +102,7 @@ class Parser:
                     )
                 self.extraction_methods.append(method)
 
-    def parse_page(self) -> Iterator[Tuple[str, str]]:
+    def parse_page(self) -> Iterator[Tuple[int, str, str]]:
         """
         Parse the XML File for title and revision tag
         Clear/Delete the Element Tree after processing
@@ -117,18 +113,22 @@ class Parser:
             # Assign the 'elem.namespace' to the 'xpath'
             elem_namespace: str = etree.QName(elem).namespace
 
-            _title: List[etree._ElementUnicodeResult] = elem.xpath(
+            _title: list[etree._ElementUnicodeResult] = elem.xpath(
                 "./xmlns:title/text( )", namespaces={"xmlns": elem_namespace}
             )
-            _wikitext: List[etree._ElementUnicodeResult] = elem.xpath(
+            _wikitext: list[etree._ElementUnicodeResult] = elem.xpath(
                 "./xmlns:revision/xmlns:text/text( )",
                 namespaces={"xmlns": elem_namespace},
             )
+            _page_id: list[etree._ElementUnicodeResult] = elem.xpath(
+                "./xmlns:id/text( )", namespaces={"xmlns": elem_namespace}
+            )
 
+            page_id = int(_page_id[0].__str__()) if _page_id else -1
             title = _title[0].__str__() if _title else ""
             wikitext = _wikitext[0].__str__() if _wikitext else ""
 
-            yield title, wikitext
+            yield page_id, title, wikitext
 
             elem.clear()
             while elem.getprevious() is not None:
@@ -144,7 +144,7 @@ class Parser:
             - https://de.wiktionary.org/wiki/instrument
             - https://de.wiktionary.org/wiki/Becken
         """
-        sections: List[str] = re.findall(
+        sections: list[str] = re.findall(
             r"(=== {{Wortart(?:[\w\W](?!^===? ))+)", wikitext, re.MULTILINE
         )
 
@@ -160,16 +160,16 @@ class Parser:
         ignored_prefixes = self.config.get("ignored_prefixes", ())
         include_wikitext = self.config.get("include_wikitext", False)
 
-        for title, wikitext in self.parse_page():
+        for page_id, title, wikitext in self.parse_page():
             # check for ignored titles
             if title.lower().startswith(ignored_prefixes):
                 continue
 
-            for section_text in self.parse_sections(wikitext):
-                current_record: Record = {
+            for index, section_text in enumerate(self.parse_sections(wikitext)):
+                current_record = {
+                    "page_id": page_id,
+                    "index": index,
                     "title": title,
-                    "lemma": "",  # to be overwritten
-                    "inflected": False,  # might be overwritten
                 }
 
                 if include_wikitext:
@@ -178,8 +178,6 @@ class Parser:
                 # execute parse methods & update current_record
                 for method in self.extraction_methods:
                     data = method(title, section_text, current_record)
-                    if data is False:
-                        continue
-                    current_record.update(data)
+                    current_record.update(data.__dict__)
 
-                yield current_record
+                yield Record(**current_record)  # type: ignore
