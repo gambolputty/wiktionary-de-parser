@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "wiktionary-de-parser"
-version = "0.9.5"
+version = "0.10.0"
 description = "Extracts data from German Wiktionary dump files. Allows you to add your own extraction methods 🚀"
 authors = ["Gregor Weichbrodt <gregorweichbrodt@gmail.com>"]
 license = "MIT"
@@ -24,9 +24,10 @@ include = [
 "Bug Tracker" = "https://github.com/gambolputty/wiktionary-de-parser/issues"
 
 [tool.poetry.dependencies]
-python = "^3.7"
-lxml = "^4.9.1"
-mwparserfromhell = "^0.6.4"
+python = "^3.11"
+lxml = "^5.1.0"
+mwparserfromhell = "^0.6.6"
+black = "^24.1.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"
