@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from importlib.machinery import SourceFileLoader
 from typing import Any, Callable, Iterable, Iterator, Tuple, TypedDict, Union
 
+import mwparserfromhell
 from lxml import etree
 
 from wiktionary_de_parser.config import PACKAGE_PATH
@@ -166,8 +167,9 @@ class Parser:
                     current_record["wikitext"] = section_text
 
                 # execute parse methods & update current_record
+                wiki_code = mwparserfromhell.parse(section_text)
                 for method in self.extraction_methods:
-                    data = method(title, section_text, current_record)
+                    data = method(title, wiki_code)
                     current_record.update(data.__dict__)
 
                 yield Record(**current_record)  # type: ignore

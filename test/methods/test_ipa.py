@@ -1,5 +1,6 @@
 from test.test_data.ipa_data import ipa_test_data, rhymes_test_data
 
+import mwparserfromhell
 import pytest
 
 from wiktionary_de_parser.methods.ipa import (
@@ -12,7 +13,8 @@ from wiktionary_de_parser.methods.ipa import (
 
 class TestIPAParsing:
     def test_returns_false(self):
-        assert init("test", "test", {}) == IPAType(ipa=None, rhymes=None)
+        wikicode = mwparserfromhell.parse("test")
+        assert init("test", wikicode) == IPAType(ipa=None, rhymes=None)
 
     @pytest.mark.parametrize("test_input,expected", ipa_test_data)
     def test_parsing_ipa_strings(self, test_input, expected):

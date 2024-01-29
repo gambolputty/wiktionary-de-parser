@@ -1,6 +1,8 @@
 import re
 from dataclasses import dataclass
 
+from mwparserfromhell.wikicode import Wikicode
+
 """
 Reference:
 https://de.wiktionary.org/wiki/Kategorie:Wiktionary:Flexionstabelle_(Deutsch)
@@ -77,8 +79,8 @@ def parse_table_values(table_string):
         return result
 
 
-def init(title: str, text: str, current_record) -> FlexionType:
-    table_string = find_table(text)
+def init(title: str, wikicode: Wikicode) -> FlexionType:
+    table_string = find_table(str(wikicode))
     result = None
 
     if table_string:

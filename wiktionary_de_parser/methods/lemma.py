@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 import mwparserfromhell
 from mwparserfromhell.nodes.template import Template
+from mwparserfromhell.wikicode import Wikicode
 
 
 @dataclass
@@ -29,10 +30,10 @@ def parse_lemma(text):
         attribute = template.get(1, None)
         if attribute:
             # remove "#" and everything after
-            return re.sub(r"\#.+", "", str(attribute.value))
+            return re.sub(r"\#.+", "", str(attribute.value))  # type: ignore
 
 
-def init(title: str, text: str, current_record) -> LemmaInfo:
+def init(title: str, wikicode: Wikicode) -> LemmaInfo:
     """
     Grundformverweis
     Von einer Deklination spricht man beim Beugen von Substantiven und den
@@ -49,7 +50,7 @@ def init(title: str, text: str, current_record) -> LemmaInfo:
     found_lemma = title
     inflected = False
 
-    parsed = parse_lemma(text)
+    parsed = parse_lemma(str(wikicode))
     if parsed:
         found_lemma = parsed
         inflected = True

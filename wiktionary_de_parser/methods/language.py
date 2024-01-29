@@ -1,6 +1,8 @@
 import re
 from dataclasses import dataclass
 
+from mwparserfromhell.wikicode import Wikicode
+
 from wiktionary_de_parser.config import PACKAGE_PATH
 
 
@@ -32,9 +34,9 @@ def parse_language(text: str):
     return lang_name
 
 
-def init(title: str, text: str, current_record) -> LangType:
+def init(title: str, wikicode: Wikicode) -> LangType:
     result = {
-        "lang": parse_language(text),
+        "lang": parse_language(str(wikicode)),
         "lang_code": None,
     }
     if result["lang"]:

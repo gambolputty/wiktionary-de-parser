@@ -20,7 +20,7 @@ def parse_paragraph(text: str):
     paragraph = find_paragraph("Aussprache", text)
 
     if not paragraph:
-        return False
+        return
 
     return mwparserfromhell.parse(paragraph)
 
@@ -128,12 +128,12 @@ def parse_rhymes(text: Union[str, Wikicode]):
         return found_rhymes
 
 
-def init(title: str, text: str, current_record) -> IPAType:
+def init(title: str, wikicode: Wikicode) -> IPAType:
     result = {
         "ipa": None,
         "rhymes": None,
     }
-    parsed = parse_paragraph(text)
+    parsed = parse_paragraph(str(wikicode))
 
     if parsed:
         ipa = parse_ipa_strings(parsed)

@@ -1,6 +1,8 @@
 import re
 from dataclasses import dataclass
 
+from mwparserfromhell.wikicode import Wikicode
+
 from wiktionary_de_parser.helper import find_paragraph, strip_html_tags
 
 
@@ -78,7 +80,7 @@ def parse_syllables(title: str, text: str):
         return result
 
 
-def init(title: str, text: str, current_record) -> SyllablesType:
-    result = parse_syllables(title, text)
+def init(title: str, wikicode: Wikicode) -> SyllablesType:
+    result = parse_syllables(title, str(wikicode))
 
     return SyllablesType(syllables=result)

@@ -2,6 +2,8 @@ import itertools
 import re
 from dataclasses import dataclass
 
+from mwparserfromhell.wikicode import Wikicode
+
 """
 Reference: https://de.wiktionary.org/wiki/Hilfe:Wortart
 """
@@ -123,7 +125,7 @@ if DEBUG is True:
     all_pos_names = [x.lower() for x in all_pos_names]
 
 
-def find_pos(pos_names, text, current_record):
+def find_pos(pos_names, text):
     result: dict[str, list[str]] = {}
 
     # fix POS when there is a certain POS template, but POS is not in pos_names
@@ -190,8 +192,9 @@ def find_pos(pos_names, text, current_record):
     return result
 
 
-def init(title: str, text: str, current_record) -> POSType:
+def init(title: str, wikicode: Wikicode) -> POSType:
     # find line
+    text = str(wikicode)
     match_line = re.search(r"(=== ?{{Wortart(?:-Test)?\|[^\n]+)", text)
 
     if match_line:
@@ -204,7 +207,7 @@ def init(title: str, text: str, current_record) -> POSType:
             pos_names = [name.strip() for name in pos_names]
 
             # find in map
-            pos_normalized = find_pos(pos_names, text, current_record)
+            pos_normalized = find_pos(pos_names, text)
 
             if pos_normalized.keys():
                 return POSType(pos=pos_normalized)
