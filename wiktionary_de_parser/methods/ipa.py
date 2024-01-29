@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Union
 
 import mwparserfromhell
 from mwparserfromhell.nodes.tag import Tag
@@ -16,16 +15,7 @@ class IPAType:
     rhymes: list[str] | None
 
 
-def parse_paragraph(text: str):
-    paragraph = find_paragraph("Aussprache", text)
-
-    if not paragraph:
-        return
-
-    return mwparserfromhell.parse(paragraph)
-
-
-def parse_ipa_strings(text: Union[str, Wikicode]):
+def parse_ipa_strings(parsed_paragraph: Wikicode):
     """
     Parse IPA-strings inside "{{Lautschrift}}"-template
 
@@ -45,15 +35,10 @@ def parse_ipa_strings(text: Union[str, Wikicode]):
     Reference: https://de.wiktionary.org/wiki/Hilfe:Aussprache
     """
 
-    parsed = parse_paragraph(text) if isinstance(text, str) else text
-
-    if not parsed:
-        return
-
     found_ipa: list[str] = []
     found_ipa_tmpl = False
 
-    for node in parsed.nodes:
+    for node in parsed_paragraph.nodes:
         # IPA-template must be present to start parsing Lautschrift-template
         if found_ipa_tmpl is False:
             if isinstance(node, Template) and node.name == "IPA":
@@ -86,16 +71,11 @@ def parse_ipa_strings(text: Union[str, Wikicode]):
         return found_ipa
 
 
-def parse_rhymes(text: Union[str, Wikicode]):
-    parsed = parse_paragraph(text) if isinstance(text, str) else text
-
-    if not parsed:
-        return
-
+def parse_rhymes(parsed_paragraph: Wikicode):
     found_rhymes: list[str] = []
     found_rhyme_tmpl = False
 
-    for node in parsed.nodes:
+    for node in parsed_paragraph.nodes:
         # Reime-template must be present to start parsing Reim-template
         if found_rhyme_tmpl is False:
             if isinstance(node, Template) and node.name == "Reime":
@@ -133,14 +113,15 @@ def init(title: str, wikicode: Wikicode) -> IPAType:
         "ipa": None,
         "rhymes": None,
     }
-    parsed = parse_paragraph(str(wikicode))
+    paragraph = find_paragraph("Aussprache", str(wikicode))
+    parsed_paragraph = mwparserfromhell.parse(paragraph)
 
-    if parsed:
-        ipa = parse_ipa_strings(parsed)
+    if parsed_paragraph:
+        ipa = parse_ipa_strings(parsed_paragraph)
         if ipa:
             result["ipa"] = ipa  # type: ignore
 
-        rhymes = parse_rhymes(parsed)
+        rhymes = parse_rhymes(parsed_paragraph)
         if rhymes:
             result["rhymes"] = rhymes  # type: ignore
 
