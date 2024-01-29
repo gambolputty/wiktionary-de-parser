@@ -52,7 +52,6 @@ class Parser:
     def __init__(
         self,
         source: Any,
-        custom_methods: list[Callable] = [],
         config: Union[Config, None] = None,
     ) -> None:
         # Initialize 'iterparse' to only generate 'end' events on tag '<entity>'
@@ -66,11 +65,11 @@ class Parser:
             user_config.update(config)
         self.config = user_config
 
-        # load default & custom methods
+        # load extraction methods
         self.extraction_methods: list[Callable] = []
-        self.load_methods(custom_methods)
+        self.load_methods()
 
-    def load_methods(self, custom_methods: list[Callable]) -> None:
+    def load_methods(self) -> None:
         # load extraction methods from folder
         methods_path = PACKAGE_PATH.joinpath("methods")
         method_files = [
@@ -92,15 +91,6 @@ class Parser:
 
             # append method
             self.extraction_methods.append(module.init)
-
-        # load custom exctraction methods
-        if custom_methods and isinstance(custom_methods, list):
-            for method in custom_methods:
-                if not callable(method):
-                    raise Exception(
-                        f'Provided extraction method "{str(method)}" is not callable'
-                    )
-                self.extraction_methods.append(method)
 
     def parse_page(self) -> Iterator[Tuple[int, str, str]]:
         """
