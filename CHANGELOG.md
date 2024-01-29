@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2024-01-29
+### Changed
+- Update dependencies
+- Use dataclasses instead of dicts internally
+### Added
+- Add "page_id" and "index" field to output (if a page contains multiple entries, the index indicates the position of the word in the page)
+- Add tests for POS and language parsing
+### Removed
+- __BREAKING__: Removed the ability to load custom methods from outside the package. The same can be achieved by setting the "wiki_text" field in the config dict and parsing the Wikitext manually.
+
 ## [0.9.5] - 2022-07-26
 ### Fixed
 - Make sure "title" is of base string type (not `etree._ElementUnicodeResult`)

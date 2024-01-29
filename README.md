@@ -1,6 +1,6 @@
 # wiktionary-de-parser
 
-This is a Python module to extract data from German Wiktionary XML files (for Python 3.7+). It allows you to add your own extraction methods.
+This is a Python module to extract data from German Wiktionary XML files (for Python 3.11+). It allows you to add your own extraction methods.
 
 ## Installation
 
@@ -8,9 +8,9 @@ This is a Python module to extract data from German Wiktionary XML files (for Py
 
 ## Features
 
-- Extracts flexion tables, genus, IPA, language, lemma, part of speech (basic), syllables, raw Wikitext
+- Extracts flexion tables, genus, IPA, language, lemma, part of speech (basic) and syllables
 - Allows you to add your own extraction methods (pass them as argument)
-- Yields per section, not per page (a word can have multiple meanings --> multiple sections of a Wiktionary pages)
+- Yields per entry, not per page (a page can have multiple entries/ words can have different meanings)
 
 ## Usage
 
@@ -22,55 +22,66 @@ bzfile_path = '/tmp/dewiktionary-latest-pages-articles-multistream.xml.bz2'
 bz_file = BZ2File(bzfile_path)
 
 for record in Parser(bz_file):
-    if 'lang_code' not in record or record['lang_code'] != 'de':
+    if record.lang_code != 'de':
       continue
     # do stuff with 'record'
 ```
 
 Note: In this example we load a compressed Wiktionary dump file that was [obtained from here](https://dumps.wikimedia.org/dewiktionary/latest).
 
-### Adding new extraction methods
-
-An extraction method takes the following arguments:
-
-- `title` (_string_): The title of the current Wiktionary page
-- `text` (_string_): The [Wikitext](https://en.wikipedia.org/wiki/Wiki#Editing) of the current word entry/section
-- `current_record` (_Dict_): A dictionary with all values of the current iteration (e. g. `current_record['lang_code']`)
-
-It must return a `Dict` with the results or `False` if the record was processed unsuccesfully.
-
-```python
-# Create a new extraction method
-def my_method(title, text, current_record):
-  # do stuff
-  return {'my_field': my_data} if my_data else False
-
-# Pass a list with all extraction methods to the class constructor:
-for record in Parser(bz_file, custom_methods=[my_method]):
-    print(record['my_field'])
-```
 
 ## Output
-Example output for the word "Abend":
+Example output for the page "Abend":
 ```python
-{'flexion': {'Akkusativ Plural': 'Abende',
-             'Akkusativ Singular': 'Abend',
-             'Dativ Plural': 'Abenden',
-             'Dativ Singular': 'Abend',
-             'Genitiv Plural': 'Abende',
-             'Genitiv Singular': 'Abends',
-             'Genus': 'm',
-             'Nominativ Plural': 'Abende',
-             'Nominativ Singular': 'Abend'},
- 'inflected': False,
- 'ipa': ['ˈaːbn̩t', 'ˈaːbm̩t'],
- 'lang': 'Deutsch',
- 'lang_code': 'de',
- 'lemma': 'Abend',
- 'pos': {'Substantiv': []},
- 'rhymes': ['aːbn̩t'],
- 'syllables': ['Abend'],
- 'title': 'Abend'}
+Record(lemma='Abend',
+       inflected=False,
+       syllables=['Abend'],
+       ipa=['ˈaːbn̩t', 'ˈaːbm̩t'],
+       rhymes=['aːbn̩t'],
+       pos={'Substantiv': []},
+       lang='Deutsch',
+       lang_code='de',
+       flexion={'Akkusativ Plural': 'Abende',
+                'Akkusativ Singular': 'Abend',
+                'Dativ Plural': 'Abenden',
+                'Dativ Singular': 'Abend',
+                'Genitiv Plural': 'Abende',
+                'Genitiv Singular': 'Abends',
+                'Genus': 'm',
+                'Nominativ Plural': 'Abende',
+                'Nominativ Singular': 'Abend'},
+       page_id=5719,
+       index=0,
+       title='Abend',
+       wikitext=None)
+
+Record(lemma='Abend',
+       inflected=False,
+       syllables=['Abend'],
+       ipa=['ˈaːbn̩t'],
+       rhymes=['aːbn̩t'],
+       pos={'Substantiv': ['Nachname']},
+       lang='Deutsch',
+       lang_code='de',
+       flexion=None,
+       page_id=5719,
+       index=1,
+       title='Abend',
+       wikitext=None)
+
+Record(lemma='Abend',
+       inflected=False,
+       syllables=['Abend'],
+       ipa=['ˈaːbn̩t', 'ˈaːbm̩t'],
+       rhymes=['aːbn̩t'],
+       pos={'Substantiv': ['Toponym']},
+       lang='Deutsch',
+       lang_code='de',
+       flexion=None,
+       page_id=5719,
+       index=2,
+       title='Abend',
+       wikitext=None)
 ```
 
 ## Development
