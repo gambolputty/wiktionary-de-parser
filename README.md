@@ -1,16 +1,19 @@
 # wiktionary-de-parser
 
-This is a Python module to extract data from German Wiktionary XML files (for Python 3.11+). It allows you to add your own extraction methods.
+A Python module to extract data from German Wiktionary XML files (for Python 3.11+).
+
+## Features
+
+- Extracts flexion tables, IPA transcriptions, language, genus, lemma, part of speech information (basic) and syllables of a word.
+- Yields per entry, not per page (a page can have multiple entries/ words can have different meanings)
 
 ## Installation
 
 `pip install wiktionary-de-parser`
 
-## Features
+Or with [Poetry](https://python-poetry.org/):
 
-- Extracts flexion tables, genus, IPA, language, lemma, part of speech (basic) and syllables
-- Allows you to add your own extraction methods (pass them as argument)
-- Yields per entry, not per page (a page can have multiple entries/ words can have different meanings)
+`poetry add wiktionary-de-parser`
 
 ## Usage
 
