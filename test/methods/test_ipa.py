@@ -18,10 +18,12 @@ class TestIPAParsing:
 
     @pytest.mark.parametrize("test_input,expected", ipa_test_data)
     def test_parsing_ipa_strings(self, test_input, expected):
-        parse_result = parse_ipa_strings(test_input)
+        wikicode = mwparserfromhell.parse(test_input)
+        parse_result = parse_ipa_strings(wikicode)
         assert parse_result == expected
 
     @pytest.mark.parametrize("test_input,expected", rhymes_test_data)
     def test_parsing_rhymes(self, test_input, expected):
-        parse_result = parse_rhymes(test_input)
+        wikicode = mwparserfromhell.parse(test_input)
+        parse_result = parse_rhymes(wikicode)
         assert parse_result == expected
