@@ -12,6 +12,7 @@ from wiktionary_de_parser.methods.flexion import FlexionType
 from wiktionary_de_parser.methods.ipa import IPAType
 from wiktionary_de_parser.methods.language import LangType
 from wiktionary_de_parser.methods.lemma import LemmaInfo
+from wiktionary_de_parser.methods.meanings import MeaningsType
 from wiktionary_de_parser.methods.pos import POSType
 from wiktionary_de_parser.methods.syllables import SyllablesType
 
@@ -22,7 +23,9 @@ class Config(TypedDict, total=False):
 
 
 @dataclass
-class Record(FlexionType, LangType, POSType, IPAType, SyllablesType, LemmaInfo):
+class Record(
+    FlexionType, LangType, POSType, IPAType, SyllablesType, LemmaInfo, MeaningsType
+):
     page_id: int
     index: int
     title: str
