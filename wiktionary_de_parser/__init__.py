@@ -1,6 +1,5 @@
 import re
 from copy import deepcopy
-from dataclasses import dataclass
 from importlib.machinery import SourceFileLoader
 from typing import Any, Callable, Iterable, Iterator, Tuple, TypedDict, Union
 
@@ -8,25 +7,11 @@ import mwparserfromhell
 from lxml import etree
 
 from wiktionary_de_parser.config import PACKAGE_PATH
-from wiktionary_de_parser.methods.flexion import FlexionType
-from wiktionary_de_parser.methods.ipa import IPAType
-from wiktionary_de_parser.methods.language import LangType
-from wiktionary_de_parser.methods.lemma import LemmaInfo
-from wiktionary_de_parser.methods.pos import POSType
-from wiktionary_de_parser.methods.syllables import SyllablesType
 
 
 class Config(TypedDict, total=False):
     ignored_prefixes: Tuple[str, ...]
     include_wikitext: bool
-
-
-@dataclass
-class Record(FlexionType, LangType, POSType, IPAType, SyllablesType, LemmaInfo):
-    page_id: int
-    index: int
-    title: str
-    wikitext: str | None = None
 
 
 default_config: Config = {
