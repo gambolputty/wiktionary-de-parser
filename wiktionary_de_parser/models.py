@@ -10,8 +10,9 @@ class WiktionaryPage(BaseModel):
 
 
 class WiktionaryPageEntry(BaseModel):
-    index: int
-    wikicode: Wikicode
     page: WiktionaryPage
+    index: int
+    wikitext: str
+    wikicode: Wikicode
 
     model_config = ConfigDict(arbitrary_types_allowed=True)

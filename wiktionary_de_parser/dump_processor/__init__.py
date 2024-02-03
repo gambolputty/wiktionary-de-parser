@@ -6,7 +6,7 @@ import requests
 from lxml import etree
 from tqdm import tqdm
 
-from wiktionary_de_parser.dump_processor.dump_page import WiktionaryPage
+from wiktionary_de_parser.models import WiktionaryPage
 
 # Credits: https://github.com/tatuylonen/wikitextprocessor/blob/958098c50df1a116ee5549f7e4d9352f349265d7/src/wikitextprocessor/dumpparser.py
 
@@ -106,7 +106,7 @@ class WiktionaryDump:
             redirect_to=redirect_to,
         )
 
-    def iter_entries(self):
+    def pages(self):
         """
         Iterates over dump file.
         """
@@ -124,9 +124,8 @@ class WiktionaryDump:
             namespace_str = "http://www.mediawiki.org/xml/export-0.10/"
             namespaces = {None: namespace_str}
 
-            for _, page_element in tqdm(
-                etree.iterparse(p.stdout, tag=f"{{{namespace_str}}}page"),
-                desc="Parsing Wiktionary dump",
+            for _, page_element in etree.iterparse(
+                p.stdout, tag=f"{{{namespace_str}}}page"
             ):
                 page = self.process_data(page_element, namespaces, namespace_ids)
 
