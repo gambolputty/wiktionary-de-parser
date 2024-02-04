@@ -27,7 +27,8 @@ from wiktionary_de_parser.dump_processor import WiktionaryDump
 dump = WiktionaryDump(dump_dir_path="directory-of-dump-file")
 
 # Download latest Wiktionary xml dump file.
-# This will download "dewiktionary-latest-pages-articles-multistream.xml.bz2" to the directory specified in `dump_dir_path`.
+# This will download "dewiktionary-latest-pages-articles-multistream.xml.bz2" to
+# the directory specified in `dump_dir_path`.
 dump.download_latest_dump()
 
 parser = WiktionaryParser()
