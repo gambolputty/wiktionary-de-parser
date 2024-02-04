@@ -3,7 +3,8 @@ import re
 import mwparserfromhell
 from mwparserfromhell.nodes.template import Template
 
-from wiktionary_de_parser.parser import Parser, ParserResult
+from wiktionary_de_parser.models import ParseLemmaResult
+from wiktionary_de_parser.parser import Parser
 
 
 class ParseLemma(Parser):
@@ -28,7 +29,7 @@ class ParseLemma(Parser):
                 # remove "#" and everything after
                 return re.sub(r"\#.+", "", str(attribute.value))  # type: ignore
 
-    def run(self):
+    def run(self) -> ParseLemmaResult:
         """
         Grundformverweis
         Von einer Deklination spricht man beim Beugen von Substantiven und den
@@ -50,6 +51,4 @@ class ParseLemma(Parser):
             found_lemma = parsed
             inflected = True
 
-        return ParserResult(
-            name="lemma", value=dict(lemma=found_lemma, inflected=inflected)
-        )
+        return dict(lemma=found_lemma, inflected=inflected)

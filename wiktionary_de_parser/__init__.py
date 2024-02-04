@@ -6,8 +6,12 @@ from typing import Type
 
 import mwparserfromhell
 
-from wiktionary_de_parser.models import WiktionaryPage, WiktionaryPageEntry
-from wiktionary_de_parser.parser import Parser, ParserResult
+from wiktionary_de_parser.models import (
+    ParsedWiktionaryPageEntry,
+    WiktionaryPage,
+    WiktionaryPageEntry,
+)
+from wiktionary_de_parser.parser import Parser
 
 
 class WiktionaryParser:
@@ -82,17 +86,16 @@ class WiktionaryParser:
         """
         Parses the HTML text.
         """
-        results: list[ParserResult] = []
-
-        # Add title to results
-        results.append(ParserResult(name="title", value=wiktionary_entry.page.name))
+        results = dict()
 
         # Instantiate all subclasses
         instances = [subclass(wiktionary_entry) for subclass in self.parser_classes]
 
         # Run all instances
         for instance in instances:
-            result = instance.run()
-            results.append(result)
+            results[instance.name] = instance.run()
 
-        return results
+        # Add wiktionary_entry to results
+        results["entry"] = wiktionary_entry
+
+        return ParsedWiktionaryPageEntry(**results)

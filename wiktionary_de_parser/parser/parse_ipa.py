@@ -4,7 +4,8 @@ from mwparserfromhell.nodes.template import Template
 from mwparserfromhell.nodes.text import Text
 from mwparserfromhell.wikicode import Wikicode
 
-from wiktionary_de_parser.parser import Parser, ParserResult
+from wiktionary_de_parser.models import ParseIpaResult
+from wiktionary_de_parser.parser import Parser
 
 WANTED_TABLE_NAMES = [
     "Deutsch Adjektiv Übersicht",
@@ -20,7 +21,8 @@ WANTED_TABLE_NAMES = [
 ]
 
 
-class ParseIPA(Parser):
+class ParseIpa(Parser):
+
     @staticmethod
     def parse_ipa_strings(parsed_paragraph: Wikicode):
         """
@@ -81,7 +83,7 @@ class ParseIPA(Parser):
         if found_ipa:
             return found_ipa
 
-    def run(self):
+    def run(self) -> ParseIpaResult:
         paragraph = self.find_paragraph("Aussprache")
         parsed_paragraph = mwparserfromhell.parse(paragraph)
         result = None
@@ -91,4 +93,4 @@ class ParseIPA(Parser):
             if ipa:
                 result = ipa
 
-        return ParserResult(name="ipa", value=result)
+        return result

@@ -1,7 +1,8 @@
 import itertools
 import re
 
-from wiktionary_de_parser.parser import Parser, ParserResult
+from wiktionary_de_parser.models import ParsePosResult
+from wiktionary_de_parser.parser import Parser
 
 DEBUG = False
 
@@ -114,7 +115,7 @@ if DEBUG is True:
     all_pos_names = [x.lower() for x in all_pos_names]
 
 
-class ParsePOS(Parser):
+class ParsePos(Parser):
     @staticmethod
     def find_pos(pos_names, text):
         result: dict[str, list[str]] = {}
@@ -187,7 +188,7 @@ class ParsePOS(Parser):
 
         return result
 
-    def run(self):
+    def run(self) -> ParsePosResult:
         text = self.entry.wikitext
         match_line = re.search(r"(=== ?{{Wortart(?:-Test)?\|[^\n]+)", text)
         result = None
@@ -209,4 +210,4 @@ class ParsePOS(Parser):
                 if pos_normalized.keys():
                     result = pos_normalized
 
-        return ParserResult(name="pos", value=result)
+        return result

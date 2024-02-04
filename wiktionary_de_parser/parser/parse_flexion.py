@@ -1,6 +1,7 @@
 import re
 
-from wiktionary_de_parser.parser import Parser, ParserResult
+from wiktionary_de_parser.models import ParseFlexionResult
+from wiktionary_de_parser.parser import Parser
 
 WANTED_TABLE_NAMES = [
     "Deutsch Adjektiv Übersicht",
@@ -17,6 +18,7 @@ WANTED_TABLE_NAMES = [
 
 
 class ParseFlexion(Parser):
+
     @staticmethod
     def find_table(text):
         re_string = "({{(" + "|".join(WANTED_TABLE_NAMES) + ")[^}]+}})"
@@ -67,7 +69,7 @@ class ParseFlexion(Parser):
         if result.keys():
             return result
 
-    def run(self):
+    def run(self) -> ParseFlexionResult:
         table_string = self.find_table(self.entry.wikitext)
         result = None
 
@@ -76,4 +78,4 @@ class ParseFlexion(Parser):
             if table_dict:
                 result = table_dict
 
-        return ParserResult(name="flexion", value=result)
+        return result

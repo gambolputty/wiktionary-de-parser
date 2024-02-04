@@ -1,7 +1,8 @@
 import re
 
 from wiktionary_de_parser.config import PACKAGE_PATH
-from wiktionary_de_parser.parser import Parser, ParserResult
+from wiktionary_de_parser.models import ParseLanuageResult
+from wiktionary_de_parser.parser import Parser
 
 # https://de.wiktionary.org/wiki/Hilfe:Sprachcodes
 LANG_CODES = {}
@@ -26,7 +27,7 @@ class ParseLanguage(Parser):
 
         return lang_name
 
-    def run(self):
+    def run(self) -> ParseLanuageResult:
         result = {
             "lang": self.parse_language(self.entry.wikitext),
             "lang_code": None,
@@ -38,4 +39,4 @@ class ParseLanguage(Parser):
             if lang_lower in LANG_CODES:
                 result["lang_code"] = LANG_CODES[lang_lower]
 
-        return ParserResult(name="language", value=result)
+        return result

@@ -1,6 +1,7 @@
 import re
 
-from wiktionary_de_parser.parser import Parser, ParserResult
+from wiktionary_de_parser.models import ParseSyllablesResult
+from wiktionary_de_parser.parser import Parser
 
 
 class ParseSyllables(Parser):
@@ -72,6 +73,5 @@ class ParseSyllables(Parser):
         if result:
             return result
 
-    def run(self):
-        result = self.parse_syllables()
-        return ParserResult(name="syllables", value=result)
+    def run(self) -> ParseSyllablesResult:
+        return self.parse_syllables()

@@ -4,7 +4,8 @@ from mwparserfromhell.nodes.template import Template
 from mwparserfromhell.nodes.text import Text
 from mwparserfromhell.wikicode import Wikicode
 
-from wiktionary_de_parser.parser import Parser, ParserResult
+from wiktionary_de_parser.models import ParseRhymesResult
+from wiktionary_de_parser.parser import Parser
 
 
 class ParseRhymes(Parser):
@@ -45,7 +46,7 @@ class ParseRhymes(Parser):
         if found_rhymes:
             return found_rhymes
 
-    def run(self):
+    def run(self) -> ParseRhymesResult:
         paragraph = self.find_paragraph("Aussprache")
         parsed_paragraph = mwparserfromhell.parse(paragraph)
         result = None
@@ -55,4 +56,4 @@ class ParseRhymes(Parser):
             if rhymes:
                 result = rhymes
 
-        return ParserResult(name="rhymes", value=result)
+        return result
