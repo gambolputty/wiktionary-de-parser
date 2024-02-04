@@ -17,74 +17,83 @@ Or with [Poetry](https://python-poetry.org/):
 
 ## Usage
 
+The following example will download the latest Wiktionary dump file ([from here](https://dumps.wikimedia.org/dewiktionary/latest)) and parse all German entries.
+
 ```python
-from bz2 import BZ2File
-from wiktionary_de_parser import Parser
+from wiktionary_de_parser import WiktionaryParser
+from wiktionary_de_parser.dump_processor import WiktionaryDump
 
-bzfile_path = '/tmp/dewiktionary-latest-pages-articles-multistream.xml.bz2'
-bz_file = BZ2File(bzfile_path)
+# Specify the directory where the dump file should be stored.
+dump = WiktionaryDump(dump_dir_path="directory-of-dump-file")
 
-for record in Parser(bz_file):
-    if record.lang_code != 'de':
-      continue
-    # do stuff with 'record'
+# Download latest Wiktionary xml dump file.
+# This will download "dewiktionary-latest-pages-articles-multistream.xml.bz2" to the directory specified in `dump_dir_path`.
+dump.download_latest_dump()
+
+parser = WiktionaryParser()
+
+for page in dump.pages():
+    # Skip redirects
+    if page.redirect_to:
+        continue
+
+    for entry in parser.entries_from_page(page):
+        parsed = parser.parse_entry(entry)
+
+       #  Ignore non-German entries
+       if parsed.language.lang_code != "de":
+            continue
+
+        # do something with "parsed
+        ...
+
 ```
 
-Note: In this example we load a compressed Wiktionary dump file that was [obtained from here](https://dumps.wikimedia.org/dewiktionary/latest).
-
-
 ## Output
-Example output for the page "Abend":
+All entries for "Abend":
+
 ```python
-Record(lemma='Abend',
-       inflected=False,
-       syllables=['Abend'],
-       ipa=['ˈaːbn̩t', 'ˈaːbm̩t'],
-       rhymes=['aːbn̩t'],
-       pos={'Substantiv': []},
-       lang='Deutsch',
-       lang_code='de',
-       flexion={'Akkusativ Plural': 'Abende',
-                'Akkusativ Singular': 'Abend',
-                'Dativ Plural': 'Abenden',
-                'Dativ Singular': 'Abend',
-                'Genitiv Plural': 'Abende',
-                'Genitiv Singular': 'Abends',
-                'Genus': 'm',
-                'Nominativ Plural': 'Abende',
-                'Nominativ Singular': 'Abend'},
-       page_id=5719,
-       index=0,
-       title='Abend',
-       wikitext=None)
+ParsedWiktionaryPageEntry(
+    name="Abend",
+    flexion={
+        "Genus": "m",
+        "Nominativ Singular": "Abend",
+        "Nominativ Plural": "Abende",
+        "Genitiv Singular": "Abends",
+        "Genitiv Plural": "Abende",
+        "Dativ Singular": "Abend",
+        "Dativ Plural": "Abenden",
+        "Akkusativ Singular": "Abend",
+        "Akkusativ Plural": "Abende",
+    },
+    ipa=["ˈaːbn̩t", "ˈaːbm̩t"],
+    language=Language(lang="Deutsch", lang_code="de"),
+    lemma=Lemma(lemma="Abend", inflected=False),
+    pos={"Substantiv": []},
+    rhymes=["aːbn̩t"],
+    syllables=["Abend"],
+)
+ParsedWiktionaryPageEntry(
+    name="Abend",
+    flexion=None,
+    ipa=["ˈaːbn̩t"],
+    language=Language(lang="Deutsch", lang_code="de"),
+    lemma=Lemma(lemma="Abend", inflected=False),
+    pos={"Substantiv": ["Nachname"]},
+    rhymes=["aːbn̩t"],
+    syllables=["Abend"],
+)
+ParsedWiktionaryPageEntry(
+    name="Abend",
+    flexion=None,
+    ipa=["ˈaːbn̩t", "ˈaːbm̩t"],
+    language=Language(lang="Deutsch", lang_code="de"),
+    lemma=Lemma(lemma="Abend", inflected=False),
+    pos={"Substantiv": ["Toponym"]},
+    rhymes=["aːbn̩t"],
+    syllables=["Abend"],
+)
 
-Record(lemma='Abend',
-       inflected=False,
-       syllables=['Abend'],
-       ipa=['ˈaːbn̩t'],
-       rhymes=['aːbn̩t'],
-       pos={'Substantiv': ['Nachname']},
-       lang='Deutsch',
-       lang_code='de',
-       flexion=None,
-       page_id=5719,
-       index=1,
-       title='Abend',
-       wikitext=None)
-
-Record(lemma='Abend',
-       inflected=False,
-       syllables=['Abend'],
-       ipa=['ˈaːbn̩t', 'ˈaːbm̩t'],
-       rhymes=['aːbn̩t'],
-       pos={'Substantiv': ['Toponym']},
-       lang='Deutsch',
-       lang_code='de',
-       flexion=None,
-       page_id=5719,
-       index=2,
-       title='Abend',
-       wikitext=None)
 ```
 
 ## Development
@@ -93,8 +102,8 @@ This project uses [Poetry](https://python-poetry.org/).
 1. Install [Poetry](https://python-poetry.org/).
 2. Clone this repository
 3. Run `poetry install` inside of the project folder to install dependencies.
-4. Change `wiktionary_de_parser/run.py` to your needs.
-5. Run `poetry run python wiktionary_de_parser/run.py` to run the parser. Or `poetry run pytest` to run tests.
+4. There is a `notebook.ipynb` to test the parser.
+5. Run `poetry run pytest` to run tests.
 
 ## License
 
