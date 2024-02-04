@@ -28,8 +28,6 @@ ParseSyllablesResult = list[str] | None
 
 
 class ParsedWiktionaryPageEntry(BaseModel):
-    entry: WiktionaryPageEntry
-
     flexion: ParseFlexionResult
     ipa: ParseIpaResult
     language: ParseLanuageResult

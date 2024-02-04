@@ -95,7 +95,4 @@ class WiktionaryParser:
         for instance in instances:
             results[instance.name] = instance.run()
 
-        # Add wiktionary_entry to results
-        results["entry"] = wiktionary_entry
-
         return ParsedWiktionaryPageEntry(**results)
