@@ -3,7 +3,7 @@ import re
 import mwparserfromhell
 from mwparserfromhell.nodes.template import Template
 
-from wiktionary_de_parser.models import ParseLemmaResult
+from wiktionary_de_parser.models import Lemma, ParseLemmaResult
 from wiktionary_de_parser.parser import Parser
 
 
@@ -54,5 +54,5 @@ class ParseLemma(Parser):
         https://de.wiktionary.org/wiki/Vorlage:Grundformverweis_Dekl
         https://de.wiktionary.org/wiki/Vorlage:Grundformverweis (deprecated)
         """
-
-        return self.parse(self.entry.page.name, self.entry.wikitext)
+        result = self.parse(self.entry.page.name, self.entry.wikitext)
+        return Lemma(**result)  # type: ignore

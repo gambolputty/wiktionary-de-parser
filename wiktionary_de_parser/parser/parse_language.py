@@ -1,7 +1,7 @@
 import re
 
 from wiktionary_de_parser.config import PACKAGE_PATH
-from wiktionary_de_parser.models import ParseLanuageResult
+from wiktionary_de_parser.models import Language, ParseLanuageResult
 from wiktionary_de_parser.parser import Parser
 
 # https://de.wiktionary.org/wiki/Hilfe:Sprachcodes
@@ -45,4 +45,4 @@ class ParseLanguage(Parser):
     def run(self) -> ParseLanuageResult:
         result = self.parse(self.entry.wikitext)
 
-        return result
+        return Language(**result)
