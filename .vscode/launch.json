@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "runner",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "wiktionary_de_parser/run.py",
             "console": "integratedTerminal",

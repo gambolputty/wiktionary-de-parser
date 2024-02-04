@@ -1,4 +1,4 @@
-data = [
+syllables_data = [
     (
         "gesagt, getan",
         """
