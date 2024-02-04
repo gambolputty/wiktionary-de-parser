@@ -88,6 +88,9 @@ class WiktionaryParser:
         """
         results = dict()
 
+        # Add the page name
+        results["name"] = wiktionary_entry.page.name
+
         # Instantiate all subclasses
         instances = [subclass(wiktionary_entry) for subclass in self.parser_classes]
 
