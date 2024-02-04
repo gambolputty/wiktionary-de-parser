@@ -83,14 +83,23 @@ class ParseIpa(Parser):
         if found_ipa:
             return found_ipa
 
-    def run(self) -> ParseIpaResult:
-        paragraph = self.find_paragraph("Aussprache")
-        parsed_paragraph = mwparserfromhell.parse(paragraph)
+    @classmethod
+    def parse(cls, wikitext: str):
+        parsed_paragraph = mwparserfromhell.parse(wikitext)
         result = None
 
         if parsed_paragraph:
-            ipa = self.parse_ipa_strings(parsed_paragraph)
+            ipa = cls.parse_ipa_strings(parsed_paragraph)
             if ipa:
                 result = ipa
+
+        return result
+
+    def run(self) -> ParseIpaResult:
+        paragraph = self.find_paragraph("Aussprache", self.entry.wikitext)
+        result = None
+
+        if paragraph:
+            result = self.parse(paragraph)
 
         return result

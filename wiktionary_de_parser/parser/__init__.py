@@ -29,8 +29,8 @@ class Parser:
         # Raise to be implemented error
         raise NotImplementedError
 
-    def find_paragraph(self, heading: str, wikitext: str | None = None):
-        wikitext = wikitext or self.entry.wikitext
+    @staticmethod
+    def find_paragraph(heading: str, wikitext: str) -> str | None:
         pattern = re.compile(r"{{" + heading + r"}}\n((?:[^\n][\n]?)+)")
         match = re.search(pattern, wikitext)
 

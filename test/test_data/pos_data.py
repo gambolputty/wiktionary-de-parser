@@ -27,7 +27,7 @@ pos_test_data = [
 |Akkusativ Singular gemischt=weißes Gold
 }}
         """,
-        {"pos": {"Substantiv": ["adjektivische Deklination"], "Wortverbindung": []}},
+        {"Substantiv": ["adjektivische Deklination"], "Wortverbindung": []},
     ),
     (
         """
@@ -50,7 +50,7 @@ pos_test_data = [
 :Fra·ge·stel·ler, {{Pl.}} Fra·ge·stel·ler
 
 """,
-        {"pos": {"Substantiv": []}},
+        {"Substantiv": []},
     ),
     (
         """
@@ -64,7 +64,7 @@ pos_test_data = [
 }}
 
 """,
-        {"pos": {"Substantiv": ["adjektivische Deklination"]}},
+        {"Substantiv": ["adjektivische Deklination"]},
     ),
     (
         """
@@ -89,7 +89,7 @@ pos_test_data = [
 |Akkusativ Plural*=Ps
 }}
 """,
-        {"pos": {"Substantiv": [], "Symbol": ["Buchstabe"]}},
+        {"Substantiv": [], "Symbol": ["Buchstabe"]},
     ),
     (
         """
@@ -102,7 +102,7 @@ pos_test_data = [
 |Superlativ=vollständigsten
 }}
 """,
-        {"pos": {"Adjektiv": []}},
+        {"Adjektiv": []},
     ),
     (
         """
@@ -128,6 +128,6 @@ pos_test_data = [
 |Bild 4=Ap14 flag.ogv|mini|2|[[Astronaut]]en von [[w:Apollo 14|Apollo 14]] ''pflanzen'' auf dem [[Mond]] die US-[[Flagge]]
 }}
 """,
-        {"pos": {"Verb": []}},
+        {"Verb": []},
     ),
 ]

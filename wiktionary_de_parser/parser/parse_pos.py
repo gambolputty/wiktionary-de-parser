@@ -188,9 +188,9 @@ class ParsePos(Parser):
 
         return result
 
-    def run(self) -> ParsePosResult:
-        text = self.entry.wikitext
-        match_line = re.search(r"(=== ?{{Wortart(?:-Test)?\|[^\n]+)", text)
+    @classmethod
+    def parse(cls, wikitext: str):
+        match_line = re.search(r"(=== ?{{Wortart(?:-Test)?\|[^\n]+)", wikitext)
         result = None
 
         if match_line:
@@ -205,9 +205,12 @@ class ParsePos(Parser):
                 pos_names = [name.strip() for name in pos_names]
 
                 # find in map
-                pos_normalized = self.find_pos(pos_names, text)
+                pos_normalized = cls.find_pos(pos_names, wikitext)
 
                 if pos_normalized.keys():
                     result = pos_normalized
 
         return result
+
+    def run(self) -> ParsePosResult:
+        return self.parse(self.entry.wikitext)

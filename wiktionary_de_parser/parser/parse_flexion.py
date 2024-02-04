@@ -69,13 +69,17 @@ class ParseFlexion(Parser):
         if result.keys():
             return result
 
-    def run(self) -> ParseFlexionResult:
-        table_string = self.find_table(self.entry.wikitext)
+    @classmethod
+    def parse(cls, wikitext: str):
+        table_string = cls.find_table(wikitext)
         result = None
 
         if table_string:
-            table_dict = self.parse_table_values(table_string)
+            table_dict = cls.parse_table_values(table_string)
             if table_dict:
                 result = table_dict
 
         return result
+
+    def run(self) -> ParseFlexionResult:
+        return self.parse(self.entry.wikitext)

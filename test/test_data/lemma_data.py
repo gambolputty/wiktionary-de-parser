@@ -1,46 +1,58 @@
-data = [
+lemma_data = [
     (
         "{{Grundformverweis|ni#Personalpronomen|ni}}",
-        "ni",
+        {"inflected": True, "lemma": "ni"},
     ),
     (
         "{{Grundformverweis Konj|1=bereiten|Abschnitt=Verb.2C_unregelm.C3.A4.C3.9Fig}}",
-        "bereiten",
+        {"inflected": True, "lemma": "bereiten"},
     ),
-    ("{{Grundformverweis|hunger}}", "hunger"),
-    ("{{Grundformverweis Konj|zeichnen}}", "zeichnen"),
+    (
+        "{{Grundformverweis|hunger}}",
+        {"inflected": True, "lemma": "hunger"},
+    ),
+    (
+        "{{Grundformverweis Konj|zeichnen}}",
+        {"inflected": True, "lemma": "zeichnen"},
+    ),
     (
         "{{Grundformverweis Konj|Abschnitt=Verb, untrennbar|AbschnittK=unterliegen (Konjugation), untrennbar, Hilfsverb haben (Deutsch)|unterliegen}}",
-        "unterliegen",
+        {"inflected": True, "lemma": "unterliegen"},
     ),
     (
         "{{Grundformverweis Konj|fara|Abschnitt=Verb 2|Flexion=0|spr=sv}}",
-        "fara",
+        {"inflected": True, "lemma": "fara"},
     ),
-    ("{{Grundformverweis Konj|dare|spr=en}}", "dare"),
-    ("{{Grundformverweis Dekl|anal|Abschnitt=Adjektiv 6|Flexion=0}}", "anal"),
+    (
+        "{{Grundformverweis Konj|dare|spr=en}}",
+        {"inflected": True, "lemma": "dare"},
+    ),
+    (
+        "{{Grundformverweis Dekl|anal|Abschnitt=Adjektiv 6|Flexion=0}}",
+        {"inflected": True, "lemma": "anal"},
+    ),
     (
         "{{Grundformverweis Dekl|pur|Abschnitt=pur (Deutsch)}}",
-        "pur",
+        {"inflected": True, "lemma": "pur"},
     ),
     (
         "{{Grundformverweis Dekl|geschafft|Abschnitt=Adjektiv}}",
-        "geschafft",
+        {"inflected": True, "lemma": "geschafft"},
     ),
     (
         "{{Grundformverweis Dekl|aufwärmen|Flexionsseite=aufzuwärmen}}",
-        "aufwärmen",
+        {"inflected": True, "lemma": "aufwärmen"},
     ),
     (
         "{{Grundformverweis Dekl|Falschmeldung}}",
-        "Falschmeldung",
+        {"inflected": True, "lemma": "Falschmeldung"},
     ),
     (
         "{{Grundformverweis Dekl|červený|spr=cs}}",
-        "červený",
+        {"inflected": True, "lemma": "červený"},
     ),
     (
         "{{Grundformverweis Dekl|decir#Substantiv, m|decir|Flexion=0}}",
-        "decir",
+        {"inflected": True, "lemma": "decir"},
     ),
 ]

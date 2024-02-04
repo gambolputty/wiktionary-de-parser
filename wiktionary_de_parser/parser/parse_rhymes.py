@@ -46,14 +46,23 @@ class ParseRhymes(Parser):
         if found_rhymes:
             return found_rhymes
 
-    def run(self) -> ParseRhymesResult:
-        paragraph = self.find_paragraph("Aussprache")
-        parsed_paragraph = mwparserfromhell.parse(paragraph)
+    @classmethod
+    def parse(cls, wikitext: str):
+        parsed_paragraph = mwparserfromhell.parse(wikitext)
         result = None
 
         if parsed_paragraph:
-            rhymes = self.parse_rhymes(parsed_paragraph)
+            rhymes = cls.parse_rhymes(parsed_paragraph)
             if rhymes:
                 result = rhymes
+
+        return result
+
+    def run(self) -> ParseRhymesResult:
+        paragraph = self.find_paragraph("Aussprache", self.entry.wikitext)
+        result = None
+
+        if paragraph:
+            result = self.parse(paragraph)
 
         return result

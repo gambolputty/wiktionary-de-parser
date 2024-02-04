@@ -5,7 +5,9 @@ from wiktionary_de_parser.parser import Parser
 
 
 class ParseSyllables(Parser):
-    def parse_syllables(self):
+
+    @classmethod
+    def parse_syllables(cls, name: str, wikitext: str):
         """
         Parse syllables below "{{Worttrennung}}"-template.
 
@@ -23,9 +25,9 @@ class ParseSyllables(Parser):
 
         Reference: https://de.wiktionary.org/wiki/Hilfe:Worttrennung
         """
-        title = self.entry.page.name
-        text = self.strip_html_tags(self.entry.wikitext)
-        paragraph = self.find_paragraph("Worttrennung", text)
+        title = name
+        text = cls.strip_html_tags(wikitext)
+        paragraph = cls.find_paragraph("Worttrennung", text)
 
         if not paragraph:
             return
@@ -73,5 +75,9 @@ class ParseSyllables(Parser):
         if result:
             return result
 
+    @classmethod
+    def parse(cls, name: str, wikitext: str):
+        return cls.parse_syllables(name, wikitext)
+
     def run(self) -> ParseSyllablesResult:
-        return self.parse_syllables()
+        return self.parse(self.entry.page.name, self.entry.wikitext)

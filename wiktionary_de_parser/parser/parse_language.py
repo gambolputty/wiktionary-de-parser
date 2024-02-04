@@ -27,9 +27,10 @@ class ParseLanguage(Parser):
 
         return lang_name
 
-    def run(self) -> ParseLanuageResult:
+    @classmethod
+    def parse(cls, wikitext: str):
         result = {
-            "lang": self.parse_language(self.entry.wikitext),
+            "lang": cls.parse_language(wikitext),
             "lang_code": None,
         }
         if result["lang"]:
@@ -38,5 +39,10 @@ class ParseLanguage(Parser):
 
             if lang_lower in LANG_CODES:
                 result["lang_code"] = LANG_CODES[lang_lower]
+
+        return result
+
+    def run(self) -> ParseLanuageResult:
+        result = self.parse(self.entry.wikitext)
 
         return result

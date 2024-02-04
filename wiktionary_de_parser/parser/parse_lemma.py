@@ -29,6 +29,18 @@ class ParseLemma(Parser):
                 # remove "#" and everything after
                 return re.sub(r"\#.+", "", str(attribute.value))  # type: ignore
 
+    @classmethod
+    def parse(cls, page_name: str, wikitext: str):
+        found_lemma = page_name
+        inflected = False
+
+        parsed = cls.parse_lemma(wikitext)
+        if parsed:
+            found_lemma = parsed
+            inflected = True
+
+        return dict(lemma=found_lemma, inflected=inflected)
+
     def run(self) -> ParseLemmaResult:
         """
         Grundformverweis
@@ -43,12 +55,4 @@ class ParseLemma(Parser):
         https://de.wiktionary.org/wiki/Vorlage:Grundformverweis (deprecated)
         """
 
-        found_lemma = self.entry.page.name
-        inflected = False
-
-        parsed = self.parse_lemma(self.entry.wikitext)
-        if parsed:
-            found_lemma = parsed
-            inflected = True
-
-        return dict(lemma=found_lemma, inflected=inflected)
+        return self.parse(self.entry.page.name, self.entry.wikitext)
