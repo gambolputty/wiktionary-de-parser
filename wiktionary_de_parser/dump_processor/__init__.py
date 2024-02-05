@@ -10,24 +10,32 @@ from wiktionary_de_parser.models import WiktionaryPage
 
 # Credits: https://github.com/tatuylonen/wikitextprocessor/blob/958098c50df1a116ee5549f7e4d9352f349265d7/src/wikitextprocessor/dumpparser.py
 
-WIKTIONARY_DUMP_URL = "https://dumps.wikimedia.org/dewiktionary/latest/dewiktionary-latest-pages-articles-multistream.xml.bz2"  # noqa: E501
+DEFAULT_WIKTIONARY_DUMP_URL = "https://dumps.wikimedia.org/dewiktionary/latest/dewiktionary-latest-pages-articles-multistream.xml.bz2"  # noqa: E501
 
 
 class WiktionaryDump:
-    def __init__(self, dump_dir_path: Path | str):
-        self.dump_dir_path = Path(dump_dir_path)
-        self.dump_file_name = WIKTIONARY_DUMP_URL.split("/")[-1]
+    def __init__(
+        self,
+        dump_dir_path: Path | str | None = None,
+        dump_download_url: str = DEFAULT_WIKTIONARY_DUMP_URL,
+        dump_file_path: Path | str | None = None,
+    ):
+        self.dump_download_url = dump_download_url
 
-    # Computed property that returns the path to the dump file
-    @property
-    def dump_file_path(self):
-        return self.dump_dir_path / self.dump_file_name
+        if dump_file_path:
+            self.dump_file_path = Path(dump_file_path)
+        elif dump_dir_path:
+            dump_dir_path = Path(dump_dir_path)
+            self.dump_file_path = dump_dir_path / self.dump_download_url.split("/")[-1]
 
-    def download_latest_dump(self):
+            # Create dunp_dir_path if it does not exist
+            dump_dir_path.mkdir(parents=True, exist_ok=True)
+        else:
+            raise ValueError("Either dump_dir_path or dump_file_path must be provided.")
+
+    def download_dump(self):
         """
-        Download the latest dump of the German Wiktionary to
-        the directory specified by "dump_dir_path".
-        This will download "dewiktionary-latest-pages-articles-multistream.xml.bz2".
+        Download the dump file to the directory specified by "dump_dir_path".
         """
 
         # Check if dump file already exists
@@ -35,10 +43,7 @@ class WiktionaryDump:
             print("Dump file already exists.")
             return
 
-        # Create dunp_dir_path if it does not exist
-        self.dump_dir_path.mkdir(parents=True, exist_ok=True)
-
-        response = requests.get(WIKTIONARY_DUMP_URL, stream=True)
+        response = requests.get(self.dump_download_url, stream=True)
         total = int(response.headers.get("content-length", 0))
         bar = tqdm(
             total=total,

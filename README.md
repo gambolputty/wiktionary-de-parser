@@ -26,13 +26,23 @@ from wiktionary_de_parser.dump_processor import WiktionaryDump
 # Specify the directory where the dump file should be stored.
 dump = WiktionaryDump(dump_dir_path="directory-of-dump-file")
 
-# Download latest Wiktionary xml dump file.
 # This will download "dewiktionary-latest-pages-articles-multistream.xml.bz2" to
 # the directory specified in `dump_dir_path`.
-dump.download_latest_dump()
+dump.download_dump()
 
+# Alternatively you can also specify a different dump file to download.
+dump = WiktionaryDump(
+    dump_dir_path="directory-of-dump-file",
+    dump_download_url="url-to-dump-file.xml.bz2",
+)
+dump.download_dump()
+
+# If you already have the dump file, you can also specify the path to the file.
+dump = WiktionaryDump(dump_file_path="path-to-dump-file.xml.bz2")
+dump.download_dump()
+
+# Next, we can parse the dump file.
 parser = WiktionaryParser()
-
 for page in dump.pages():
     # Skip redirects
     if page.redirect_to:
