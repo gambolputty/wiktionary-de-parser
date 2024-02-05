@@ -35,7 +35,7 @@ dump = WiktionaryDump(
 )
 dump.download_dump()
 
-# If you already have the dump file, you can also specify the path to the file.
+# If you already have the dump file, you can specify the path to the file.
 dump = WiktionaryDump(dump_file_path="path-to-dump-file.xml.bz2")
 dump.download_dump()
 
