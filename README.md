@@ -17,8 +17,6 @@ Or with [Poetry](https://python-poetry.org/):
 
 ## Usage
 
-The following example will download the latest Wiktionary dump file ([from here](https://dumps.wikimedia.org/dewiktionary/latest)) and parse all German entries.
-
 ```python
 from wiktionary_de_parser import WiktionaryParser
 from wiktionary_de_parser.dump_processor import WiktionaryDump
