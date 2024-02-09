@@ -35,18 +35,12 @@ class WiktionaryParser:
                 module_name = child.stem  # Entfernen Sie die .py-Endung
                 spec = importlib.util.spec_from_file_location(module_name, child)
 
-                if not spec:
+                if not spec or not spec.loader:
                     raise Exception(f"Could not load {child}")
 
                 module = importlib.util.module_from_spec(spec)
-
-                if not module:
-                    raise Exception(f"Could not load {child}")
-
-                if not spec.loader:
-                    raise Exception(f"Could not load {child}")
-
                 spec.loader.exec_module(module)
+
                 for name, obj in inspect.getmembers(module):
                     if (
                         inspect.isclass(obj)
