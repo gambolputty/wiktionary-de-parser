@@ -34,7 +34,7 @@ ParseLanuageResult = Language
 ParseLemmaResult = Lemma
 ParsePosResult = dict[str, list[str]] | None
 ParseRhymesResult = list[str] | None
-ParseSyllablesResult = list[str] | None
+ParseHyphenationResult = list[str] | None
 
 
 class ParsedWiktionaryPageEntry(BaseModel):
@@ -45,4 +45,4 @@ class ParsedWiktionaryPageEntry(BaseModel):
     lemma: ParseLemmaResult
     pos: ParsePosResult
     rhymes: ParseRhymesResult
-    syllables: ParseSyllablesResult
+    hyphenation: ParseHyphenationResult

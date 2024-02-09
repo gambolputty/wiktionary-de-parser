@@ -1,4 +1,4 @@
-syllables_data = [
+hyphenation_data = [
     (
         "gesagt, getan",
         """

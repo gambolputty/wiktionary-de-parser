@@ -1,31 +1,31 @@
 import re
 
-from wiktionary_de_parser.models import ParseSyllablesResult
+from wiktionary_de_parser.models import ParseHyphenationResult
 from wiktionary_de_parser.parser import Parser
 
 
-class ParseSyllables(Parser):
+class ParseHyphenation(Parser):
 
     @classmethod
-    def parse_syllables(cls, name: str, wikitext: str):
+    def parse_hyphenation(cls, name: str, wikitext: str):
         """
-        Parse syllables below "{{Worttrennung}}"-template.
+        Parse hyphenation
+        "{{Worttrennung}}"-template.
 
         Problem:
-        Commas can be part of the title, but we don't know when they are and are not.
+        Commas can be part of the "title", but we don't know where they are and are not.
 
-        Commas are part of title:
+        Commas are part of "title":
             ge·sagt, ge·tan
-        Commas are not part of title:
+        Commas are not part of "title":
             zwan·zig, zwan·zi·ge
             In·tel·li·genz·quo·ti·ent; In·tel·li·genz·quo·ti·en·ten
 
         Solution:
-        Find title inside paragraph by determing start- and end-index and extract it with middle dots.
+        Find "title" inside paragraph by determing start- and end-index and extract it with middle dots.
 
         Reference: https://de.wiktionary.org/wiki/Hilfe:Worttrennung
         """
-        title = name
         text = cls.strip_html_tags(wikitext)
         paragraph = cls.find_paragraph("Worttrennung", text)
 
@@ -38,14 +38,14 @@ class ParseSyllables(Parser):
         title_index = 0
         start_index = -1
         end_index = -1
-        last_title_index = len(title) - 1
+        last_title_index = len(name) - 1
         last_paragraph_index = len(paragraph) - 1
         for index, char in enumerate(paragraph):
             # find index to start parsing from
             # test if title can be inserted from current index
             # remove mid dots for testing
             if start_index == -1:
-                if paragraph[index:].replace("·", "").startswith(title):
+                if paragraph[index:].replace("·", "").startswith(name):
                     start_index = index
                     end_index = index
                 continue
@@ -57,7 +57,7 @@ class ParseSyllables(Parser):
             title_index += 1
             if (
                 title_index >= last_title_index
-                or char != title[title_index]
+                or char != name[title_index]
                 or index == last_paragraph_index
             ):
                 end_index += 1
@@ -77,7 +77,7 @@ class ParseSyllables(Parser):
 
     @classmethod
     def parse(cls, name: str, wikitext: str):
-        return cls.parse_syllables(name, wikitext)
+        return cls.parse_hyphenation(name, wikitext)
 
-    def run(self) -> ParseSyllablesResult:
+    def run(self) -> ParseHyphenationResult:
         return self.parse(self.entry.page.name, self.entry.wikitext)

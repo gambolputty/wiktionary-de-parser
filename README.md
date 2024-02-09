@@ -4,7 +4,7 @@ A Python module to extract data from German Wiktionary XML files (for Python 3.1
 
 ## Features
 
-- Extracts flexion tables, IPA transcriptions, language, genus, lemma, part of speech information (basic) and syllables of a word.
+- Extracts _IPA transcriptions_, _hyphenation_, _language_, _part of speech_ information (basic), _genus_ and _flexion tables_ of a word.
 - Yields per entry, not per page (a page can have multiple entries/ words can have different meanings)
 
 ## Installation
@@ -80,7 +80,7 @@ ParsedWiktionaryPageEntry(
     lemma=Lemma(lemma="Abend", inflected=False),
     pos={"Substantiv": []},
     rhymes=["aːbn̩t"],
-    syllables=["Abend"],
+    hyphenation=["Abend"],
 )
 ParsedWiktionaryPageEntry(
     name="Abend",
@@ -90,7 +90,7 @@ ParsedWiktionaryPageEntry(
     lemma=Lemma(lemma="Abend", inflected=False),
     pos={"Substantiv": ["Nachname"]},
     rhymes=["aːbn̩t"],
-    syllables=["Abend"],
+    hyphenation=["Abend"],
 )
 ParsedWiktionaryPageEntry(
     name="Abend",
@@ -100,7 +100,7 @@ ParsedWiktionaryPageEntry(
     lemma=Lemma(lemma="Abend", inflected=False),
     pos={"Substantiv": ["Toponym"]},
     rhymes=["aːbn̩t"],
-    syllables=["Abend"],
+    hyphenation=["Abend"],
 )
 
 ```
