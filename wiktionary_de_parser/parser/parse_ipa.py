@@ -22,6 +22,7 @@ WANTED_TABLE_NAMES = [
 
 
 class ParseIpa(Parser):
+    name = "ipa"
 
     @staticmethod
     def parse_ipa_strings(parsed_paragraph: Wikicode):

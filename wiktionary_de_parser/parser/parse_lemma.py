@@ -8,6 +8,8 @@ from wiktionary_de_parser.parser import Parser
 
 
 class ParseLemma(Parser):
+    name = "lemma"
+
     @staticmethod
     def parse_lemma(text):
         match_template = re.search(r"({{Grundformverweis.+)", text)

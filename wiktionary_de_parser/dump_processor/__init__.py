@@ -40,7 +40,6 @@ class WiktionaryDump:
 
         # Check if dump file already exists
         if self.dump_file_path.exists():
-            print("Dump file already exists.")
             return
 
         response = requests.get(self.dump_download_url, stream=True)

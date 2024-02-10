@@ -116,6 +116,8 @@ if DEBUG is True:
 
 
 class ParsePos(Parser):
+    name = "pos"
+
     @staticmethod
     def find_pos(pos_names, text):
         result: dict[str, list[str]] = {}

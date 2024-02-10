@@ -18,6 +18,7 @@ WANTED_TABLE_NAMES = [
 
 
 class ParseFlexion(Parser):
+    name = "flexion"
 
     @staticmethod
     def find_table(text):

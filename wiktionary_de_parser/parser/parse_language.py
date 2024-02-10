@@ -16,6 +16,8 @@ with open(
 
 
 class ParseLanguage(Parser):
+    name = "language"
+
     @staticmethod
     def parse_language(text: str):
         match_lang = re.search(r"=== ?{{Wortart\|[^}|]+\|([^}|]+)(?:\|[^}|]+)*}}", text)

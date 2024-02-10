@@ -9,6 +9,8 @@ from wiktionary_de_parser.parser import Parser
 
 
 class ParseRhymes(Parser):
+    name = "rhymes"
+
     @staticmethod
     def parse_rhymes(parsed_paragraph: Wikicode):
         found_rhymes: list[str] = []

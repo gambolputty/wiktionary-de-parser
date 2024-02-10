@@ -19,7 +19,7 @@ class WiktionaryPageEntry(BaseModel):
 
 
 class Language(BaseModel):
-    lang: str
+    lang: str | None
     lang_code: str | None
 
 
@@ -39,10 +39,10 @@ ParseHyphenationResult = list[str] | None
 
 class ParsedWiktionaryPageEntry(BaseModel):
     name: str
+    hyphenation: ParseHyphenationResult
     flexion: ParseFlexionResult
     ipa: ParseIpaResult
     language: ParseLanuageResult
     lemma: ParseLemmaResult
     pos: ParsePosResult
     rhymes: ParseRhymesResult
-    hyphenation: ParseHyphenationResult

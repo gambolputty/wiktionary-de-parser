@@ -17,53 +17,58 @@ Or with [Poetry](https://python-poetry.org/):
 
 ## Usage
 
+### Loading the XML dump file
 ```python
 from wiktionary_de_parser import WiktionaryParser
 from wiktionary_de_parser.dump_processor import WiktionaryDump
 
-# Specify the directory where the dump file should be stored.
+# To download the dump file, specify the directory where the
+# dump file should be stored.
 dump = WiktionaryDump(dump_dir_path="directory-of-dump-file")
 
 # This will download "dewiktionary-latest-pages-articles-multistream.xml.bz2" to
 # the directory specified in `dump_dir_path`.
 dump.download_dump()
 
-# Alternatively you can also specify a different dump file to download.
+# Alternatively you can specify a different dump file to download.
 dump = WiktionaryDump(
     dump_dir_path="directory-of-dump-file",
     dump_download_url="url-to-dump-file.xml.bz2",
 )
 dump.download_dump()
 
-# If you already have the dump file, you can specify the path to the file.
+# If you already have the dump file locally, specify the path to the file.
 dump = WiktionaryDump(dump_file_path="path-to-dump-file.xml.bz2")
 dump.download_dump()
+```
 
-# Next, we can parse the dump file.
+### Parsing the dump file
+```python
+from pprint import pprint
+from wiktionary_de_parser import WiktionaryParser
+
+# ... (see above)
+
 parser = WiktionaryParser()
+
 for page in dump.pages():
-    # Skip redirects
     if page.redirect_to:
         continue
 
-    for entry in parser.entries_from_page(page):
-        parsed = parser.parse_entry(entry)
-
-       #  Ignore non-German entries
-       if parsed.language.lang_code != "de":
-            continue
-
-        # do something with "parsed
-        ...
-
+    if page.name == "Abend":
+        for entry in parser.entries_from_page(page):
+            results = parser.parse_entry(entry)
+            pprint(results)
+        break
 ```
 
 ## Output
-All entries for "Abend":
+All page entries for "Abend":
 
 ```python
 ParsedWiktionaryPageEntry(
     name="Abend",
+    hyphenation=["Abend"],
     flexion={
         "Genus": "m",
         "Nominativ Singular": "Abend",
@@ -80,27 +85,26 @@ ParsedWiktionaryPageEntry(
     lemma=Lemma(lemma="Abend", inflected=False),
     pos={"Substantiv": []},
     rhymes=["aːbn̩t"],
-    hyphenation=["Abend"],
 )
 ParsedWiktionaryPageEntry(
     name="Abend",
+    hyphenation=["Abend"],
     flexion=None,
     ipa=["ˈaːbn̩t"],
     language=Language(lang="Deutsch", lang_code="de"),
     lemma=Lemma(lemma="Abend", inflected=False),
     pos={"Substantiv": ["Nachname"]},
     rhymes=["aːbn̩t"],
-    hyphenation=["Abend"],
 )
 ParsedWiktionaryPageEntry(
     name="Abend",
+    hyphenation=["Abend"],
     flexion=None,
     ipa=["ˈaːbn̩t", "ˈaːbm̩t"],
     language=Language(lang="Deutsch", lang_code="de"),
     lemma=Lemma(lemma="Abend", inflected=False),
     pos={"Substantiv": ["Toponym"]},
     rhymes=["aːbn̩t"],
-    hyphenation=["Abend"],
 )
 
 ```

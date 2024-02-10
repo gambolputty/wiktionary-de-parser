@@ -78,7 +78,7 @@ class WiktionaryParser:
 
     def parse_entry(self, wiktionary_entry: WiktionaryPageEntry):
         """
-        Parses the HTML text.
+        Parses the each entry of a page.
         """
         results = dict()
 

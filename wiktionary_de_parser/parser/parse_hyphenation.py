@@ -5,6 +5,7 @@ from wiktionary_de_parser.parser import Parser
 
 
 class ParseHyphenation(Parser):
+    name = "hyphenation"
 
     @classmethod
     def parse_hyphenation(cls, name: str, wikitext: str):
