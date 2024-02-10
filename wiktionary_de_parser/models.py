@@ -1,5 +1,4 @@
-from mwparserfromhell.wikicode import Wikicode
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
 
 class WiktionaryPage(BaseModel):
@@ -13,9 +12,6 @@ class WiktionaryPageEntry(BaseModel):
     page: WiktionaryPage
     index: int
     wikitext: str
-    wikicode: Wikicode
-
-    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class Language(BaseModel):

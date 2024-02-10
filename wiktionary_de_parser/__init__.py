@@ -4,8 +4,6 @@ import re
 from pathlib import Path
 from typing import Type
 
-import mwparserfromhell
-
 from wiktionary_de_parser.models import (
     ParsedWiktionaryPageEntry,
     WiktionaryPage,
@@ -73,20 +71,18 @@ class WiktionaryParser:
                 page=page,
                 index=index,
                 wikitext=entry,
-                wikicode=mwparserfromhell.parse(entry),
             )
 
     def parse_entry(self, wiktionary_entry: WiktionaryPageEntry):
         """
         Parses an entry of a page.
         """
-        results = dict()
 
-        # Instantiate all subclasses
-        instances = [subclass(wiktionary_entry) for subclass in self.parser_classes]
-
-        # Run all instances
-        results = {instance.name: instance.run() for instance in instances}
+        # Instantiate all subclasses and run them
+        results = {
+            (instance := subclass(wiktionary_entry)).name: instance.run()
+            for subclass in self.parser_classes
+        }
 
         # Add the page name
         results["name"] = wiktionary_entry.page.name
