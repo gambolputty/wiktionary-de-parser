@@ -78,18 +78,17 @@ class WiktionaryParser:
 
     def parse_entry(self, wiktionary_entry: WiktionaryPageEntry):
         """
-        Parses the each entry of a page.
+        Parses an entry of a page.
         """
         results = dict()
-
-        # Add the page name
-        results["name"] = wiktionary_entry.page.name
 
         # Instantiate all subclasses
         instances = [subclass(wiktionary_entry) for subclass in self.parser_classes]
 
         # Run all instances
-        for instance in instances:
-            results[instance.name] = instance.run()
+        results = {instance.name: instance.run() for instance in instances}
+
+        # Add the page name
+        results["name"] = wiktionary_entry.page.name
 
         return ParsedWiktionaryPageEntry(**results)
