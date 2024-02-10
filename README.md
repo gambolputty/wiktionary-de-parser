@@ -52,10 +52,12 @@ from wiktionary_de_parser import WiktionaryParser
 parser = WiktionaryParser()
 
 for page in dump.pages():
+    # Skip redirects
     if page.redirect_to:
         continue
 
     if page.name == "Abend":
+        # Parse all entries for "Abend"
         for entry in parser.entries_from_page(page):
             results = parser.parse_entry(entry)
             pprint(results)
