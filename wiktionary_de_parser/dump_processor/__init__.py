@@ -125,7 +125,7 @@ class WiktionaryDump:
         namespace_ids = {0}  # see https://de.wiktionary.org/wiki/Hilfe:Namensr%C3%A4ume
 
         with self.decompress_dump_file(self.dump_file_path) as p:
-            namespace_str = "http://www.mediawiki.org/xml/export-0.10/"
+            namespace_str = "http://www.mediawiki.org/xml/export-0.11/"
             namespaces = {None: namespace_str}
 
             for _, page_element in etree.iterparse(
