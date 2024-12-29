@@ -15,7 +15,10 @@ class Parser:
 
     @staticmethod
     def find_paragraph(heading: str, wikitext: str) -> str | None:
-        pattern = re.compile(r"{{" + heading + r"}}\n((?:[^\n][\n]?)+)")
+        pattern = re.compile(
+            r"{{" + re.escape(heading) + r"}}\n(.*?)(?=\n{{|\Z)", re.DOTALL
+        )
+
         match = re.search(pattern, wikitext)
 
         return match.group(1) if match is not None else None

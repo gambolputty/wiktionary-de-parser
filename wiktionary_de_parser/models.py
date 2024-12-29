@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic import BaseModel
 
 
@@ -31,6 +33,7 @@ ParseLemmaResult = Lemma
 ParsePosResult = dict[str, list[str]] | None
 ParseRhymesResult = list[str] | None
 ParseHyphenationResult = list[str] | None
+ParseMeaningsResults = Any
 
 
 class ParsedWiktionaryPageEntry(BaseModel):
@@ -42,3 +45,4 @@ class ParsedWiktionaryPageEntry(BaseModel):
     lemma: ParseLemmaResult
     pos: ParsePosResult
     rhymes: ParseRhymesResult
+    meanings: ParseMeaningsResults
