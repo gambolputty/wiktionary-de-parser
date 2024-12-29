@@ -35,7 +35,7 @@ TEMPLATE_NAME_MAPPING = {
 }
 
 LEADING_DASH_PATTERN = re.compile(r"^— ")
-NUMBERED_LIST_PATTERN = re.compile(r"^\[\d+[a-z]?\] ")
+NUMBERED_LIST_PATTERN = re.compile(r"^\[(?:\d+(?:\.\d+)*[a-z]?|[a-z])\] ")
 
 """
 TODO:

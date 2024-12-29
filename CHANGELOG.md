@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.2] - 2024-12-30
+### Changed
+- Update dependencies
+- Improved meanings parsing (WIP)
+
 ## [0.12.1] - 2024-12-30
 ### Added
 - Parse meanings and add "meanings" field to output, when `include_meanings`-param ist True in `parse_entry`-call.
