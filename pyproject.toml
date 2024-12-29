@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "wiktionary-de-parser"
-version = "0.12.0"
+version = "0.12.1"
 description = "Extracts data from German Wiktionary dump files."
 authors = ["Gregor Weichbrodt <gregorweichbrodt@gmail.com>"]
 license = "MIT"
@@ -39,6 +39,7 @@ black = "*"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.0"
+ipywidgets = "^8.1.5"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

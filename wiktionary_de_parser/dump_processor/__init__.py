@@ -26,12 +26,16 @@ class WiktionaryDump:
             self.dump_file_path = Path(dump_file_path)
         elif dump_dir_path:
             dump_dir_path = Path(dump_dir_path)
-            self.dump_file_path = dump_dir_path / self.dump_download_url.split("/")[-1]
+            self.dump_file_path = (
+                dump_dir_path / self.dump_download_url.split("/")[-1]
+            )
 
             # Create dunp_dir_path if it does not exist
             dump_dir_path.mkdir(parents=True, exist_ok=True)
         else:
-            raise ValueError("Either dump_dir_path or dump_file_path must be provided.")
+            raise ValueError(
+                "Either dump_dir_path or dump_file_path must be provided."
+            )
 
     def download_dump(self):
         """
@@ -74,7 +78,7 @@ class WiktionaryDump:
             raise ValueError("Dump file extension is not .bz2")
 
     @staticmethod
-    def process_data(
+    def process_page_data(
         page_element, namespaces: dict[None, str], namespace_ids: set[int]
     ):
         page_id = int(page_element.findtext("id", "", namespaces))
@@ -90,7 +94,9 @@ class WiktionaryDump:
         model = page_element.findtext("revision/model", "", namespaces)
 
         if (
-            redirect_element := page_element.find("redirect", namespaces=namespaces)
+            redirect_element := page_element.find(
+                "redirect", namespaces=namespaces
+            )
         ) is not None:
             redirect_to = redirect_element.get("title", "")
             # redirect_to existing implies a redirection, but having a
@@ -122,7 +128,9 @@ class WiktionaryDump:
                 "Please download the dump file first."
             )
 
-        namespace_ids = {0}  # see https://de.wiktionary.org/wiki/Hilfe:Namensr%C3%A4ume
+        namespace_ids = {
+            0
+        }  # see https://de.wiktionary.org/wiki/Hilfe:Namensr%C3%A4ume
 
         with self.decompress_dump_file(self.dump_file_path) as p:
             namespace_str = "http://www.mediawiki.org/xml/export-0.11/"
@@ -131,7 +139,9 @@ class WiktionaryDump:
             for _, page_element in etree.iterparse(
                 p.stdout, tag=f"{{{namespace_str}}}page"
             ):
-                page = self.process_data(page_element, namespaces, namespace_ids)
+                page = self.process_page_data(
+                    page_element, namespaces, namespace_ids
+                )
 
                 if not page:
                     continue

@@ -22,7 +22,7 @@ class WiktionaryParser:
     def find_parser_classes():
         path = Path(__file__).parent / "parser"
         parent_class = Parser
-        classes = []
+        classes: list[Type[Parser]] = []
 
         for child in path.iterdir():
             if (
@@ -31,7 +31,9 @@ class WiktionaryParser:
                 and child.name != "__init__.py"
             ):
                 module_name = child.stem  # Entfernen Sie die .py-Endung
-                spec = importlib.util.spec_from_file_location(module_name, child)
+                spec = importlib.util.spec_from_file_location(
+                    module_name, child
+                )
 
                 if not spec or not spec.loader:
                     raise Exception(f"Could not load {child}")
@@ -73,15 +75,21 @@ class WiktionaryParser:
                 wikitext=entry,
             )
 
-    def parse_entry(self, wiktionary_entry: WiktionaryPageEntry):
+    def parse_entry(
+        self,
+        wiktionary_entry: WiktionaryPageEntry,
+        include_meanings: bool = False,
+    ):
         """
         Parses an entry of a page.
         """
 
         # Instantiate all subclasses and run them
         results = {
-            (instance := subclass(wiktionary_entry)).name: instance.run()
+            instance.name: instance.run()
             for subclass in self.parser_classes
+            if (instance := subclass(wiktionary_entry))
+            and (include_meanings or instance.name != "meanings")
         }
 
         # Add the page name

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import TypedDict
 
 from pydantic import BaseModel
 
@@ -33,7 +33,15 @@ ParseLemmaResult = Lemma
 ParsePosResult = dict[str, list[str]] | None
 ParseRhymesResult = list[str] | None
 ParseHyphenationResult = list[str] | None
-ParseMeaningsResults = Any
+
+
+class MeaningDict(TypedDict, total=False):
+    text: str
+    tags: list[str]
+    sublist: list["MeaningDict"]
+
+
+ParseMeaningsResults = list[MeaningDict] | None
 
 
 class ParsedWiktionaryPageEntry(BaseModel):
@@ -45,4 +53,4 @@ class ParsedWiktionaryPageEntry(BaseModel):
     lemma: ParseLemmaResult
     pos: ParsePosResult
     rhymes: ParseRhymesResult
-    meanings: ParseMeaningsResults
+    meanings: ParseMeaningsResults | None = None

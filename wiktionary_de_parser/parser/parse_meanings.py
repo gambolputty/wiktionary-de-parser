@@ -3,10 +3,9 @@ from dataclasses import dataclass
 
 import wikitextparser as wtp
 
-from wiktionary_de_parser.models import ParseMeaningsResults
+from wiktionary_de_parser.models import MeaningDict, ParseMeaningsResults
 from wiktionary_de_parser.parser import Parser
 
-SKIP_TAGS = {"ref", "br", "hr", "nowiki", "syntaxhighlight"}
 TEMPLATE_NAME_MAPPING = {
     "kPl.": "kein Plural",
     "übertr.": "übertragen",
@@ -35,6 +34,9 @@ TEMPLATE_NAME_MAPPING = {
     "landsch.": "landschaftlich",
 }
 
+LEADING_DASH_PATTERN = re.compile(r"^— ")
+NUMBERED_LIST_PATTERN = re.compile(r"^\[\d+[a-z]?\] ")
+
 """
 TODO:
     Vorlage "Üt" (Übersetzung) -> https://de.wiktionary.org/wiki/Vorlage:%C3%9Ct
@@ -42,183 +44,87 @@ TODO:
 """
 
 
-# def parse_tag(tag: Tag):
-#     if str(tag.tag).lower() in SKIP_TAGS:
-#         return None
-
-#     if tag.tag == "sup" or tag.tag == "sub" or tag.tag == "math":
-#         return str(tag)
-
-#     return tag.contents.strip_code()
-
-
-# def parse_k_template(template: Template):
-#     """
-#     Reference: https://de.wiktionary.org/wiki/Vorlage:K
-
-#     """
-#     params = [param.value.strip_code() for param in template.params]
-
-#     return params
-
-
-# def parse_ü_template(template: Template):
-#     """
-#     Reference: https://de.wiktionary.org/wiki/Vorlage:%C3%9C
-
-#     """
-#     if len(template.params) == 3:
-#         return template.params[2].strip_code()
-
-#     return template.params[1].strip_code()
-
-
-# def parse_template(template: Template):
-#     template_name = template.name.strip_code()
-
-#     if template_name == "K":
-#         return parse_k_template(template)
-#     elif template_name == "Ü":
-#         return parse_ü_template(template)
-#     elif template_name == "QS Bedeutungen":
-#         # Template indicating that the meaning is missing references
-#         return None
-#     else:
-#         # Check if the template is a mapping
-#         if template_name in TEMPLATE_NAME_MAPPING:
-#             return TEMPLATE_NAME_MAPPING[template_name]
-
-#     return None
-
-
-# def parse_list_item(nodes: list[Node]):
-#     """
-#     Possible types of nodes:
-#         mwparserfromhell.nodes.tag.Tag
-#         mwparserfromhell.nodes.template.Template
-#         mwparserfromhell.nodes.text.Text
-#         mwparserfromhell.nodes.wikilink.Wikilink
-
-#     Possible templates:
-#         K
-#     """
-#     result = []
-
-#     for node in nodes:
-#         if isinstance(node, Tag):
-#             parsed_tag = parse_tag(node)
-#             if parsed_tag:
-#                 result.append(parsed_tag)
-
-#         elif isinstance(node, Template):
-#             parsed_template = parse_template(node)
-#             if parsed_template:
-#                 result.append(parsed_template)
-
-#         elif isinstance(node, Text):
-#             result.append(node.value)
-#         elif isinstance(node, Wikilink):
-#             result.append(node.title)
-#         else:
-#             raise NotImplementedError(
-#                 f"Node type {type(node)} is not implemented"
-#             )
-
-#     return result
-
-
 class WikiListItem:
-    tags: list[str] | None
-    text: str | None
-    sublist: "WikiList"
-    pattern: str
-
-    # ol_pattern = "[:;]"
-    # ul_pattern = "\\*"
+    __slots__ = ["tags", "text", "sublist", "pattern"]
 
     def __init__(
         self, wikitext: str, pattern: str, sublist: "WikiList | None"
     ) -> None:
+        parsed_wikitext = wtp.parse(wikitext)
+
         self.pattern = pattern
-
-        if isinstance(wikitext, str):
-            self.text = self.parse_text(wikitext)
-            self.tags = self.parse_templates(wikitext)
-
-        if isinstance(sublist, WikiList):
-            self.sublist = sublist
+        self.text = self.parse_text(parsed_wikitext)
+        self.tags = self.parse_templates(parsed_wikitext)
+        self.sublist = sublist
 
     @staticmethod
-    def parse_text(wikitext: str):
-        text = wtp.parse(wtp.remove_markup(wikitext)).plain_text()
+    def parse_text(parsed_wikitext: wtp.WikiText) -> str:
+        text = parsed_wikitext.plain_text()
 
-        # Remove leading marker symbols
-        # "— "
-        text = text.lstrip("— ")
+        text = LEADING_DASH_PATTERN.sub("", text)
+        text = NUMBERED_LIST_PATTERN.sub("", text)
 
-        # Followed by a space: [1], [2], [3], [5a], [5b] ...
-        text = re.sub(r"^\[\d+[a-z]?\] ", "", text)
-
-        return text
+        return text.strip()
 
     @staticmethod
-    def parse_templates(wikitext: str) -> list[str] | None:
+    def parse_templates(parsed_wikitext: wtp.WikiText) -> list[str] | None:
         """
         Reference: https://de.wiktionary.org/wiki/Vorlage:K
 
         """
-        templates = wtp.parse(wikitext).templates
+        templates = parsed_wikitext.templates
 
-        # parse k-templates
-        k_templates = [
-            tmplt.arguments for tmplt in templates if tmplt.name == "K"
-        ]
+        if not templates:
+            return None
 
-        # make k_templates a flat list of values
-        k_template_values = [
-            item.value for sublist in k_templates for item in sublist
-        ]
+        # Optimierte Template-Verarbeitung
+        result = []
+        for template in templates:
+            if template.name == "K":
+                # Flatten arguments direkt beim Einlesen
+                result.extend(arg.value for arg in template.arguments)
+            else:
+                result.append(template.name)
 
-        # parse other templates
-        other_templates = [tmplt.name for tmplt in templates]
+        # Mapping nur auf das finale Ergebnis anwenden
+        return [TEMPLATE_NAME_MAPPING.get(tag, tag) for tag in result]
 
-        return k_template_values + other_templates
-
-    def to_string(self, indent: int = 0) -> str:
-        """Convert the list item and its sublist to a string representation."""
-        indent_str = "  " * indent
-        text_parts = []
-
-        if self.tags:
-            tags_str = f"[{', '.join(self.tags)}]"
-            text_parts.append(tags_str)
+    def export(self) -> MeaningDict:
+        result: MeaningDict = {}
 
         if self.text:
-            text_parts.append(self.text)
+            result["text"] = self.text
 
-        text = " ".join(text_parts)
-        result = [f"{indent_str}• {text}"]
+        if self.tags:
+            result["tags"] = self.tags
 
-        if hasattr(self, "sublist") and self.sublist:
-            result.append(self.sublist.to_string(indent + 1))
+        if self.sublist:
+            result["sublist"] = self.sublist.export()
 
-        return "\n".join(result)
+        return result
 
 
 @dataclass(slots=True)
 class WikiList:
     items: list[WikiListItem]
 
-    def to_string(self, indent: int = 0) -> str:
-        """Convert the entire list to a string representation."""
-        return "\n".join(item.to_string(indent) for item in self.items)
+    def export(self) -> list[MeaningDict]:
+        return [item.export() for item in self.items]
 
 
 class ParseMeanings(Parser):
     name = "meanings"
 
     @classmethod
-    def parse_wiki_list(cls, wiki_lists: list[wtp.WikiList]):
+    def parse_wiki_list(cls, wiki_lists: list[wtp.WikiList]) -> WikiList | None:
+        """
+        List items might have empty text and tags, but a sublist.
+        Example: https://de.wiktionary.org/wiki/Skizze
+
+        Lists could have a depth of 3 (or more?)
+        Example: https://de.wiktionary.org/wiki/wegen
+        """
+
         list_items: list[WikiListItem] = []
 
         for wiki_list in wiki_lists:
@@ -231,27 +137,27 @@ class ParseMeanings(Parser):
                     cls.parse_wiki_list(sublists) if sublists else None
                 )
                 new_item = WikiListItem(
-                    raw_list_item, wiki_list.pattern, sublist_parsed
+                    wikitext=raw_list_item,
+                    pattern=wiki_list.pattern,
+                    sublist=sublist_parsed,
                 )
-
-                # Check cases where fields are missing
-                # if not new_item.text and not new_item.tags:
-                #     continue
 
                 # Check if last list item has pattern '\\*' and current new_item has not that pattern. If so, add new_item to
                 # the sublist of the last list item
+                last_item = list_items[-1] if list_items else None
                 if (
                     list_items
-                    and list_items[-1].pattern == "\\*"
+                    and last_item
+                    and last_item.pattern == "\\*"
                     and new_item.pattern != "\\*"
                 ):
-                    if not hasattr(list_items[-1], "sublist"):
-                        list_items[-1].sublist = WikiList(items=[])
-                    list_items[-1].sublist.items.append(new_item)
+                    if not last_item.sublist:
+                        last_item.sublist = WikiList(items=[])
+                    last_item.sublist.items.append(new_item)
                 else:
                     list_items.append(new_item)
 
-        return WikiList(items=list_items)
+        return WikiList(items=list_items) if list_items else None
 
     @classmethod
     def parse_meanings(cls, parsed_paragraph: wtp.WikiText):
@@ -272,7 +178,7 @@ class ParseMeanings(Parser):
         if parsed_paragraph:
             meanings = cls.parse_meanings(parsed_paragraph)
             if meanings:
-                result = meanings
+                result = meanings.export()
 
         return result
 
@@ -284,3 +190,37 @@ class ParseMeanings(Parser):
             result = self.parse(paragraph)
 
         return result
+
+
+def format_meaning_dict(meaning_dict: MeaningDict, level: int = 0) -> str:
+    lines = []
+    indent = "  " * level
+
+    # Handle main text with bullet point
+    text = meaning_dict.get("text", "").strip()
+    if text:
+        lines.append(f"{indent}• {text}")
+
+    # Handle tags right after the text
+    if "tags" in meaning_dict and meaning_dict["tags"]:
+        tags_str = ", ".join(meaning_dict["tags"])
+        # If there was no text, add bullet point with tags
+        if not text:
+            lines.append(f"{indent}• [{tags_str}]")
+        else:
+            # Add tags to the last line
+            if lines:
+                lines[-1] = f"{lines[-1]} [{tags_str}]"
+
+    # Handle sublist with increased indentation
+    if "sublist" in meaning_dict:
+        for sub_item in meaning_dict["sublist"]:
+            lines.append(format_meaning_dict(sub_item, level + 1))
+
+    return "\n".join(lines)
+
+
+def format_meanings(meanings: ParseMeaningsResults) -> str:
+    if not meanings:
+        return ""
+    return "\n".join(format_meaning_dict(m) for m in meanings)
