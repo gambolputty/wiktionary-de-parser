@@ -219,6 +219,7 @@ IGNORED_K_PARAMS = {
     "Prä",
     "Kas",
 }
+IGNORED_TEMPLATES = {"WP"}
 LEADING_DASH_PATTERN = re.compile(r"^— ")
 NUMBERED_LIST_PATTERN = re.compile(r"^\[(?:\d+(?:\.\d+)*[a-z]?|[a-z])\] ")
 PAREN_MATCH_PATTERN = re.compile(r"^\s*\(([^)]+)\)\s*(.+)")
@@ -255,7 +256,9 @@ class WikiListItem:
             if name == "K":
                 return ""
 
-            if name.startswith(("QS", "Ref-", "Lit-")):
+            if name in IGNORED_TEMPLATES or name.startswith(
+                ("QS", "Ref-", "Lit-")
+            ):
                 return ""
 
             return TEMPLATE_NAME_MAPPING.get(template.name, template.name)
@@ -270,7 +273,7 @@ class WikiListItem:
         return text.strip()
 
     @staticmethod
-    def sanitize_template_name(text: str) -> str:
+    def sanitize_template_name(text: str) -> str | None:
         """
         Sanitize the tag by removing unwanted characters.
         """
@@ -300,6 +303,9 @@ class WikiListItem:
         """
 
         text = text.strip()
+
+        if len(text) > 50 or len(text) < 2:
+            return None
 
         return TEMPLATE_NAME_MAPPING.get(text, text)
 
@@ -393,7 +399,7 @@ class WikiListItem:
                 parts = [text[:i], text[i + 1 :]]
                 break
 
-        if len(parts) == 2 and len(parts[0]) <= 50:
+        if len(parts) == 2:
             before_colon, after_colon = parts[0].strip(), parts[1].strip()
 
             # Extrahiere Tags und handle verschachtelte Klammern
