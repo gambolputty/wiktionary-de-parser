@@ -32,6 +32,7 @@ TEMPLATE_NAME_MAPPING = {
     "abw.": "abwertend",
     "scherzh.": "scherzhaft",
     "landsch.": "landschaftlich",
+    "bildungsspr.": "bildungssprachlich",
 }
 
 LEADING_DASH_PATTERN = re.compile(r"^— ")
@@ -61,7 +62,7 @@ TODO:
 
 
 class WikiListItem:
-    __slots__ = ["tags", "text", "sublist", "pattern"]
+    __slots__ = ["tags", "raw_tags", "text", "sublist", "pattern"]
 
     def __init__(
         self, wikitext: str, pattern: str, sublist: "WikiList | None"
@@ -71,6 +72,7 @@ class WikiListItem:
         self.pattern = pattern
         self.text = self.parse_text(parsed_wikitext)
         self.tags = self.parse_templates(parsed_wikitext)
+        self.raw_tags, self.text = self.parse_raw_tags(self.text)
         self.sublist = sublist
 
     @staticmethod
@@ -87,6 +89,9 @@ class WikiListItem:
         """
         Reference: https://de.wiktionary.org/wiki/Vorlage:K
 
+
+        TODO: fußnote?? https://de.wiktionary.org/wiki/Bifurkation
+
         """
         templates = parsed_wikitext.templates
 
@@ -98,17 +103,46 @@ class WikiListItem:
         for template in templates:
             if template.name == "K":
                 # Flatten arguments direkt beim Einlesen
-                result.extend(
+                new_tags = [
                     arg.value
                     for arg in template.arguments
                     if arg.name not in IGNORED_TAG_NAMES
                     and arg.value not in IGNORED_TAG_VALUES
-                )
+                ]
+                if new_tags:
+                    result.extend(new_tags)
             else:
                 result.append(template.name)
 
         # Mapping nur auf das finale Ergebnis anwenden
         return [TEMPLATE_NAME_MAPPING.get(tag, tag) for tag in result]
+
+    @staticmethod
+    def parse_raw_tags(text: str) -> tuple[list[str] | None, str]:
+        """
+        When the text starts with one or few words before a colon, it is considered as tags.
+        Returns a tuple of (tags, remaining_text) where tags is the list of tags before the colon and remaining_text is the text after the colon.
+        """
+        if not text:
+            return None, text
+
+        if ":" not in text:
+            return None, text
+
+        # Split the text by colon
+        parts = text.split(":", 1)
+        tags = None
+        remaining_text = text
+
+        if len(parts) > 1:
+            # starting text should not be too long
+            if len(parts[0]) > 50:
+                return None, text
+
+            tags = parts[0].split(", ")
+            remaining_text = parts[1].strip()
+
+        return tags, remaining_text
 
     def export(self) -> MeaningDict:
         result: MeaningDict = {}
@@ -118,6 +152,9 @@ class WikiListItem:
 
         if self.tags:
             result["tags"] = self.tags
+
+        if self.raw_tags:
+            result["raw_tags"] = self.raw_tags
 
         if self.sublist:
             result["sublist"] = self.sublist.export()
@@ -225,21 +262,27 @@ def format_meaning_dict(meaning_dict: MeaningDict, level: int = 0) -> str:
     lines = []
     indent = "  " * level
 
-    # Handle main text with bullet point
-    text = meaning_dict.get("text", "").strip()
-    if text:
-        lines.append(f"{indent}• {text}")
+    # Erstelle die Grundzeile mit Bullet Point
+    current_line = f"{indent}• "
 
-    # Handle tags right after the text
+    # Füge zuerst raw_tags hinzu
+    if "raw_tags" in meaning_dict and meaning_dict["raw_tags"]:
+        raw_tags_str = ", ".join(meaning_dict["raw_tags"])
+        current_line += f"<{raw_tags_str}> "
+
+    # Füge dann tags hinzu
     if "tags" in meaning_dict and meaning_dict["tags"]:
         tags_str = ", ".join(meaning_dict["tags"])
-        # If there was no text, add bullet point with tags
-        if not text:
-            lines.append(f"{indent}• [{tags_str}]")
-        else:
-            # Add tags to the last line
-            if lines:
-                lines[-1] = f"{lines[-1]} [{tags_str}]"
+        current_line += f"[{tags_str}] "
+
+    # Füge den Haupttext hinzu
+    text = meaning_dict.get("text", "").strip()
+    if text:
+        current_line += text
+
+    # Füge die Zeile nur hinzu, wenn sie mehr als den Bullet Point enthält
+    if len(current_line) > len(f"{indent}• "):
+        lines.append(current_line.rstrip())
 
     # Handle sublist with increased indentation
     if "sublist" in meaning_dict:

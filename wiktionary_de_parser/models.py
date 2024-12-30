@@ -1,6 +1,5 @@
-from typing import TypedDict
-
 from pydantic import BaseModel
+from typing_extensions import TypedDict
 
 
 class WiktionaryPage(BaseModel):
@@ -38,6 +37,7 @@ ParseHyphenationResult = list[str] | None
 class MeaningDict(TypedDict, total=False):
     text: str
     tags: list[str]
+    raw_tags: list[str]
     sublist: list["MeaningDict"]
 
 
