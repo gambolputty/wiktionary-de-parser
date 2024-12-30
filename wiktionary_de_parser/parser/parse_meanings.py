@@ -6,6 +6,9 @@ import wikitextparser as wtp
 from wiktionary_de_parser.models import MeaningDict, ParseMeaningsResults
 from wiktionary_de_parser.parser import Parser
 
+# Reference:
+# - https://de.wiktionary.org/wiki/Vorlage:K
+# - https://de.wiktionary.org/wiki/Vorlage:K/Abk
 TEMPLATE_NAME_MAPPING = {
     "kPl.": "kein Plural",
     "übertr.": "übertragen",
@@ -33,11 +36,177 @@ TEMPLATE_NAME_MAPPING = {
     "scherzh.": "scherzhaft",
     "landsch.": "landschaftlich",
     "bildungsspr.": "bildungssprachlich",
+    "Abl.": "mit Ablativ",
+    "Ablativ": "mit Ablativ",
+    "AE": "US-amerikanisch",
+    "AmE": "US-amerikanisch",
+    "Akkusativ": "mit Akkusativ",
+    "alemann.": "alemannisch",
+    "alemannisch": "alemannisch",
+    "allg.": "allgemein",
+    "allgemein": "allgemein",
+    "alltagsspr.": "alltagssprachlich",
+    "amtsspr.": "amtssprachlich",
+    "ansonsten": "ansonsten",
+    "attr.": "attributiv",
+    "auch": "auch",
+    "bair.": "bairisch",
+    "bairisch": "bairisch",
+    "bar.": "bairisch",
+    "BrE": "britisch",
+    "Bedva.": "veraltete Bedeutung",
+    "Bedvatd.": "veraltende Bedeutung",
+    "bei": "bei",
+    "bes.": "besonders",
+    "besonders": "besonders",
+    "beziehungsweise": "beziehungsweise",
+    "bzw.": "beziehungsweise",
+    "bis": "bis",
+    "bisweilen": "bisweilen",
+    "das": "das",
+    "Dativ": "mit Dativ",
+    "DDR": "DDR",
+    "der": "der",
+    "dichter.": "dichterisch",
+    "die": "die",
+    "Dim.": "Diminutiv",
+    "Dimin.": "Diminutiv",
+    "Diminutiv": "Diminutiv",
+    "eher": "eher",
+    "erzg.": "erzgebirgisch",
+    "erzgeb.": "erzgebirgisch",
+    "erzgebirgisch": "erzgebirgisch",
+    "euph.": "euphemistisch",
+    "fam.": "familiär",
+    "fig": "figürlich",
+    "fig.": "figurativ",
+    "früher": "früher",
+    "Genitiv": "mit Genitiv",
+    "gsm": "schweizerdeutsch",
+    "häufig": "häufig",
+    "haben": "Hilfsverb haben",
+    "hebben": "Hilfsverb hebben",
+    "hauptsächlich": "hauptsächlich",
+    "ieS": "im engeren Sinne",
+    "i.e.S.": "im engeren Sinne",
+    "i. e. S.": "im engeren Sinne",
+    "im": "im",
+    "in": "in",
+    "in Bezug auf": "in Bezug auf",
+    "indekl.": "indeklinabel",
+    "insbes.": "insbesondere",
+    "Instrumental": "mit Instrumental",
+    "intransitiv": "intransitiv",
+    "iPl": "im Plural",
+    "iron.": "ironisch",
+    "iwS": "im weiteren Sinne",
+    "i.w.S.": "im weiteren Sinne",
+    "i. w. S.": "im weiteren Sinne",
+    "jugendspr.": "jugendsprachlich",
+    "kinderspr.": "kindersprachlich",
+    "kirchenlateinisch": "kirchenlateinisch",
+    "klasslat.": "klassischlateinisch",
+    "klassischlateinisch": "klassischlateinisch",
+    "kSg.": "kein Singular",
+    "lautm.": "lautmalerisch",
+    "leicht": "leicht",
+    "Ling.": "Linguistik",
+    "mA": "mit Akkusativ",
+    "md.": "mitteldeutsch",
+    "mdal.": "mundartlich",
+    "Med.": "Medizin",
+    "meißnisch": "meißnisch",
+    "Meißnisch": "Meißnisch",
+    "meist": "meist",
+    "meistens": "meistens",
+    "metaphor.": "metaphorisch",
+    "meton.": "metonymisch",
+    "mG": "mit Genitiv",
+    "mit": "mit",
+    "mitteld.": "mitteldeutsch",
+    "mitunter": "mitunter",
+    "mlat.": "mittellateinisch",
+    "mittellateinisch": "mittellateinisch",
+    "mundartl.": "mundartlich",
+    "nDu.": "nur Dual",
+    "nigr.": "nigrisch",
+    "nkLat.": "nachklassischlateinisch",
+    "nlat.": "neulateinisch",
+    "noch": "noch",
+    "noch in": "noch in",
+    "nordwestd.": "nordwestdeutsch",
+    "nPl.": "nur Plural",
+    "nur": "nur",
+    "nur noch": "nur noch",
+    "obersächsisch": "obersächsisch",
+    "Obersächsisch": "Obersächsisch",
+    "oder": "oder",
+    "oft": "oft",
+    "oftmals": "oftmals",
+    "ohne": "ohne",
+    "osterländisch": "osterländisch",
+    "Osterländisch": "Osterländisch",
+    "Österreich": "Österreich",
+    "ostfränkisch": "ostfränkisch",
+    "pej.": "pejorativ",
+    "Plural": "im Plural",
+    "poet.": "poetisch",
+    "PräpmG": "Präposition mit Genitiv",
+    "PmG": "Präposition mit Genitiv",
+    "respektive": "respektive",
+    "sal.": "salopp",
+    "schriftspr.": "schriftsprachlich",
+    "schülerspr.": "schülersprachlich",
+    "schwäb.": "schwäbisch",
+    "schwäbisch": "schwäbisch",
+    "Schweiz": "Schweiz",
+    "Schweizerdeutsch": "Schweizerdeutsch",
+    "seemannsspr.": "seemannssprachlich",
+    "sein": "Hilfsverb sein",
+    "sehr": "sehr",
+    "seltener": "seltener",
+    "seltener auch": "seltener auch",
+    "soldatenspr.": "soldatensprachlich",
+    "sonderspr.": "sondersprachlich",
+    "sonst": "sonst",
+    "sowie": "sowie",
+    "spätlat.": "spätlateinisch",
+    "spätlateinisch": "spätlateinisch",
+    "später": "später",
+    "speziell": "speziell",
+    "techn.": "technisch",
+    "teils": "teils",
+    "teilweise": "teilweise",
+    "tlwva.": "veraltete Bedeutung",
+    "tlwvatd.": "veraltende Bedeutung",
+    "trans.": "transitiv",
+    "transitiv": "transitiv",
+    "über": "über",
+    "überwiegend": "überwiegend",
+    "ungebr.": "ungebräuchlich",
+    "unpers.": "unpersönlich",
+    "unpersönlich": "unpersönlich",
+    "ursprünglich": "ursprünglich",
+    "vatd.": "veraltend",
+    "verh.": "verhüllend",
+    "volkst.": "volkstümlich",
+    "von": "von",
+    "vor allem": "vor allem",
+    "vor allem in": "vor allem in",
+    "vlat.": "vulgärlateinisch",
+    "vulgärlat.": "vulgärlateinisch",
+    "vulgärlateinisch": "vulgärlateinisch",
+    "wien.": "wienerisch",
+    "wienerisch": "wienerisch",
+    "Wpräp": "Wechselpräposition",
+    "z. B.": "zum Beispiel",
+    "z. T.": "zum Teil",
+    "zijn": "Hilfsverb zijn",
+    "zum Beispiel": "zum Beispiel",
+    "zum Teil": "zum Teil",
+    "zumeist": "zumeist",
 }
-
-LEADING_DASH_PATTERN = re.compile(r"^— ")
-NUMBERED_LIST_PATTERN = re.compile(r"^\[(?:\d+(?:\.\d+)*[a-z]?|[a-z])\] ")
-IGNORED_TAG_NAMES = {
+IGNORED_K_PARAMS = {
     "ft",
     "spr",
     "t1",
@@ -50,9 +219,12 @@ IGNORED_TAG_NAMES = {
     "Prä",
     "Kas",
 }
-IGNORED_TAG_VALUES = {
-    "QS Herkunft",
-}
+LEADING_DASH_PATTERN = re.compile(r"^— ")
+NUMBERED_LIST_PATTERN = re.compile(r"^\[(?:\d+(?:\.\d+)*[a-z]?|[a-z])\] ")
+PAREN_MATCH_PATTERN = re.compile(r"^\s*\(([^)]+)\)\s*(.+)")
+TAG_GROUP_PATTERN = re.compile(r"([^,()]+(?:\([^)]+\))?)")
+HTML_TAG_PATTERN = re.compile(r"<[^>]+>.*?</[^>]+>|<[^>]+/>")
+TAG_PAREN_PATTERN = re.compile(r"^(.+?)\s*\(([^)]+)\)$")
 
 """
 TODO:
@@ -77,12 +249,59 @@ class WikiListItem:
 
     @staticmethod
     def parse_text(parsed_wikitext: wtp.WikiText) -> str:
-        text = parsed_wikitext.plain_text()
+        def replace_templates(template):
+            name = template.name
+
+            if name == "K":
+                return ""
+
+            if name.startswith(("QS", "Ref-", "Lit-")):
+                return ""
+
+            return TEMPLATE_NAME_MAPPING.get(template.name, template.name)
+
+        text = parsed_wikitext.plain_text(
+            replace_templates=(lambda template: replace_templates(template)),
+        )
 
         text = LEADING_DASH_PATTERN.sub("", text)
         text = NUMBERED_LIST_PATTERN.sub("", text)
 
         return text.strip()
+
+    @staticmethod
+    def sanitize_template_name(text: str) -> str:
+        """
+        Sanitize the tag by removing unwanted characters.
+        """
+
+        """
+        Strip html tags AND their content from the text.
+        Example: 'text <ref>reference content</ref> more text' -> 'text more text'
+        """
+        text = HTML_TAG_PATTERN.sub("", text)
+
+        # Replace &nbsp with space
+        text = text.replace("&nbsp", " ")
+
+        # Remove wiki markup
+        text = wtp.remove_markup(text)
+
+        """
+        If the text starts with "(" and ends with ")", remove them.
+        Examples:
+            - (Rio Grande do Sul)
+        """
+        if text.startswith("(") and text.endswith(")"):
+            text = text[1:-1]
+
+        """
+        TODO: What to do with "(Argentinien, Uruguay) ländlich"?
+        """
+
+        text = text.strip()
+
+        return TEMPLATE_NAME_MAPPING.get(text, text)
 
     @staticmethod
     def parse_templates(parsed_wikitext: wtp.WikiText) -> list[str] | None:
@@ -98,51 +317,112 @@ class WikiListItem:
         if not templates:
             return None
 
-        # Optimierte Template-Verarbeitung
-        result = []
+        found_tags = []
         for template in templates:
-            if template.name == "K":
-                # Flatten arguments direkt beim Einlesen
+            template_name = template.name
+
+            if template_name == "K":
                 new_tags = [
                     arg.value
                     for arg in template.arguments
-                    if arg.name not in IGNORED_TAG_NAMES
-                    and arg.value not in IGNORED_TAG_VALUES
+                    if arg.name not in IGNORED_K_PARAMS
                 ]
                 if new_tags:
-                    result.extend(new_tags)
-            else:
-                result.append(template.name)
+                    found_tags.extend(new_tags)
+            elif template_name.startswith(("QS", "Ref-", "Lit-")) is False:
+                found_tags.append(template_name)
 
-        # Mapping nur auf das finale Ergebnis anwenden
-        return [TEMPLATE_NAME_MAPPING.get(tag, tag) for tag in result]
+        # Sanitize tags
+        found_tags = [
+            tag_cleaned
+            for tag in found_tags
+            if (tag_cleaned := WikiListItem.sanitize_template_name(tag))
+        ]
+
+        return found_tags
+
+    @staticmethod
+    def has_multiple_parentheses(text: str) -> bool:
+        """
+        Check if the text contains multiple opening or closing parentheses.
+        Returns True if there are multiple pairs or unmatched parentheses.
+        """
+        open_count = text.count("(")
+        close_count = text.count(")")
+        return open_count > 1 or close_count > 1 or open_count != close_count
 
     @staticmethod
     def parse_raw_tags(text: str) -> tuple[list[str] | None, str]:
         """
-        When the text starts with one or few words before a colon, it is considered as tags.
-        Returns a tuple of (tags, remaining_text) where tags is the list of tags before the colon and remaining_text is the text after the colon.
+        Parses tags from text in the following formats:
+        1. Leading parenthetical content: "(tag1, tag2) text"
+        2. Colon-separated tags: "tag1, tag2: text"
+        3. Tags with nested parentheses: "tag1 (subtag1, subtag2): text"
+
+        Returns (tags, remaining_text) or (None, original_text) if no tags found.
         """
         if not text:
             return None, text
 
-        if ":" not in text:
-            return None, text
+        # Pattern für Text der mit Klammern beginnt: (content) rest
+        paren_match = PAREN_MATCH_PATTERN.match(text)
+        if paren_match:
+            content, remaining = paren_match.groups()
+            # Nur verarbeiten wenn der Inhalt ein einzelnes Wort oder Komma-Liste ist
+            if "," in content or " " not in content:
+                tags = [t.strip() for t in content.split(",") if t.strip()]
+                tags = [
+                    t_clean
+                    for t in tags
+                    if (t_clean := WikiListItem.sanitize_template_name(t))
+                ]
+                if tags:
+                    return tags, remaining.strip()
 
-        # Split the text by colon
-        parts = text.split(":", 1)
-        tags = None
-        remaining_text = text
+        # Pattern für Text mit Doppelpunkt
+        # Teile den Text am ersten Doppelpunkt, der nicht in Klammern steht
+        parts = []
+        paren_level = 0
 
-        if len(parts) > 1:
-            # starting text should not be too long
-            if len(parts[0]) > 50:
-                return None, text
+        for i, char in enumerate(text):
+            if char == "(":
+                paren_level += 1
+            elif char == ")":
+                paren_level -= 1
+            elif char == ":" and paren_level == 0:
+                parts = [text[:i], text[i + 1 :]]
+                break
 
-            tags = parts[0].split(", ")
-            remaining_text = parts[1].strip()
+        if len(parts) == 2 and len(parts[0]) <= 50:
+            before_colon, after_colon = parts[0].strip(), parts[1].strip()
 
-        return tags, remaining_text
+            # Extrahiere Tags und handle verschachtelte Klammern
+            tags = []
+            # Pattern für Tags mit optionalen Klammern: word1 (sub1, sub2), word2
+            for tag_group in TAG_GROUP_PATTERN.finditer(before_colon):
+                tag = tag_group.group(1).strip()
+                if not tag:
+                    continue
+
+                # Prüfe auf Klammern-Tags
+                paren_match = TAG_PAREN_PATTERN.match(tag)
+                if paren_match:
+                    main_tag, paren_content = paren_match.groups()
+                    if main_tag.strip():
+                        tags.append(main_tag.strip())
+                    tags.extend(t.strip() for t in paren_content.split(","))
+                else:
+                    tags.append(tag)
+
+            tags = [
+                t_clean
+                for t in tags
+                if (t_clean := WikiListItem.sanitize_template_name(t))
+            ]
+            if tags:
+                return tags, after_colon
+
+        return None, text
 
     def export(self) -> MeaningDict:
         result: MeaningDict = {}
@@ -300,7 +580,7 @@ def format_meanings(meanings: list[list[MeaningDict]]) -> str:
 
     for index, meanings_list in enumerate(meanings):
         if index > 0:
-            lines.append(f"\nBedeutungen für den {index + 2}. Eintrag:")
+            lines.append("\nBedeutungen für den nächsten Eintrag:")
         for meaning_dict in meanings_list:
             lines.append(format_meaning_dict(meaning_dict))
 
