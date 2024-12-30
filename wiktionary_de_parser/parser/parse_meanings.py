@@ -36,6 +36,22 @@ TEMPLATE_NAME_MAPPING = {
 
 LEADING_DASH_PATTERN = re.compile(r"^— ")
 NUMBERED_LIST_PATTERN = re.compile(r"^\[(?:\d+(?:\.\d+)*[a-z]?|[a-z])\] ")
+IGNORED_TAG_NAMES = {
+    "ft",
+    "spr",
+    "t1",
+    "t2",
+    "t3",
+    "t4",
+    "t5",
+    "t6",
+    "t7",
+    "Prä",
+    "Kas",
+}
+IGNORED_TAG_VALUES = {
+    "QS Herkunft",
+}
 
 """
 TODO:
@@ -82,7 +98,12 @@ class WikiListItem:
         for template in templates:
             if template.name == "K":
                 # Flatten arguments direkt beim Einlesen
-                result.extend(arg.value for arg in template.arguments)
+                result.extend(
+                    arg.value
+                    for arg in template.arguments
+                    if arg.name not in IGNORED_TAG_NAMES
+                    and arg.value not in IGNORED_TAG_VALUES
+                )
             else:
                 result.append(template.name)
 
@@ -141,6 +162,14 @@ class ParseMeanings(Parser):
                     pattern=wiki_list.pattern,
                     sublist=sublist_parsed,
                 )
+
+                # Dont save it if it has no text, tags or sublist
+                if (
+                    not new_item.text
+                    and not new_item.tags
+                    and not new_item.sublist
+                ):
+                    continue
 
                 # Check if last list item has pattern '\\*' and current new_item has not that pattern. If so, add new_item to
                 # the sublist of the last list item
@@ -220,7 +249,16 @@ def format_meaning_dict(meaning_dict: MeaningDict, level: int = 0) -> str:
     return "\n".join(lines)
 
 
-def format_meanings(meanings: ParseMeaningsResults) -> str:
+def format_meanings(meanings: list[list[MeaningDict]]) -> str:
     if not meanings:
         return ""
-    return "\n".join(format_meaning_dict(m) for m in meanings)
+
+    lines = []
+
+    for index, meanings_list in enumerate(meanings):
+        if index > 0:
+            lines.append(f"\nBedeutungen für den {index + 2}. Eintrag:")
+        for meaning_dict in meanings_list:
+            lines.append(format_meaning_dict(meaning_dict))
+
+    return "\n".join(lines)
