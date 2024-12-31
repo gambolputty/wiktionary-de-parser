@@ -279,6 +279,9 @@ class WikiListItem:
             and not (template_name.islower() and len(template_name) <= 2)
             and template_name not in IGNORED_TEMPLATES
             and not template_name.startswith(blocked_prefixes)
+            # Allow only certain characters
+            and re.match(r"^[a-zA-ZäöüÄÖÜß0-9\- \.]+$", template_name)
+            is not None
         )
 
     @staticmethod
@@ -434,7 +437,7 @@ class WikiListItem:
                 parts = [text[:i], text[i + 1 :]]
                 break
 
-        if len(parts) == 2:
+        if len(parts) == 2 and len(parts[0]) <= 50:
             before_colon, after_colon = parts[0].strip(), parts[1].strip()
 
             # Extrahiere Tags und handle verschachtelte Klammern
