@@ -244,9 +244,21 @@ class WikiListItem:
 
         self.pattern = pattern
         self.text = self.parse_text(parsed_wikitext)
-        self.tags = self.parse_templates(parsed_wikitext)
+        self.tags = self.retrieve_template_tags(parsed_wikitext)
         self.raw_tags, self.text = self.parse_raw_tags(self.text)
         self.sublist = sublist
+
+    @staticmethod
+    def is_valid_template_name(template_name: str) -> bool:
+        """
+        Check if the template is valid.
+        """
+        blocked_prefixes = ("QS", "Ref-", "Lit-", "Wiki")
+
+        return (
+            template_name not in IGNORED_TEMPLATES
+            and not template_name.startswith(blocked_prefixes)
+        )
 
     @staticmethod
     def parse_text(parsed_wikitext: wtp.WikiText) -> str:
@@ -256,9 +268,7 @@ class WikiListItem:
             if name == "K":
                 return ""
 
-            if name in IGNORED_TEMPLATES or name.startswith(
-                ("QS", "Ref-", "Lit-")
-            ):
+            if not WikiListItem.is_valid_template_name(template.name):
                 return ""
 
             return TEMPLATE_NAME_MAPPING.get(template.name, template.name)
@@ -310,7 +320,9 @@ class WikiListItem:
         return TEMPLATE_NAME_MAPPING.get(text, text)
 
     @staticmethod
-    def parse_templates(parsed_wikitext: wtp.WikiText) -> list[str] | None:
+    def retrieve_template_tags(
+        parsed_wikitext: wtp.WikiText,
+    ) -> list[str] | None:
         """
         Reference: https://de.wiktionary.org/wiki/Vorlage:K
 
@@ -335,7 +347,7 @@ class WikiListItem:
                 ]
                 if new_tags:
                     found_tags.extend(new_tags)
-            elif template_name.startswith(("QS", "Ref-", "Lit-")) is False:
+            elif WikiListItem.is_valid_template_name(template_name):
                 found_tags.append(template_name)
 
         # Sanitize tags
@@ -376,14 +388,15 @@ class WikiListItem:
             content, remaining = paren_match.groups()
             # Nur verarbeiten wenn der Inhalt ein einzelnes Wort oder Komma-Liste ist
             if "," in content or " " not in content:
-                tags = [t.strip() for t in content.split(",") if t.strip()]
-                tags = [
+                raw_tags = [t.strip() for t in content.split(",") if t.strip()]
+                raw_tags = [
                     t_clean
-                    for t in tags
+                    for t in raw_tags
                     if (t_clean := WikiListItem.sanitize_template_name(t))
+                    and WikiListItem.is_valid_template_name(t_clean)
                 ]
-                if tags:
-                    return tags, remaining.strip()
+                if raw_tags:
+                    return raw_tags, remaining.strip()
 
         # Pattern für Text mit Doppelpunkt
         # Teile den Text am ersten Doppelpunkt, der nicht in Klammern steht
@@ -403,7 +416,7 @@ class WikiListItem:
             before_colon, after_colon = parts[0].strip(), parts[1].strip()
 
             # Extrahiere Tags und handle verschachtelte Klammern
-            tags = []
+            raw_tags = []
             # Pattern für Tags mit optionalen Klammern: word1 (sub1, sub2), word2
             for tag_group in TAG_GROUP_PATTERN.finditer(before_colon):
                 tag = tag_group.group(1).strip()
@@ -415,18 +428,20 @@ class WikiListItem:
                 if paren_match:
                     main_tag, paren_content = paren_match.groups()
                     if main_tag.strip():
-                        tags.append(main_tag.strip())
-                    tags.extend(t.strip() for t in paren_content.split(","))
+                        raw_tags.append(main_tag.strip())
+                    raw_tags.extend(t.strip() for t in paren_content.split(","))
                 else:
-                    tags.append(tag)
+                    raw_tags.append(tag)
 
-            tags = [
+            raw_tags = [
                 t_clean
-                for t in tags
+                for t in raw_tags
                 if (t_clean := WikiListItem.sanitize_template_name(t))
+                and WikiListItem.is_valid_template_name(t_clean)
             ]
-            if tags:
-                return tags, after_colon
+
+            if raw_tags:
+                return raw_tags, after_colon
 
         return None, text
 
