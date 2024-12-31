@@ -219,7 +219,7 @@ IGNORED_K_PARAMS = {
     "Prä",
     "Kas",
 }
-IGNORED_TEMPLATES = {"WP"}
+IGNORED_TEMPLATES = {"WP", "Internetquelle"}
 LEADING_DASH_PATTERN = re.compile(r"^— ")
 NUMBERED_LIST_PATTERN = re.compile(r"^\[(?:\d+(?:\.\d+)*[a-z]?|[a-z])\] ")
 PAREN_MATCH_PATTERN = re.compile(r"^\s*\(([^)]+)\)\s*(.+)")
@@ -232,6 +232,23 @@ TODO:
     Vorlage "Üt" (Übersetzung) -> https://de.wiktionary.org/wiki/Vorlage:%C3%9Ct
     Beispiel: https://de.wiktionary.org/wiki/%CF%87
 """
+
+
+class TemplateParser:
+    def __init__(self, template: wtp.Template):
+        self.template = template
+
+    def parse_k_template(self) -> list[str] | None:
+        arguments = self.template.arguments
+        new_tags = [
+            arg.value for arg in arguments if arg.name not in IGNORED_K_PARAMS
+        ]
+
+        if new_tags:
+            return new_tags
+
+    def parse_ut_template(self) -> str | None:
+        return self.template.arguments[1].value
 
 
 class WikiListItem:
@@ -256,7 +273,11 @@ class WikiListItem:
         blocked_prefixes = ("QS", "Ref-", "Lit-", "Wiki")
 
         return (
-            template_name not in IGNORED_TEMPLATES
+            len(template_name) < 50
+            and len(template_name) > 1
+            # Disallow lowercase templates with 2 or fewer characters
+            and not (template_name.islower() and len(template_name) <= 2)
+            and template_name not in IGNORED_TEMPLATES
             and not template_name.startswith(blocked_prefixes)
         )
 
@@ -267,6 +288,9 @@ class WikiListItem:
 
             if name == "K":
                 return ""
+
+            if name == "Üt":
+                return TemplateParser(template).parse_ut_template()
 
             if not WikiListItem.is_valid_template_name(template.name):
                 return ""
@@ -283,7 +307,7 @@ class WikiListItem:
         return text.strip()
 
     @staticmethod
-    def sanitize_template_name(text: str) -> str | None:
+    def sanitize_template_name(text: str) -> str:
         """
         Sanitize the tag by removing unwanted characters.
         """
@@ -314,9 +338,6 @@ class WikiListItem:
 
         text = text.strip()
 
-        if len(text) > 50 or len(text) < 2:
-            return None
-
         return TEMPLATE_NAME_MAPPING.get(text, text)
 
     @staticmethod
@@ -338,15 +359,16 @@ class WikiListItem:
         found_tags = []
         for template in templates:
             template_name = template.name
+            parser = TemplateParser(template)
 
             if template_name == "K":
-                new_tags = [
-                    arg.value
-                    for arg in template.arguments
-                    if arg.name not in IGNORED_K_PARAMS
-                ]
+                new_tags = parser.parse_k_template()
                 if new_tags:
                     found_tags.extend(new_tags)
+            elif template_name == "Üt":
+                new_tag = parser.parse_ut_template()
+                if new_tag:
+                    found_tags.append(new_tag)
             elif WikiListItem.is_valid_template_name(template_name):
                 found_tags.append(template_name)
 
