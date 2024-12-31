@@ -205,6 +205,10 @@ TEMPLATE_NAME_MAPPING = {
     "zum Beispiel": "zum Beispiel",
     "zum Teil": "zum Teil",
     "zumeist": "zumeist",
+    # not K-Template
+    "kStg.": "keine Steigerung",
+    "amer.": "US-amerikanisch",
+    "mD": "mit Dativ",
 }
 IGNORED_K_PARAMS = {
     "ft",
@@ -218,20 +222,15 @@ IGNORED_K_PARAMS = {
     "t7",
     "Prä",
     "Kas",
+    "spe",
 }
-IGNORED_TEMPLATES = {"WP", "Internetquelle"}
+IGNORED_TEMPLATES = {"WP", "Internetquelle", "NNBSP", "MZ", "DOI"}
 LEADING_DASH_PATTERN = re.compile(r"^— ")
 NUMBERED_LIST_PATTERN = re.compile(r"^\[(?:\d+(?:\.\d+)*[a-z]?|[a-z])\] ")
 PAREN_MATCH_PATTERN = re.compile(r"^\s*\(([^)]+)\)\s*(.+)")
 TAG_GROUP_PATTERN = re.compile(r"([^,()]+(?:\([^)]+\))?)")
 HTML_TAG_PATTERN = re.compile(r"<[^>]+>.*?</[^>]+>|<[^>]+/>")
 TAG_PAREN_PATTERN = re.compile(r"^(.+?)\s*\(([^)]+)\)$")
-
-"""
-TODO:
-    Vorlage "Üt" (Übersetzung) -> https://de.wiktionary.org/wiki/Vorlage:%C3%9Ct
-    Beispiel: https://de.wiktionary.org/wiki/%CF%87
-"""
 
 
 class TemplateParser:
@@ -250,6 +249,9 @@ class TemplateParser:
     def parse_ut_template(self) -> str | None:
         return self.template.arguments[1].value
 
+    def parse_ch_template(self) -> str | None:
+        return "Schweiz und Liechtenstein"
+
 
 class WikiListItem:
     __slots__ = ["tags", "raw_tags", "text", "sublist", "pattern"]
@@ -257,6 +259,7 @@ class WikiListItem:
     def __init__(
         self, wikitext: str, pattern: str, sublist: "WikiList | None"
     ) -> None:
+        wikitext = WikiListItem.strip_html_tags(wikitext)
         parsed_wikitext = wtp.parse(wikitext)
 
         self.pattern = pattern
@@ -295,6 +298,9 @@ class WikiListItem:
             if name == "Üt":
                 return TemplateParser(template).parse_ut_template()
 
+            if name == "CH&LI":
+                return TemplateParser(template).parse_ch_template()
+
             if not WikiListItem.is_valid_template_name(template.name):
                 return ""
 
@@ -303,23 +309,24 @@ class WikiListItem:
         text = parsed_wikitext.plain_text(
             replace_templates=(lambda template: replace_templates(template)),
         )
-
         text = LEADING_DASH_PATTERN.sub("", text)
         text = NUMBERED_LIST_PATTERN.sub("", text)
 
         return text.strip()
 
     @staticmethod
-    def sanitize_template_name(text: str) -> str:
-        """
-        Sanitize the tag by removing unwanted characters.
-        """
-
+    def strip_html_tags(text: str) -> str:
         """
         Strip html tags AND their content from the text.
         Example: 'text <ref>reference content</ref> more text' -> 'text more text'
         """
-        text = HTML_TAG_PATTERN.sub("", text)
+        return HTML_TAG_PATTERN.sub("", text)
+
+    @staticmethod
+    def sanitize_template_name(text: str) -> str:
+        """
+        Sanitize the tag by removing unwanted characters.
+        """
 
         # Replace &nbsp with space
         text = text.replace("&nbsp", " ")
@@ -370,6 +377,10 @@ class WikiListItem:
                     found_tags.extend(new_tags)
             elif template_name == "Üt":
                 new_tag = parser.parse_ut_template()
+                if new_tag:
+                    found_tags.append(new_tag)
+            elif template_name == "CH&LI":
+                new_tag = parser.parse_ch_template()
                 if new_tag:
                     found_tags.append(new_tag)
             elif WikiListItem.is_valid_template_name(template_name):
