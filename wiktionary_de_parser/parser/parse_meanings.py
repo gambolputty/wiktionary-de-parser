@@ -356,7 +356,7 @@ class WikiListItem:
 
         self.pattern = pattern
         self.text = self.parse_text(parsed_wikitext)
-        self.tags = self.retrieve_template_tags(parsed_wikitext)
+        self.tags = self.get_template_tags(parsed_wikitext)
         self.raw_tags, self.text = self.parse_raw_tags(self.text)
         self.sublist = sublist
 
@@ -443,9 +443,9 @@ class WikiListItem:
         return TEMPLATE_NAME_MAPPING.get(text, text)
 
     @staticmethod
-    def retrieve_template_tags(
+    def get_template_tags(
         parsed_wikitext: wtp.WikiText,
-    ) -> list[str] | None:
+    ) -> list[str]:
         """
         Reference: https://de.wiktionary.org/wiki/Vorlage:K
 
@@ -456,7 +456,7 @@ class WikiListItem:
         templates = parsed_wikitext.templates
 
         if not templates:
-            return None
+            return []
 
         found_tags = []
         for template in templates:
@@ -487,91 +487,92 @@ class WikiListItem:
 
         return found_tags
 
-    @staticmethod
-    def has_multiple_parentheses(text: str) -> bool:
-        """
-        Check if the text contains multiple opening or closing parentheses.
-        Returns True if there are multiple pairs or unmatched parentheses.
-        """
-        open_count = text.count("(")
-        close_count = text.count(")")
-        return open_count > 1 or close_count > 1 or open_count != close_count
-
-    @staticmethod
-    def parse_raw_tags(text: str) -> tuple[list[str] | None, str]:
+    def parse_raw_tags(self, text: str) -> tuple[list[str], str]:
         """
         Parses tags from text in the following formats:
         1. Leading parenthetical content: "(tag1, tag2) text"
         2. Colon-separated tags: "tag1, tag2: text"
         3. Tags with nested parentheses: "tag1 (subtag1, subtag2): text"
 
-        Returns (tags, remaining_text) or (None, original_text) if no tags found.
+        Returns (tags, remaining_text) or ([], original_text) if no tags found.
         """
-        if not text:
-            return None, text
+        raw_tags = []
+        remaining_text = text
 
-        # Pattern für Text der mit Klammern beginnt: (content) rest
-        paren_match = PAREN_MATCH_PATTERN.match(text)
-        if paren_match:
-            content, remaining = paren_match.groups()
-            # Nur verarbeiten wenn der Inhalt ein einzelnes Wort oder Komma-Liste ist
-            if "," in content or " " not in content:
-                raw_tags = [t.strip() for t in content.split(",") if t.strip()]
-                raw_tags = [
-                    t_clean
-                    for t in raw_tags
-                    if (t_clean := WikiListItem.sanitize_template_name(t))
-                    and WikiListItem.is_valid_template_name(t_clean)
-                ]
-                if raw_tags:
-                    return raw_tags, remaining.strip()
+        if text:
+            # Pattern für Text der mit Klammern beginnt: (content) rest
+            paren_match = PAREN_MATCH_PATTERN.match(text)
+            if paren_match:
+                # Inhalt in Klammern und der Rest des Textes
+                content, after_paren = paren_match.groups()
+                # Nur verarbeiten wenn der Inhalt der Klammer ein einzelnes
+                # Wort oder Komma-Liste ist
+                if ", " in content or " " not in content:
+                    candidate_tags = [
+                        t.strip() for t in content.split(",") if t.strip()
+                    ]
+                    valid_tags = [
+                        t_clean
+                        for t in candidate_tags
+                        if (t_clean := WikiListItem.sanitize_template_name(t))
+                        and WikiListItem.is_valid_template_name(t_clean)
+                    ]
+                    if valid_tags:
+                        raw_tags = valid_tags
+                        remaining_text = after_paren.strip()
 
-        # Pattern für Text mit Doppelpunkt
-        # Teile den Text am ersten Doppelpunkt, der nicht in Klammern steht
-        parts = []
-        paren_level = 0
+            # Wenn keine Klammer-Tags gefunden wurden, suche nach Doppelpunkt-Tags
+            if not raw_tags:
+                # Teile den Text am ersten Doppelpunkt, der nicht in Klammern steht
+                parts = []
+                paren_level = 0
+                for i, char in enumerate(text):
+                    if char == "(":
+                        paren_level += 1
+                    elif char == ")":
+                        paren_level -= 1
+                    elif char == ":" and paren_level == 0:
+                        parts = [text[:i], text[i + 1 :]]
+                        break
 
-        for i, char in enumerate(text):
-            if char == "(":
-                paren_level += 1
-            elif char == ")":
-                paren_level -= 1
-            elif char == ":" and paren_level == 0:
-                parts = [text[:i], text[i + 1 :]]
-                break
+                if len(parts) == 2 and len(parts[0]) <= 50:
+                    before_colon, after_colon = (
+                        parts[0].strip(),
+                        parts[1].strip(),
+                    )
+                    candidate_tags = []
 
-        if len(parts) == 2 and len(parts[0]) <= 50:
-            before_colon, after_colon = parts[0].strip(), parts[1].strip()
+                    # Pattern für Tags mit optionalen Klammern
+                    for tag_group in TAG_GROUP_PATTERN.finditer(before_colon):
+                        tag = tag_group.group(1).strip()
+                        if tag:
+                            # Prüfe auf Klammern-Tags
+                            paren_match = TAG_PAREN_PATTERN.match(tag)
+                            if paren_match:
+                                main_tag, paren_content = paren_match.groups()
+                                if main_tag.strip():
+                                    candidate_tags.append(main_tag.strip())
+                                candidate_tags.extend(
+                                    t.strip() for t in paren_content.split(",")
+                                )
+                            else:
+                                candidate_tags.append(tag)
 
-            # Extrahiere Tags und handle verschachtelte Klammern
-            raw_tags = []
-            # Pattern für Tags mit optionalen Klammern: word1 (sub1, sub2), word2
-            for tag_group in TAG_GROUP_PATTERN.finditer(before_colon):
-                tag = tag_group.group(1).strip()
-                if not tag:
-                    continue
+                    valid_tags = [
+                        t_clean
+                        for t in candidate_tags
+                        if (t_clean := WikiListItem.sanitize_template_name(t))
+                        and WikiListItem.is_valid_template_name(t_clean)
+                    ]
 
-                # Prüfe auf Klammern-Tags
-                paren_match = TAG_PAREN_PATTERN.match(tag)
-                if paren_match:
-                    main_tag, paren_content = paren_match.groups()
-                    if main_tag.strip():
-                        raw_tags.append(main_tag.strip())
-                    raw_tags.extend(t.strip() for t in paren_content.split(","))
-                else:
-                    raw_tags.append(tag)
+                    if valid_tags:
+                        raw_tags = valid_tags
+                        remaining_text = after_colon
 
-            raw_tags = [
-                t_clean
-                for t in raw_tags
-                if (t_clean := WikiListItem.sanitize_template_name(t))
-                and WikiListItem.is_valid_template_name(t_clean)
-            ]
+        # Remove raw tags that is already saved in self.tags
+        raw_tags = [tag for tag in raw_tags if tag not in self.tags]
 
-            if raw_tags:
-                return raw_tags, after_colon
-
-        return None, text
+        return raw_tags, remaining_text
 
     def export(self) -> MeaningDict:
         result: MeaningDict = {}
