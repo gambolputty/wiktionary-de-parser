@@ -210,19 +210,59 @@ TEMPLATE_NAME_MAPPING = {
     "amer.": "US-amerikanisch",
     "mD": "mit Dativ",
 }
-IGNORED_K_PARAMS = {
-    "ft",
-    "spr",
-    "t1",
-    "t2",
-    "t3",
-    "t4",
-    "t5",
-    "t6",
-    "t7",
-    "Prä",
-    "Kas",
-    "spe",
+# Referenz: https://de.wiktionary.org/wiki/Vorlage:K
+K_TEMPLATE_WHITESPACE_TRIGGERS = {
+    "allg.",
+    "allgemein",
+    "ansonsten",
+    "auch",
+    "bei",
+    "bes.",
+    "besonders",
+    "bis",
+    "bisweilen",
+    "das",
+    "der",
+    "die",
+    "eher",
+    "früher",
+    "häufig",
+    "hauptsächlich",
+    "im",
+    "in",
+    "in Bezug auf",
+    "insbes.",
+    "leicht",
+    "meist",
+    "meistens",
+    "mit",
+    "mitunter",
+    "noch",
+    "noch in",
+    "nur",
+    "nur noch",
+    "oft",
+    "oftmals",
+    "ohne",
+    "sehr",
+    "seltener",
+    "seltener auch",
+    "sonst",
+    "später",
+    "speziell",
+    "teils",
+    "teilweise",
+    "über",
+    "überwiegend",
+    "ursprünglich",
+    "von",
+    "vor allem",
+    "vor allem in",
+    "z. B.",
+    "z. T.",
+    "zum Beispiel",
+    "zum Teil",
+    "zumeist",
 }
 IGNORED_TEMPLATES = {"WP", "Internetquelle", "NNBSP", "MZ", "DOI"}
 LEADING_DASH_PATTERN = re.compile(r"^— ")
@@ -232,6 +272,16 @@ TAG_GROUP_PATTERN = re.compile(r"([^,()]+(?:\([^)]+\))?)")
 HTML_TAG_PATTERN = re.compile(r"<[^>]+>.*?</[^>]+>|<[^>]+/>")
 TAG_PAREN_PATTERN = re.compile(r"^(.+?)\s*\(([^)]+)\)$")
 
+# Liste der Konjunktionen die im Modul:Kontext definiert sind
+CONJUNCTIONS = {
+    "beziehungsweise",
+    "bzw.",
+    "oder",
+    "respektive",
+    "sowie",
+    "und",
+}
+
 
 class TemplateParser:
     def __init__(self, template: wtp.Template):
@@ -239,12 +289,54 @@ class TemplateParser:
 
     def parse_k_template(self) -> list[str] | None:
         arguments = self.template.arguments
-        new_tags = [
-            arg.value for arg in arguments if arg.name not in IGNORED_K_PARAMS
-        ]
 
-        if new_tags:
-            return new_tags
+        # Collect the positional parameters (1-7)
+        positional_args: list[str] = []
+        for i in range(1, 8):
+            arg = next((a for a in arguments if a.name == str(i)), None)
+            if arg and arg.value.strip():
+                value = arg.value.strip()
+                positional_args.append(TEMPLATE_NAME_MAPPING.get(value, value))
+
+        if not positional_args:
+            return None
+
+        tags = []
+        current_tag = ""
+
+        # Iterate over the positional arguments, check for separators and
+        # create tags
+        for i, arg in enumerate(positional_args, 1):
+            # Check for seperator value
+            current_separator = next(
+                (a.value for a in arguments if a.name == f"t{i}"), None
+            )
+
+            # If the separator is not defined, check if arg is in
+            # K_TEMPLATE_WHITESPACE_TRIGGERS
+            if not current_separator:
+                if arg in K_TEMPLATE_WHITESPACE_TRIGGERS or arg in CONJUNCTIONS:
+                    current_separator = "_"
+                else:
+                    current_separator = ","
+
+            # If the separator is "," or ";", start a new tag
+            if current_separator in (",", ";"):
+                current_tag += arg
+                tags.append(current_tag)
+                current_tag = ""
+            # If the separator is "_" add a whitespace
+            elif current_separator == "_":
+                current_tag += f"{arg} "
+            # If the separator is ":" add a colon
+            elif current_separator == ":":
+                current_tag += f"{arg}: "
+
+        # Add the last tag
+        if current_tag:
+            tags.append(current_tag.strip())
+
+        return tags
 
     def parse_ut_template(self) -> str | None:
         return self.template.arguments[1].value
