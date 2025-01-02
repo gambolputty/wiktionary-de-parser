@@ -67,7 +67,15 @@ class WikiListItem:
             if not WikiListItem.is_valid_template_name(template.name):
                 return ""
 
-            return TEMPLATE_NAME_MAPPING.get(template.name, template.name)
+            name = TEMPLATE_NAME_MAPPING.get(template.name, template.name)
+
+            # if template has a single argument that is a comma, colon or ; append it to the name
+            if len(template.arguments) == 1:
+                arg = template.arguments[0].value.strip()
+                if arg in {",", ":", ";"}:
+                    name += arg
+
+            return name
 
         text = parsed_wikitext.plain_text(
             replace_templates=(lambda template: replace_templates(template)),
