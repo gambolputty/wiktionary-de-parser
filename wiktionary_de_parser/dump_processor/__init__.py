@@ -1,3 +1,4 @@
+import bz2
 import shutil
 import subprocess
 from pathlib import Path
@@ -62,22 +63,6 @@ class WiktionaryDump:
                 bar.update(size)
 
     @staticmethod
-    def decompress_dump_file(dump_path: Path) -> subprocess.Popen:
-        if str(dump_path).endswith(".bz2"):
-            decompress_command = (
-                "lbzcat" if shutil.which("lbzcat") is not None else "bzcat"
-            )
-            p = subprocess.Popen(
-                [decompress_command, str(dump_path)], stdout=subprocess.PIPE
-            )
-            if p.stdout is not None:
-                return p
-            else:
-                raise Exception(f"No stdout from command {decompress_command}")
-        else:
-            raise ValueError("Dump file extension is not .bz2")
-
-    @staticmethod
     def process_page_data(
         page_element, namespaces: dict[None, str], namespace_ids: set[int]
     ):
@@ -132,12 +117,12 @@ class WiktionaryDump:
             0
         }  # see https://de.wiktionary.org/wiki/Hilfe:Namensr%C3%A4ume
 
-        with self.decompress_dump_file(self.dump_file_path) as p:
+        with bz2.open(self.dump_file_path) as p:
             namespace_str = "http://www.mediawiki.org/xml/export-0.11/"
             namespaces = {None: namespace_str}
 
             for _, page_element in etree.iterparse(
-                p.stdout, tag=f"{{{namespace_str}}}page"
+                p, tag=f"{{{namespace_str}}}page"
             ):
                 page = self.process_page_data(
                     page_element, namespaces, namespace_ids
