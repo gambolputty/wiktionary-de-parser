@@ -84,7 +84,7 @@ ParsedWiktionaryPageEntry(
     },
     ipa=["ˈaːbn̩t", "ˈaːbm̩t"],
     language=Language(lang="Deutsch", lang_code="de"),
-    lemma=Lemma(lemma="Abend", inflected=False),
+    lemma=Lemma(lemma="Abend", reference_type=<ReferenceType.NONE: 'none'>),
     pos={"Substantiv": []},
     rhymes=["aːbn̩t"],
 )
@@ -94,7 +94,7 @@ ParsedWiktionaryPageEntry(
     flexion=None,
     ipa=["ˈaːbn̩t"],
     language=Language(lang="Deutsch", lang_code="de"),
-    lemma=Lemma(lemma="Abend", inflected=False),
+    lemma=Lemma(lemma="Abend", reference_type=<ReferenceType.NONE: 'none'>),
     pos={"Substantiv": ["Nachname"]},
     rhymes=["aːbn̩t"],
 )
@@ -104,7 +104,7 @@ ParsedWiktionaryPageEntry(
     flexion=None,
     ipa=["ˈaːbn̩t", "ˈaːbm̩t"],
     language=Language(lang="Deutsch", lang_code="de"),
-    lemma=Lemma(lemma="Abend", inflected=False),
+    lemma=Lemma(lemma="Abend", reference_type=<ReferenceType.NONE: 'none'>),
     pos={"Substantiv": ["Toponym"]},
     rhymes=["aːbn̩t"],
 )

@@ -1,58 +1,79 @@
+from wiktionary_de_parser.models import ReferenceType
+
 lemma_data = [
+    # Grundformverweis tests (inflected forms)
     (
         "{{Grundformverweis|ni#Personalpronomen|ni}}",
-        {"inflected": True, "lemma": "ni"},
+        {"reference_type": ReferenceType.INFLECTED, "lemma": "ni"},
     ),
     (
         "{{Grundformverweis Konj|1=bereiten|Abschnitt=Verb.2C_unregelm.C3.A4.C3.9Fig}}",
-        {"inflected": True, "lemma": "bereiten"},
+        {"reference_type": ReferenceType.INFLECTED, "lemma": "bereiten"},
     ),
     (
         "{{Grundformverweis|hunger}}",
-        {"inflected": True, "lemma": "hunger"},
+        {"reference_type": ReferenceType.INFLECTED, "lemma": "hunger"},
     ),
     (
         "{{Grundformverweis Konj|zeichnen}}",
-        {"inflected": True, "lemma": "zeichnen"},
+        {"reference_type": ReferenceType.INFLECTED, "lemma": "zeichnen"},
     ),
     (
         "{{Grundformverweis Konj|Abschnitt=Verb, untrennbar|AbschnittK=unterliegen (Konjugation), untrennbar, Hilfsverb haben (Deutsch)|unterliegen}}",
-        {"inflected": True, "lemma": "unterliegen"},
+        {"reference_type": ReferenceType.INFLECTED, "lemma": "unterliegen"},
     ),
     (
         "{{Grundformverweis Konj|fara|Abschnitt=Verb 2|Flexion=0|spr=sv}}",
-        {"inflected": True, "lemma": "fara"},
+        {"reference_type": ReferenceType.INFLECTED, "lemma": "fara"},
     ),
     (
         "{{Grundformverweis Konj|dare|spr=en}}",
-        {"inflected": True, "lemma": "dare"},
+        {"reference_type": ReferenceType.INFLECTED, "lemma": "dare"},
     ),
     (
         "{{Grundformverweis Dekl|anal|Abschnitt=Adjektiv 6|Flexion=0}}",
-        {"inflected": True, "lemma": "anal"},
+        {"reference_type": ReferenceType.INFLECTED, "lemma": "anal"},
     ),
     (
         "{{Grundformverweis Dekl|pur|Abschnitt=pur (Deutsch)}}",
-        {"inflected": True, "lemma": "pur"},
+        {"reference_type": ReferenceType.INFLECTED, "lemma": "pur"},
     ),
     (
         "{{Grundformverweis Dekl|geschafft|Abschnitt=Adjektiv}}",
-        {"inflected": True, "lemma": "geschafft"},
+        {"reference_type": ReferenceType.INFLECTED, "lemma": "geschafft"},
     ),
     (
         "{{Grundformverweis Dekl|aufwärmen|Flexionsseite=aufzuwärmen}}",
-        {"inflected": True, "lemma": "aufwärmen"},
+        {"reference_type": ReferenceType.INFLECTED, "lemma": "aufwärmen"},
     ),
     (
         "{{Grundformverweis Dekl|Falschmeldung}}",
-        {"inflected": True, "lemma": "Falschmeldung"},
+        {"reference_type": ReferenceType.INFLECTED, "lemma": "Falschmeldung"},
     ),
     (
         "{{Grundformverweis Dekl|červený|spr=cs}}",
-        {"inflected": True, "lemma": "červený"},
+        {"reference_type": ReferenceType.INFLECTED, "lemma": "červený"},
     ),
     (
         "{{Grundformverweis Dekl|decir#Substantiv, m|decir|Flexion=0}}",
-        {"inflected": True, "lemma": "decir"},
+        {"reference_type": ReferenceType.INFLECTED, "lemma": "decir"},
+    ),
+    # Lemmaverweis tests (variant forms)
+    (
+        "{{Lemmaverweis|mild}}",
+        {"reference_type": ReferenceType.VARIANT, "lemma": "mild"},
+    ),
+    (
+        "{{Lemmaverweis|Geographie}}",
+        {"reference_type": ReferenceType.VARIANT, "lemma": "Geographie"},
+    ),
+    (
+        "{{Lemmaverweis|Küken}}",
+        {"reference_type": ReferenceType.VARIANT, "lemma": "Küken"},
+    ),
+    # No reference template (standalone lemma)
+    (
+        "== Hund ({{Sprache|Deutsch}}) ==\n=== {{Wortart|Substantiv|Deutsch}} ===",
+        {"reference_type": ReferenceType.NONE, "lemma": "Untitled"},
     ),
 ]

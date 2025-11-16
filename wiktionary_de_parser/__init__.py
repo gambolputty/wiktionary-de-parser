@@ -41,7 +41,7 @@ class WiktionaryParser:
                 module = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module)
 
-                for name, obj in inspect.getmembers(module):
+                for _, obj in inspect.getmembers(module):
                     if (
                         inspect.isclass(obj)
                         and issubclass(obj, parent_class)

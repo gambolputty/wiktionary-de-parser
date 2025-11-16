@@ -1,3 +1,5 @@
+from enum import Enum
+
 from pydantic import BaseModel
 from typing_extensions import TypedDict
 
@@ -20,9 +22,43 @@ class Language(BaseModel):
     lang_code: str | None
 
 
+class ReferenceType(str, Enum):
+    """
+    Type of lemma reference in German Wiktionary.
+
+    Reference types distinguish different ways a word entry points to another:
+    - NONE: Standalone lemma, no reference to another word
+    - INFLECTED: Inflected/declined form ({{Grundformverweis}})
+      Examples: "gehörte" → "gehören" (verb conjugation),
+                "Häuser" → "Haus" (noun declension)
+    - VARIANT: Alternative form or variant ({{Lemmaverweis}})
+      Examples: "milde" → "mild" (pronunciation variant),
+                "Geografie" → "Geographie" (alternative spelling),
+                "Kücken" → "Küken" (regional variant)
+
+    References:
+    - https://de.wiktionary.org/wiki/Vorlage:Grundformverweis
+    - https://de.wiktionary.org/wiki/Vorlage:Lemmaverweis
+    """
+
+    NONE = "none"
+    INFLECTED = "inflected"
+    VARIANT = "variant"
+
+
 class Lemma(BaseModel):
+    """
+    Lemma information for a Wiktionary entry.
+
+    Attributes:
+        lemma: The canonical form of the word. If the entry contains a
+               reference template (Grundformverweis or Lemmaverweis), this
+               points to the target lemma. Otherwise, it's the page name.
+        reference_type: Type of reference (NONE, INFLECTED, or VARIANT)
+    """
+
     lemma: str
-    inflected: bool
+    reference_type: ReferenceType = ReferenceType.NONE
 
 
 ParseFlexionResult = dict | None

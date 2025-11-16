@@ -4,6 +4,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.0] - 2025-11-16
+### Added
+- Support for `{{Lemmaverweis}}` template to handle variant forms (alternative spellings, regional variants, pronunciation variants)
+- New `ReferenceType` enum to distinguish between inflected forms and variants
+- Extended lemma parsing documentation with examples
+
+### Changed
+- **BREAKING**: Replaced `Lemma.inflected: bool` with `Lemma.reference_type: ReferenceType`
+  - Old: `lemma.inflected` (boolean)
+  - New: `lemma.reference_type` (enum: NONE, INFLECTED, or VARIANT)
+- Enhanced lemma parser to recognize both `{{Grundformverweis}}` (inflected forms) and `{{Lemmaverweis}}` (variants)
+- Improved code documentation in `parse_lemma.py` with detailed examples
+- updated dependencies
+
+### Migration Guide
+If you were checking for inflected forms:
+```python
+# Before (0.12.x):
+if lemma.inflected:
+    ...
+
+# After (0.13.0):
+if lemma.reference_type != ReferenceType.NONE:
+    ...
+
+# Or more specifically:
+if lemma.reference_type == ReferenceType.INFLECTED:  # Only inflected forms
+    ...
+if lemma.reference_type == ReferenceType.VARIANT:    # Only variants
+    ...
+```
+
 ## [0.12.15] - 2025-11-16
 ### Changed
 - add support for extracting POS from declinable forms in German
