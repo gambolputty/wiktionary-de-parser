@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.12.13] - 2025-12-02
+## [0.12.14] - 2025-11-16
+### Changed
+- add ruff
+- add CLAUDE.md file
+
+## [0.12.13] - 2024-12-30
 ### Changed
 - Improved meanings parsing (experimental)
 

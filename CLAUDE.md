@@ -17,8 +17,10 @@ A Python library that extracts linguistic data (IPA, hyphenation, flexion, POS, 
 - `poetry run pytest test/methods/test_<module>.py` - Run specific test module
 - `poetry run pytest test/methods/test_<module>.py::test_function_name` - Run specific test
 
-### Code Formatting
-- `poetry run black .` - Format code with Black
+### Code Formatting & Linting
+- `poetry run ruff format` - Format code with Ruff
+- `poetry run ruff check` - Check code for linting issues
+- `poetry run ruff check --fix` - Auto-fix linting issues
 
 ### Build & Distribution
 - `poetry build` - Build distribution packages

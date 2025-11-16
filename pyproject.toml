@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "wiktionary-de-parser"
-version = "0.12.13"
+version = "0.12.14"
 description = "Extracts data from German Wiktionary dump files."
 authors = ["Gregor Weichbrodt <gregorweichbrodt@gmail.com>"]
 license = "MIT"
@@ -27,20 +27,27 @@ include = [
 python = "^3.11"
 lxml = "^5.1.0"
 mwparserfromhell = "^0.6.6"
-black = "^24.1.1"
 pydantic = "^2.6.0"
 requests = "^2.31.0"
 tqdm = "^4.66.1"
 wikitextparser = "^0.56.2"
-
-[tool.poetry.dev-dependencies]
-pytest = "^7.1.2"
-black = "*"
+ruff = "^0.14.5"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.0"
 ipywidgets = "^8.1.5"
+pytest = "^7.1.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+extend-exclude = [".vscode"]
+line-length = 80
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "W"]
+
+[tool.ruff.lint.pycodestyle]
+max-doc-length = 150
