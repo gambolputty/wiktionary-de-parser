@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "wiktionary-de-parser"
-version = "0.12.14"
+version = "0.12.15"
 description = "Extracts data from German Wiktionary dump files."
 authors = ["Gregor Weichbrodt <gregorweichbrodt@gmail.com>"]
 license = "MIT"

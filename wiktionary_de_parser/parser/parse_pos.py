@@ -6,12 +6,31 @@ from wiktionary_de_parser.parser import Parser
 
 DEBUG = False
 
+# Mapping from genitive forms in "Grammatische Merkmale" to (POS, subtype)
+# Format: "Genitive" -> (pos, subtype) or (pos, None) if no subtype
+DEKLINIERTE_FORM_POS_MAP = {
+    "Substantivs": ("Substantiv", None),
+    "Adjektivs": ("Adjektiv", None),
+    "Positivs": ("Adjektiv", "Positiv"),
+    "Superlativs": ("Adjektiv", "Superlativ"),
+    "Komparativs": ("Adjektiv", "Komparativ"),
+    "Personalpronomens": ("Pronomen", "Personalpronomen"),
+    "Possessivpronomens": ("Pronomen", "Possessivpronomen"),
+    "Demonstrativpronomens": ("Pronomen", "Demonstrativpronomen"),
+    "Indefinitpronomens": ("Pronomen", "Indefinitpronomen"),
+    "Relativpronomens": ("Pronomen", "Relativpronomen"),
+    "Reflexivpronomens": ("Pronomen", "Reflexivpronomen"),
+    "Pronomens": ("Pronomen", None),
+    "Numerales": ("Numerale", None),
+}
+
 POS_MAP = {
     "Abkürzung": ["Kurzwort"],
     "Adjektiv": [
         "Partizip",
         "Partizip I",
         "Partizip II",
+        "Positiv",
         "Komparativ",
         "Superlativ",
         "Gerundivum",
@@ -102,8 +121,6 @@ POS_MAP = {
         "Erweiterter Infinitiv",
     ],
     "Wortverbindung": [],
-    # needs additional parsing; can be: Substantiv, Adjektiv, Artikel, Pronomen
-    "Deklinierte Form": [],
 }
 
 NOT_IN_MAP = set()
@@ -190,6 +207,54 @@ class ParsePos(Parser):
 
         return result
 
+    @staticmethod
+    def extract_pos_from_deklinierte_form(wikitext: str):
+        """
+        Extract the actual POS from 'Deklinierte Form' entries.
+
+        Deklinierte Form entries contain grammatical features like:
+        "Genitiv Singular des Substantivs [[Word]]"
+
+        We extract "Substantivs" and map it to "Substantiv".
+        """
+        # Look for the pattern "des/der <POS-genitive>"
+        # Account for optional empty lines after the template
+        match = re.search(
+            r'{{Grammatische Merkmale}}\s*(.*?)(?:\n\n{{|{{Grundformverweis|$)',
+            wikitext,
+            re.DOTALL
+        )
+
+        if not match:
+            return None
+
+        features_text = match.group(1).strip()
+
+        if not features_text:
+            return None
+
+        # Extract all POS mentions in genitive form
+        pos_matches = re.findall(
+            r'des?\s+(' + '|'.join(DEKLINIERTE_FORM_POS_MAP.keys()) + r')\b',
+            features_text
+        )
+
+        if not pos_matches:
+            return None
+
+        # Take the first match and map it to the base form
+        pos_genitive = pos_matches[0]
+        pos_info = DEKLINIERTE_FORM_POS_MAP.get(pos_genitive)
+
+        if pos_info:
+            pos_base, subtype = pos_info
+            if subtype:
+                return {pos_base: [subtype]}
+            else:
+                return {pos_base: []}
+
+        return None
+
     @classmethod
     def parse(cls, wikitext: str):
         match_line = re.search(r"(=== ?{{Wortart(?:-Test)?\|[^\n]+)", wikitext)
@@ -205,6 +270,15 @@ class ParsePos(Parser):
             if pos_names:
                 # strip
                 pos_names = [name.strip() for name in pos_names]
+
+                # Special handling for "Deklinierte Form"
+                # Extract the actual POS from grammatical features
+                if "Deklinierte Form" in pos_names:
+                    deklinierte_pos = cls.extract_pos_from_deklinierte_form(
+                        wikitext
+                    )
+                    if deklinierte_pos:
+                        return deklinierte_pos
 
                 # find in map
                 pos_normalized = cls.find_pos(pos_names, wikitext)

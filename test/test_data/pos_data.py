@@ -130,4 +130,110 @@ pos_test_data = [
 """,
         {"Verb": []},
     ),
+    (
+        """
+=== {{Wortart|Deklinierte Form|Deutsch}} ===
+
+{{Worttrennung}}
+:Thuns
+
+{{Aussprache}}
+:{{IPA}} {{Lautschrift|tuːns}}
+:{{Hörbeispiele}} {{Audio|De-Thuns.ogg}}
+:{{Reime}} {{Reim|uːns|Deutsch}}
+
+{{Grammatische Merkmale}}
+*Genitiv Singular des Substantivs '''[[Thun]]'''
+
+{{Grundformverweis Dekl|Thun}}
+""",
+        {"Substantiv": []},
+    ),
+    (
+        """
+=== {{Wortart|Deklinierte Form|Deutsch}} ===
+
+{{Nebenformen}}
+:[[Geschosshöhen]]
+
+{{Worttrennung}}
+:Ge·schoß·hö·hen
+
+{{Aussprache}}
+:{{IPA}} {{Lautschrift|ɡəˈʃoːsˌhøːən}}
+:{{Hörbeispiele}} {{Audio|De-Geschoßhöhen.ogg}}
+
+{{Grammatische Merkmale}}
+*Nominativ Plural des Substantivs '''[[Geschoßhöhe]]'''
+*Genitiv Plural des Substantivs '''[[Geschoßhöhe]]'''
+*Dativ Plural des Substantivs '''[[Geschoßhöhe]]'''
+*Akkusativ Plural des Substantivs '''[[Geschoßhöhe]]'''
+
+{{Grundformverweis Dekl|Geschoßhöhe}}
+""",
+        {"Substantiv": []},
+    ),
+    (
+        """
+=== {{Wortart|Deklinierte Form|Deutsch}} ===
+
+{{Worttrennung}}
+:Nah·men, {{Pl.1}} Nah·men, {{Pl.2}} Nah·mens
+
+{{Grammatische Merkmale}}
+*3. Person Femininum Singular Dativ des Personalpronomens '''[[sie]]'''
+""",
+        {"Pronomen": ["Personalpronomen"]},
+    ),
+    (
+        """
+=== {{Wortart|Deklinierte Form|Deutsch}} ===
+
+{{Grammatische Merkmale}}
+*Nominativ Plural des Adjektivs '''[[schön]]'''
+*Genitiv Plural des Adjektivs '''[[schön]]'''
+*Dativ Plural des Adjektivs '''[[schön]]'''
+*Akkusativ Plural des Adjektivs '''[[schön]]'''
+
+{{Grundformverweis Dekl|schön}}
+""",
+        {"Adjektiv": []},
+    ),
+    (
+        """
+=== {{Wortart|Deklinierte Form|Deutsch}} ===
+
+{{Grammatische Merkmale}}
+*Nominativ Singular Femininum des Positivs des Adjektivs '''[[schnell]]'''
+*Akkusativ Singular Femininum des Positivs des Adjektivs '''[[schnell]]'''
+*Nominativ Plural des Positivs des Adjektivs '''[[schnell]]'''
+*Akkusativ Plural des Positivs des Adjektivs '''[[schnell]]'''
+
+{{Grundformverweis Dekl|schnell}}
+""",
+        {"Adjektiv": ["Positiv"]},
+    ),
+    (
+        """
+=== {{Wortart|Deklinierte Form|Deutsch}} ===
+
+{{Grammatische Merkmale}}
+*Genitiv Singular Maskulinum des Superlativs des Adjektivs '''[[schnell]]'''
+*Genitiv Singular Neutrum des Superlativs des Adjektivs '''[[schnell]]'''
+
+{{Grundformverweis Dekl|schnellsten}}
+""",
+        {"Adjektiv": ["Superlativ"]},
+    ),
+    (
+        """
+=== {{Wortart|Deklinierte Form|Deutsch}} ===
+
+{{Grammatische Merkmale}}
+*Akkusativ Singular des Personalpronomens '''[[ich]]'''
+
+{{Grundformverweis Dekl|ich}}
+""",
+        {"Pronomen": ["Personalpronomen"]},
+    ),
 ]
