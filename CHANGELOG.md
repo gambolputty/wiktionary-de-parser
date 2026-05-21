@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.0] - 2026-05-22
+### Added
+- `etymology` parser for the `{{Herkunft}}` section. Returns
+  `EtymologyResult` with `type` (COMPOUND, DERIVATION, MOVIERUNG, CONVERSION,
+  LOANWORD, SHORTENING, VARIANT, UNKNOWN), `components`, `prefix`, `suffix`,
+  `fugenelement`, and `source_language`. Exposed via
+  `ParsedWiktionaryPageEntry.etymology`.
+
 ## [0.13.1] - 2025-11-16
 ### Changed
 - Moved `ruff` from runtime dependencies to dev dependencies
