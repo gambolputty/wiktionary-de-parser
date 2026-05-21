@@ -1,46 +1,67 @@
-[tool.poetry]
+[project]
 name = "wiktionary-de-parser"
 version = "0.13.1"
 description = "Extracts data from German Wiktionary dump files."
-authors = ["Gregor Weichbrodt <gregorweichbrodt@gmail.com>"]
-license = "MIT"
+authors = [{ name = "Gregor Weichbrodt", email = "gregorweichbrodt@gmail.com" }]
+requires-python = ">=3.11,<4"
 readme = "README.md"
-homepage = "https://github.com/gambolputty/wiktionary-de-parser"
-repository = "https://github.com/gambolputty/wiktionary-de-parser"
-keywords = ["wiktionary", "xml", "parser", "data-extraction", "german", "nlp"]
+license = "MIT"
+keywords = [
+    "wiktionary",
+    "xml",
+    "parser",
+    "data-extraction",
+    "german",
+    "nlp",
+]
 classifiers = [
     "Programming Language :: Python :: 3.7",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Natural Language :: German",
-    "Topic :: Text Processing :: Markup :: XML"
+    "Topic :: Text Processing :: Markup :: XML",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
-include = [
+dependencies = [
+    "lxml>=5.1.0,<6",
+    "mwparserfromhell>=0.6.6,<0.7",
+    "pydantic>=2.6.0,<3",
+    "requests>=2.31.0,<3",
+    "tqdm>=4.66.1,<5",
+    "wikitextparser>=0.56.2,<0.57",
+]
+
+[project.urls]
+Homepage = "https://github.com/gambolputty/wiktionary-de-parser"
+Repository = "https://github.com/gambolputty/wiktionary-de-parser"
+"Bug Tracker" = "https://github.com/gambolputty/wiktionary-de-parser/issues"
+
+[dependency-groups]
+dev = [
+    "ipykernel>=6.29.0,<7",
+    "ipywidgets>=8.1.5,<9",
+    "pytest>=7.1.2,<8",
+    "ruff>=0.14.5,<0.15",
+]
+
+[tool.uv]
+default-groups = "all"
+
+[tool.uv.build-backend]
+module-name = "wiktionary_de_parser"
+module-root = ""
+source-include = [
     "CHANGELOG.md",
     "LICENSE.txt",
 ]
 
-[tool.poetry.urls]
-"Bug Tracker" = "https://github.com/gambolputty/wiktionary-de-parser/issues"
-
-[tool.poetry.dependencies]
-python = "^3.11"
-lxml = "^5.1.0"
-mwparserfromhell = "^0.6.6"
-pydantic = "^2.6.0"
-requests = "^2.31.0"
-tqdm = "^4.66.1"
-wikitextparser = "^0.56.2"
-
-[tool.poetry.group.dev.dependencies]
-ipykernel = "^6.29.0"
-ipywidgets = "^8.1.5"
-pytest = "^7.1.2"
-ruff = "^0.14.5"
-
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build>=0.9.16,<0.10.0"]
+build-backend = "uv_build"
 
 [tool.ruff]
 extend-exclude = [".vscode"]
