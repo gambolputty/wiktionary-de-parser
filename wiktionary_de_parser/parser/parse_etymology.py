@@ -91,6 +91,7 @@ TERMINOLOGY: set[str] = set(MARKER_TO_TYPE) | {
     "Infix",
     "Interfix",
     "Fugenelement",
+    "Gleitlaut",
     "Derivatem",
     "Ableitungsmorphem",
     "Wortbildungsmorphem",
@@ -608,6 +609,33 @@ def _select_first_line(section: str) -> str:
     return section[: match.start()].rstrip()
 
 
+def _select_first_sentence(section: str) -> str:
+    """Cut the section at the first sentence boundary (";" or ". ") so trailing
+    explanatory prose doesn't pollute the component list.
+
+    Many Herkunft sections cram structural claim and historical commentary into
+    a single line, separated by a semicolon: "[[Determinativkompositum]] aus X
+    und Y; das Wort geht zurück auf …". After the cut, the [X, Y]-style
+    composition is intact and the [[zehn]] / [[sechs]] / [[Frau]] gloss
+    wikilinks in the explanation are gone.
+
+    Comma is *not* a boundary — it appears inside compositions
+    ("X, Y und Z", "X, mit dem Fugenelement Y").
+    """
+    semicolon = section.find(";")
+    # Sentence end = ". " followed by a capital letter. The negative lookbehind
+    # for a digit prevents matching "17. Jahrhundert" or "16. Jahrhundert" as
+    # sentence boundaries, which they aren't.
+    period_match = re.search(r"(?<!\d)\.\s+(?=[A-ZÄÖÜ])", section)
+    cuts = [
+        c for c in (semicolon, period_match.start() if period_match else -1)
+        if c >= 0
+    ]
+    if not cuts:
+        return section
+    return section[: min(cuts)].rstrip()
+
+
 def _is_empty_or_qs(section: str) -> bool:
     text = section.strip().lstrip(":").strip()
     text = SENSE_MARKER_RE.sub("", text).strip()
@@ -798,6 +826,7 @@ class ParseEtymology(Parser):
         section = _select_structural_block(section)
         section = _select_first_sense(section)
         section = _select_first_line(section)
+        section = _select_first_sentence(section)
         parsed = mwparserfromhell.parse(section)
         wikilinks = parsed.filter_wikilinks()
         has_verbherkunft = "{{Verbherkunft" in section

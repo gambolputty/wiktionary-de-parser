@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.1] - 2026-05-22
+### Fixed
+- `etymology` parser: `[[Gleitlaut]]` is now recognised as terminology (like
+  `[[Fugenelement]]`) and no longer leaks into `components`.
+- `etymology` parser: sections that pack the structural claim and explanatory
+  prose into a single line are now cut at the first sentence boundary
+  (`;` or `. `). This prevents gloss wikilinks in trailing explanations
+  (e.g. `[[sechs]]`, `[[zehn]]` after `{{Üt|grc|ἕξ}}` / `{{Ü|la|decem}}`) from
+  ending up in `components`, and lets entries like `Detektiv` be classified as
+  LOANWORD instead of COMPOUND when `[[Kompositum]]` only appears deep in
+  explanatory text.
+
 ## [0.14.0] - 2026-05-22
 ### Added
 - `etymology` parser for the `{{Herkunft}}` section. Returns

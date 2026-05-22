@@ -656,4 +656,83 @@ etymology_test_data: list[tuple[str, str, dict | None]] = [
             "source_language": None,
         },
     ),
+    # Sendeturm: [[Gleitlaut]] is terminology and must not appear in
+    # components. Like [[Fugenelement]], it labels the morpheme between
+    # parts, not a component itself.
+    (
+        "Sendeturm",
+        "{{Herkunft}}\n"
+        ":[[Determinativkompositum]] aus dem Stamm des Verbs ''[[senden]]'' "
+        "und dem Substantiv ''[[Turm]]'' mit dem [[Gleitlaut]] ''[[-e-]]''\n"
+        "{{Synonyme}}",
+        {
+            "type": EtymologyType.COMPOUND,
+            "components": ["senden", "Turm"],
+            "fugenelement": "e",
+            "suffix": None,
+            "prefix": None,
+            "source_language": None,
+        },
+    ),
+    # Hexadezimalsystem: single-line section with a semicolon separating
+    # the composition statement from a trailing etymology explanation.
+    # _select_first_sentence cuts at the semicolon, so glosses [[sechs]],
+    # [[zehn]] after "{{Ü|grc|ἕξ}}" / "{{Ü|la|decem}}" don't leak in.
+    (
+        "Hexadezimalsystem",
+        "{{Herkunft}}\n"
+        ":[[Determinativkompositum]], zusammengesetzt aus dem Adjektiv "
+        "''[[hexadezimal]]'' und dem Substantiv ''[[System]]''; das "
+        "griechisch-lateinische Mischwort ''hexadezimal'' ist "
+        "zusammengesetzt aus griechisch ''{{Üt|grc|ἕξ}}'' „[[sechs]]“, "
+        "und lateinisch ''{{Ü|la|decem}}'' „[[zehn]]“\n"
+        "{{Synonyme}}",
+        {
+            "type": EtymologyType.COMPOUND,
+            "components": ["hexadezimal", "System"],
+            "fugenelement": None,
+            "suffix": None,
+            "prefix": None,
+            "source_language": None,
+        },
+    ),
+    # Detektiv: "[[Kompositum]]" appears deep in the section, after several
+    # sentences of loanword explanation. _select_first_sentence cuts before
+    # it so the section is correctly classified as LOANWORD, not COMPOUND.
+    # The negative-lookbehind on the period regex avoids splitting at
+    # "z. B." or "v. Chr." abbreviations.
+    (
+        "Detektiv",
+        "{{Herkunft}}\n"
+        ":''Detektiv'' wurde aus dem [[englisch]]en "
+        "''{{Ü|en|detective}}'' entlehnt. Dieses ist eine Bildung zum "
+        "Verb ''{{Ü|en|detect}}''. Dabei handelt es sich um das [[PPP]] "
+        "des Verbs, eines [[Kompositum]]s von ''{{Ü|la|tegere}}''\n"
+        "{{Synonyme}}",
+        {
+            "type": EtymologyType.LOANWORD,
+            "components": [],
+            "fugenelement": None,
+            "suffix": None,
+            "prefix": None,
+            "source_language": "Englisch",
+        },
+    ),
+    # Erfolg: "im 17. Jahrhundert" must NOT be treated as a sentence
+    # boundary — the negative-lookbehind for a digit prevents
+    # _select_first_sentence from cutting at the date marker.
+    (
+        "Erfolg",
+        "{{Herkunft}}\n"
+        ":[[Rückbildung]] im 17. Jahrhundert von ''[[erfolgen]]''\n"
+        "{{Synonyme}}",
+        {
+            "type": EtymologyType.DERIVATION,
+            "components": ["erfolgen"],
+            "fugenelement": None,
+            "suffix": None,
+            "prefix": None,
+            "source_language": None,
+        },
+    ),
 ]
