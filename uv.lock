@@ -1060,7 +1060,7 @@ wheels = [
 
 [[package]]
 name = "wiktionary-de-parser"
-version = "0.14.1"
+version = "0.14.2"
 source = { editable = "." }
 dependencies = [
     { name = "lxml" },

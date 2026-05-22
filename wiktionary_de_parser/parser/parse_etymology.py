@@ -103,8 +103,15 @@ TERMINOLOGY: set[str] = set(MARKER_TO_TYPE) | {
     "Verbsuffix",
     "Verb",
     "Substantiv",
+    "Substantiven",
+    "Substantivs",
     "Adjektiv",
+    "Adjektivs",
+    "Adjektiven",
     "Adverb",
+    "Adverbs",
+    "Verbs",
+    "Verben",
     "Partikel",
     "Pronomen",
     "Präposition",
@@ -150,6 +157,20 @@ TERMINOLOGY: set[str] = set(MARKER_TO_TYPE) | {
     "Rufname",
     "Übername",
     "Verbalstamm",
+    "Flexion",
+    "Wortgruppe",
+    "Syntagma",
+    "substantiviert",
+    "substantivisch",
+    "Wortbildungselement",
+    "implizite Derivation",
+    "implizite Ableitung",
+    "Suffigierung",
+    "Verkleinerungsform",
+    "Verkleinerungsendung",
+    "gebundenes lexikalisches Morphem",
+    "lexikalisches Morphem",
+    "Ursprungsbedeutung",
     "Diminutivendung",
     "Lexem",
     "Schimpfwort",
@@ -549,11 +570,29 @@ _LANG_ALT = "|".join(sorted(LANGUAGE_WIKILINKS, key=len, reverse=True))
 LANGUAGE_PLAIN_RE = re.compile(r"\b(" + _LANG_ALT + r")\w*", re.IGNORECASE)
 QS_ONLY_RE = re.compile(r"(?:\{\{QS[^}]*\}\}\s*)+")
 INTERWIKI_PREFIX_RE = re.compile(
-    r"^(?:w|s|b|q|v|n|commons|wikt|mw|doi|isbn|incubator|meta):",
+    r"^:?(?:w|s|b|q|v|n|commons|wikt|mw|doi|isbn|incubator|meta"
+    r"|hilfe|wikipedia|wiktionary|wikisource):",
     re.IGNORECASE,
 )
 HEAD_WORD_RE = re.compile(r"[A-Za-zÄÖÜäöüß]+")
 NEXT_BLOCK_LINE_RE = re.compile(r"\n\s*:")
+# Connectors that introduce an alternative etymology in the same line:
+# "Determinativkompositum aus X und Y oder Ableitung von Z mit -keit".
+# Keep the first branch and drop the rest.
+ALTERNATIVE_CONNECTOR_RE = re.compile(
+    r"\s+(?:oder|bzw\.?|alternativ|auch:)\s+",
+    re.IGNORECASE,
+)
+# Word "Suffix" or "Präfix" as a free-standing token. Used to downgrade
+# COMPOUND→DERIVATION when Wiktionary explicitly labels the bound morpheme
+# as a derivational affix, even if the structural marker was "zusammengesetzt".
+SUFFIX_PREFIX_WORD_RE = re.compile(r"\b(?:Suffix|Präfix)\b")
+# Wikilink target must contain at least one Latin/Greek/Cyrillic letter or
+# digit to be considered a possible component. CJK, Arabic, Hebrew etc.
+# glosses ("[[漫画]]" next to "Manga") can't be components of a German lemma.
+# Digits are allowed because numeric-prefixed lemmas like "8-seitig" use
+# [[8]] as a genuine component.
+_HAS_LATINISH_RE = re.compile(r"[A-Za-z0-9ÄÖÜäöüßΑ-Ωα-ωА-Яа-я]")
 
 # Verbherkunft W-values that indicate the prefix is itself a lexeme (noun/adj)
 # rather than a particle. For these, the result is a COMPOUND, not a derivation.
@@ -604,6 +643,22 @@ def _select_first_line(section: str) -> str:
     lines. Those follow-up lines are full of wikilinks that pollute the
     components list. The first line carries the structural information."""
     match = NEXT_BLOCK_LINE_RE.search(section)
+    if match is None:
+        return section
+    return section[: match.start()].rstrip()
+
+
+def _select_first_alternative(section: str) -> str:
+    """When the section offers two competing etymologies separated by
+    "oder" / "bzw." / "alternativ" / "auch:", keep only the first branch.
+
+    Example: "Determinativkompositum aus [[Alkohol]] und [[Abhängigkeit]] oder
+    Ableitung von [[alkoholabhängig]] mit dem Suffix [[-keit]]" — without this
+    helper the parser collects all four wikilinks. Must run *before* the
+    Suffix/Präfix downgrade (Bug A), otherwise the "or Ableitung … Suffix …"
+    branch would force the whole entry to DERIVATION.
+    """
+    match = ALTERNATIVE_CONNECTOR_RE.search(section)
     if match is None:
         return section
     return section[: match.start()].rstrip()
@@ -723,6 +778,12 @@ def _extract_components_and_morphemes(
         # — those are Wiktionary typos, not real lemmas.
         if any(c in target for c in "()[]{}<>"):
             continue
+        # Skip wikilinks that contain no Latin/Greek/Cyrillic letters — they're
+        # CJK, Arabic, Hebrew, etc. glosses for foreign source words
+        # ([[漫画]] next to "Manga"). The German lemma can't have these as
+        # components.
+        if not _HAS_LATINISH_RE.search(target):
+            continue
         stem, lead, trail = _strip_bound_morpheme(target)
         if lead and trail:
             if fugenelement is None:
@@ -827,6 +888,7 @@ class ParseEtymology(Parser):
         section = _select_first_sense(section)
         section = _select_first_line(section)
         section = _select_first_sentence(section)
+        section = _select_first_alternative(section)
         parsed = mwparserfromhell.parse(section)
         wikilinks = parsed.filter_wikilinks()
         has_verbherkunft = "{{Verbherkunft" in section
@@ -870,6 +932,28 @@ class ParseEtymology(Parser):
         # language name).
         if etype == EtymologyType.DERIVATION and has_language_signal:
             etype = EtymologyType.LOANWORD
+
+        # "zusammengesetzt aus X und dem Suffix [[-Y]]" matches the COMPOUND
+        # plaintext marker but is structurally a derivation. When Wiktionary
+        # explicitly labels the bound morpheme "Suffix" / "Präfix", downgrade
+        # COMPOUND → DERIVATION so the affix stays in the suffix/prefix slot
+        # and isn't appended to components by the COMPOUND post-processing.
+        #
+        # Exception: bound-lexeme compounds (Vexill-o-logie, Bio-graphie,
+        # Tridec-an, Acid-o-phobie) also use "Suffix" for the trailing
+        # -logie/-graphie/-an/-phobie, but they're genuine compounds. They're
+        # distinguishable by either an explicit Fugenelement or by a
+        # "gebundenes Lexem" marker in the section.
+        is_bound_lexeme_compound = (
+            "Fugenelement" in section or "gebunden" in section
+        )
+        if (
+            etype == EtymologyType.COMPOUND
+            and (suffix or prefix)
+            and SUFFIX_PREFIX_WORD_RE.search(section)
+            and not is_bound_lexeme_compound
+        ):
+            etype = EtymologyType.DERIVATION
 
         # Resolve source_language before the final type fallback so it can
         # disambiguate ambiguous UNKNOWN sections (Erbwort vs derivation).

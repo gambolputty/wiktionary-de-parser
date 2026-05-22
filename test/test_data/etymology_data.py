@@ -735,4 +735,170 @@ etymology_test_data: list[tuple[str, str, dict | None]] = [
             "source_language": None,
         },
     ),
+    # bolschewistisch: "zusammengesetzt aus X und dem Suffix [[-Y]]" is
+    # *structurally* a derivation, not a compound. The "Suffix"/"Präfix"
+    # plaintext token downgrades COMPOUND → DERIVATION so -isch stays in
+    # the suffix slot and doesn't pollute components.
+    (
+        "bolschewistisch",
+        "{{Herkunft}}\n"
+        ":zusammengesetzt aus dem Substantiv ''[[Bolschewist]]'' und dem "
+        "Suffix ''[[-isch]]''\n"
+        "{{Synonyme}}",
+        {
+            "type": EtymologyType.DERIVATION,
+            "components": ["Bolschewist"],
+            "fugenelement": None,
+            "suffix": "isch",
+            "prefix": None,
+            "source_language": None,
+        },
+    ),
+    # betriebswirtschaftlich: same pattern as bolschewistisch.
+    (
+        "betriebswirtschaftlich",
+        "{{Herkunft}}\n"
+        ":zusammengesetzt aus ''[[Betriebswirtschaft]]'' und dem Suffix "
+        "''[[-lich]]''\n"
+        "{{Synonyme}}",
+        {
+            "type": EtymologyType.DERIVATION,
+            "components": ["Betriebswirtschaft"],
+            "fugenelement": None,
+            "suffix": "lich",
+            "prefix": None,
+            "source_language": None,
+        },
+    ),
+    # Tridecan: bound-lexeme compound that also uses "Suffix" in the
+    # section ("mit dem Suffix -an"). The "gebundenes Lexem" marker is the
+    # signal that distinguishes this from a true derivation — keep the
+    # COMPOUND classification and let post-processing append -an as the
+    # final component.
+    (
+        "Tridecan",
+        "{{Herkunft}}\n"
+        ":[[Determinativkompositum]], zusammengesetzt aus dem gebundenen "
+        "Lexem ''[[tridec-]]'' mit dem gebundenen Lexem ''[[-dec-]]'' und "
+        "dem [[Suffix]] ''[[-an]]''\n"
+        "{{Synonyme}}",
+        {
+            "type": EtymologyType.COMPOUND,
+            "components": ["tridec", "an"],
+            "fugenelement": "dec",
+            "suffix": None,
+            "prefix": None,
+            "source_language": None,
+        },
+    ),
+    # Alkoholabhängigkeit: " oder " connector splits two competing
+    # etymologies — _select_first_alternative keeps only the first branch,
+    # so the [[alkoholabhängig]], [[-keit]] from the alternative don't end
+    # up in the COMPOUND components.
+    (
+        "Alkoholabhängigkeit",
+        "{{Herkunft}}\n"
+        ":Determinativkompositum aus den Substantiven ''[[Alkohol]]'' und "
+        "''[[Abhängigkeit]]'' oder Ableitung des Adjektivs "
+        "''[[alkoholabhängig]]'' mit dem Suffix ''[[-keit]]''\n"
+        "{{Synonyme}}",
+        {
+            "type": EtymologyType.COMPOUND,
+            "components": ["Alkohol", "Abhängigkeit"],
+            "fugenelement": None,
+            "suffix": None,
+            "prefix": None,
+            "source_language": None,
+        },
+    ),
+    # Mindesthaltbarkeit: [[Flexion]] is Wiktionary terminology ("Flexion
+    # des Adjektivs X") and must be filtered out of components.
+    (
+        "Mindesthaltbarkeit",
+        "{{Herkunft}}\n"
+        ":[[Determinativkompositum]] aus der [[Flexion]] des [[Adjektiv]]s "
+        "''[[minder|mindeste(r)]]'', dem [[Adjektiv]] ''[[haltbar]]'' "
+        "sowie dem [[Ableitungsmorphem]] ''[[-keit]]''\n"
+        "{{Synonyme}}",
+        {
+            "type": EtymologyType.COMPOUND,
+            "components": ["minder", "haltbar", "keit"],
+            "fugenelement": None,
+            "suffix": None,
+            "prefix": None,
+            "source_language": None,
+        },
+    ),
+    # Interwiki link with leading colon: [[:w:Karl Steinbuch]] points at the
+    # Wikipedia article. The leading ":" forces a link (instead of a category)
+    # and must be tolerated by the namespace filter.
+    (
+        "Informatik",
+        "{{Herkunft}}\n"
+        ":[[Wortkreuzung]] aus [[Information]] und [[informatique]], "
+        "1957 von [[:w:Karl Steinbuch]] geprägt\n"
+        "{{Synonyme}}",
+        {
+            "type": EtymologyType.SHORTENING,
+            "components": ["Information", "informatique"],
+            "fugenelement": None,
+            "suffix": None,
+            "prefix": None,
+            "source_language": None,
+        },
+    ),
+    # Bürgerkrieg: "[[Substantiv]]en" works because the wikilink is just
+    # [[Substantiv]], filtered as terminology. But the *declined* form
+    # [[Substantiven]] (a different wikilink, target "Substantiven") slipped
+    # through because only "Substantiv" was in TERMINOLOGY.
+    (
+        "Bürgerkrieg",
+        "{{Herkunft}}\n"
+        ":[[Determinativkompositum]] aus den [[Substantiven]] "
+        "''[[Bürger]]'' und ''[[Krieg]]''\n"
+        "{{Synonyme}}",
+        {
+            "type": EtymologyType.COMPOUND,
+            "components": ["Bürger", "Krieg"],
+            "fugenelement": None,
+            "suffix": None,
+            "prefix": None,
+            "source_language": None,
+        },
+    ),
+    # Mangaka: CJK glosses ([[漫画]], [[画家]], [[画]]) can't be components
+    # of a German lemma. They're filtered by the _HAS_LATINISH_RE check.
+    (
+        "Mangaka",
+        "{{Herkunft}}\n"
+        ":[[Determinativkompositum]] aus [[manga]] (''[[漫画]]'') und "
+        "[[gaka]] (''[[画家]]'')\n"
+        "{{Synonyme}}",
+        {
+            "type": EtymologyType.COMPOUND,
+            "components": ["manga", "gaka"],
+            "fugenelement": None,
+            "suffix": None,
+            "prefix": None,
+            "source_language": None,
+        },
+    ),
+    # Stiefsohn: "gebundenes lexikalisches Morphem" is meta-linguistic
+    # terminology, not a component. Filtered as a multi-word TERMINOLOGY
+    # entry.
+    (
+        "Stiefsohn",
+        "{{Herkunft}}\n"
+        ":[[Determinativkompositum]] aus ''[[stief]]'' "
+        "([[gebundenes lexikalisches Morphem]]) und ''[[Sohn]]''\n"
+        "{{Synonyme}}",
+        {
+            "type": EtymologyType.COMPOUND,
+            "components": ["stief", "Sohn"],
+            "fugenelement": None,
+            "suffix": None,
+            "prefix": None,
+            "source_language": None,
+        },
+    ),
 ]

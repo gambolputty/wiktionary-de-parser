@@ -4,6 +4,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.2] - 2026-05-22
+### Fixed
+- `etymology` parser: `"zusammengesetzt aus X und dem Suffix [[-Y]]"` is now
+  classified as DERIVATION (was COMPOUND). Triggered by the word "Suffix" or
+  "Präfix" in the section; gated by a "Fugenelement" / "gebundenes Lexem"
+  marker so genuine bound-lexeme compounds like Vexillologie or Tridecan
+  stay COMPOUND.
+- `etymology` parser: sections that offer two competing etymologies
+  separated by `oder` / `bzw.` / `alternativ` / `auch:` (e.g.
+  Alkoholabhängigkeit) are now cut at the first connector, so wikilinks
+  from the alternative branch don't leak into `components`.
+- `etymology` parser: interwiki/cross-project wikilinks with a leading
+  colon (`[[:w:Karl Steinbuch]]`) are now filtered, plus additional
+  namespace prefixes (`Hilfe:`, `Wikipedia:`, `Wiktionary:`,
+  `Wikisource:`).
+- `etymology` parser: wikilinks with no Latin/Greek/Cyrillic letters
+  (CJK, Arabic, Hebrew) are filtered — they're glosses for foreign source
+  words, not components of a German lemma.
+- `etymology` parser: declined forms of POS terminology (`Substantiven`,
+  `Substantivs`, `Adjektivs`, `Adjektiven`, `Verbs`, `Verben`,
+  `Adverbs`) added to TERMINOLOGY filter.
+- `etymology` parser: additional meta-linguistic terminology filtered
+  out of components: `Flexion`, `Wortgruppe`, `Syntagma`,
+  `substantiviert`, `substantivisch`, `Wortbildungselement`,
+  `gebundenes lexikalisches Morphem`, `lexikalisches Morphem`,
+  `implizite Derivation`, `implizite Ableitung`, `Suffigierung`,
+  `Verkleinerungsform`, `Verkleinerungsendung`, `Ursprungsbedeutung`.
+
 ## [0.14.1] - 2026-05-22
 ### Fixed
 - `etymology` parser: `[[Gleitlaut]]` is now recognised as terminology (like
