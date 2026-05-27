@@ -1,6 +1,6 @@
 [project]
 name = "wiktionary-de-parser"
-version = "0.14.2"
+version = "0.15.0"
 description = "Extracts data from German Wiktionary dump files."
 authors = [{ name = "Gregor Weichbrodt", email = "gregorweichbrodt@gmail.com" }]
 requires-python = ">=3.11,<4"

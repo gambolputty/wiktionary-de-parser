@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.15.0] - 2026-05-27
 ### Fixed
 - `ipa` parser: tolerate `, `, `,  `, `; `, `,` as separators between
   `{{Lautschrift}}` templates (was strict on single `", "`). Recovers
@@ -111,7 +111,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Parser.find_paragraph`: strips `<ref>` blocks (multi-line and
   self-closing) before locating the section so a `\n{{…}}` inside a
   citation can no longer terminate the section capture early. All
-  callers (IPA, Rhymes, Hyphenation, Meanings, Etymology) benefit.
+  callers (IPA, Rhymes, Hyphenation, Meanings) benefit.
 
 ### Added
 - `pos` parser POS_MAP additions: `Bauwerksname`, `Göttername`,
@@ -130,6 +130,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     `entries_from_page`, `parse_pos`, `parse_language`.
 
 ### Removed
+- **BREAKING**: `etymology` parser and the `etymology` field on
+  `ParsedWiktionaryPageEntry`. The `{{Herkunft}}` section is too free-form
+  for reliable structured extraction and the parser produced unreliable
+  output on real Wiktionary data. The `EtymologyType` enum and
+  `EtymologyResult` model are also removed.
 - `parse_ipa.WANTED_TABLE_NAMES` constant (was declared but unused; the
   flexion parser has its own active copy).
 

@@ -54,8 +54,8 @@ def test_multiline_ref_with_nested_template_does_not_truncate():
     """Code-review #2 finding 5 — find_paragraph used to terminate at the
     first `\\n{{` even when that `{{` sat inside a `<ref>` citation. Now
     refs are stripped before the section walk, so all callers (IPA,
-    Rhymes, Hyphenation, Etymology, Meanings) benefit, not just the one
-    that had a private workaround."""
+    Rhymes, Hyphenation, Meanings) benefit, not just the one that had a
+    private workaround."""
     wt = (
         "{{Aussprache}}\n"
         ":{{IPA}} {{Lautschrift|foo}}<ref>citation\n"
