@@ -27,12 +27,12 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
-    "lxml>=5.1.0,<6",
-    "mwparserfromhell>=0.6.6,<0.7",
-    "pydantic>=2.6.0,<3",
-    "requests>=2.31.0,<3",
-    "tqdm>=4.66.1,<5",
-    "wikitextparser>=0.56.2,<0.57",
+    "lxml>=6.1.1,<7",
+    "mwparserfromhell>=0.7.2,<0.8",
+    "pydantic>=2.13.4,<3",
+    "requests>=2.34.2,<3",
+    "tqdm>=4.67.3,<5",
+    "wikitextparser>=0.56.4,<0.57",
 ]
 
 [project.urls]
@@ -42,10 +42,10 @@ Repository = "https://github.com/gambolputty/wiktionary-de-parser"
 
 [dependency-groups]
 dev = [
-    "ipykernel>=6.29.0,<7",
-    "ipywidgets>=8.1.5,<9",
-    "pytest>=7.1.2,<8",
-    "ruff>=0.14.5,<0.15",
+    "ipykernel>=7.2.0,<8",
+    "ipywidgets>=8.1.8,<9",
+    "pytest>=9.0.3,<10",
+    "ruff>=0.15.14,<0.16",
 ]
 
 [tool.uv]

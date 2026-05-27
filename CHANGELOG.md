@@ -133,6 +133,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `parse_ipa.WANTED_TABLE_NAMES` constant (was declared but unused; the
   flexion parser has its own active copy).
 
+### Changed
+- Bumped dependencies to current major releases:
+  `lxml` 5.4 → 6.1, `mwparserfromhell` 0.6.6 → 0.7.2, `pydantic` 2.12 →
+  2.13, `requests` 2.32 → 2.34, `tqdm` 4.67.1 → 4.67.3, `ipykernel`
+  6.31 → 7.2, `pytest` 7.4 → 9.0, `ruff` 0.14 → 0.15. No code changes
+  required.
+
 ## [0.14.2] - 2026-05-22
 ### Fixed
 - `etymology` parser: `"zusammengesetzt aus X und dem Suffix [[-Y]]"` is now
