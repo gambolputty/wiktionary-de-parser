@@ -4,6 +4,135 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Fixed
+- `ipa` parser: tolerate `, `, `,  `, `; `, `,` as separators between
+  `{{Lautschrift}}` templates (was strict on single `", "`). Recovers
+  multi-variant IPAs on ~340 pages including `Kaffee`, `Leipzig`,
+  `Inkongruenz`, `Alpenrepublik`, `New Orleans`, `Stahlbeton`, …
+- `ipa` parser: `{{Lautschrift|spr=de|ˈxyz}}` (named parameter before
+  the positional IPA) used to return `['spr=de']`. Now correctly skips
+  named params and picks the positional IPA value (`verwehen`, `Bane`,
+  `Arnis`, `meh` and similar pages).
+- `ipa` parser: HTML markup like `<sup>ə</sup>` inside Lautschrift values
+  is stripped (e.g. `elf` now yields `['ˈɛləf']` instead of leaking the
+  tags).
+- `ipa` parser: `{{Lautschrift?}}` (unverified pronunciation) is used as
+  a fallback when an entry has no verified `{{Lautschrift}}`. Adds IPA
+  for ~230 entries including `Betriebswirtschaftslehre`,
+  `Niederschöneweide`, `Maßband`. Verified Lautschrift still wins when
+  both are present in the same paragraph.
+- `ipa` parser: interleaved `{{Lautschrift?}}` between two verified
+  `{{Lautschrift}}` templates no longer terminates the chain.
+- `ipa` parser: tolerates whitespace inside the `{{IPA}}` template name
+  (`{{ IPA }}`).
+- `rhymes` parser: same separator and named-param fixes as `ipa`.
+- `pos` parser: typo `{{Deutsch Substantiv Übersicht - sch` (stray
+  space) corrected to `-sch`; matches 514 real templates.
+- `pos` parser: `{{Wortart|spr=de|Substantiv}}` (named parameter before
+  positional) now correctly returns `Substantiv` instead of `spr=de`.
+- `pos` parser: `Grammatische Merkmale` extraction tolerates a section
+  followed by a single-newline `\n{{…}}` (previously required
+  `\n\n{{…}}`).
+- `pos` parser: redundant `Übersicht - sch` substring check removed (the
+  shorter `Übersicht` already matches).
+- `flexion` parser: nested templates inside Übersicht tables
+  (`|Genus={{m}}`, `|Bild=…{{Per-Deutschlandradio|…}}`) no longer
+  truncate the table at the first inner `}`. Rewrites the table walk to
+  brace-balanced parsing via `mwparserfromhell`. 203 pages got
+  full-coverage flexion tables.
+- `flexion` parser: caption-side `<ref>` blocks with named parameters
+  (`Autor=`, `Titel=`, `ISBN=`, …) no longer leak as table fields.
+- `flexion` parser: numeric-only keys from broken Übersicht tables are
+  dropped (`Kyoto` no longer returns `{'3': "''Kyoto''", '2': '1'}`).
+- `flexion` parser: multi-line `<ref>` inside a cell value is stripped
+  in full (was leaving the ref body and a stray `</ref>`).
+- `flexion` parser: `&nbsp;` is now actually replaced with a space (the
+  trailing `;` used to leak).
+- `hyphenation` parser: affix markers on the lemma (`auto-`, `-ow`,
+  `-s-`) survive the syllable split instead of disappearing.
+- `hyphenation` parser: trailing newline no longer glued to the last
+  syllable (`A` → `['A']`, not `['A\n']`).
+- `hyphenation` parser: standalone commas and dots inside chemical
+  names like `1,2,3-Propentricarbonsäure` and `Web 2.0` are preserved
+  (only `, ` with whitespace is treated as a word separator).
+- `hyphenation` parser: abbreviation lemmas (`Mr.`, `etc.`) keep their
+  trailing dot — `rstrip` now only removes characters the lemma itself
+  doesn't end with.
+- `hyphenation` parser: lemmas wrapped in a `{{Polytonisch|…}}` (or
+  similar) template no longer leak a `}` into the last syllable.
+- `language` parser: `{{Wortart|Substantiv|spr=en}}` (named instead of
+  positional language) now correctly returns `lang=None` instead of
+  capturing `spr=en` as the language name.
+- `language` parser: tolerates Italian-style and double-space Wortart
+  headers (same shapes that `entries_from_page` now accepts).
+- `language` parser: `{{Wortart|Substantiv|2=Englisch|Adjektiv}}` etc.
+  follow MediaWiki positional semantics (numeric position beats source
+  order).
+- `language` parser: the language-code loader skips empty / malformed
+  lines instead of raising `IndexError` (defense against future code
+  files with a trailing newline).
+- `lemma` parser: nested `{{linkZiel|<lang>|<lemma>}}` templates inside
+  `{{Grundformverweis Dekl|…}}` are now resolved (`kalt` → `kaldur`,
+  `við` → `viður`, `hin` → `hinn`, etc.).
+- `lemma` parser: `{{Lemmaverweis|#anchor|RealLemma}}` (first positional
+  is just a section anchor) returns `RealLemma` instead of `None`.
+- `lemma` parser: `{{Alte Schreibweise|<post-reform>|Reform …}}` is
+  recognised as a VARIANT reference, pointing at the post-reform
+  spelling.
+- `lemma` parser: reference templates spanning multiple lines
+  (`{{Alte Schreibweise|Mopps\n|Reform 1996}}`) are no longer truncated.
+- `lemma` parser: reference templates buried inside `<ref>` citations
+  in body prose no longer hijack the page lemma — only top-level
+  templates count.
+- `lemma` parser: `{{Lemmaverweis|target<!-- comment -->}}` returns
+  `target` instead of the raw string with the comment.
+- `lemma` parser: explicit-numeric positional `|2=value` follows
+  MediaWiki semantics; whitespace around the inner wrapper template
+  (`| {{linkZiel|is|kaldur}} |…`) no longer disqualifies wrapper
+  detection.
+- `meanings` parser: multi-line `<ref>…</ref>` blocks (whose body may
+  contain a line starting with `{{…}}`) are now stripped before
+  list-tokenization, so they don't truncate the section or leak `<ref>`
+  fragments into the meaning text.
+- `meanings` parser: `<ref name="https://…/x">` (attribute value
+  containing slashes) is now matched in full.
+- `meanings` parser: backref-style HTML-tag stripper in `wiki_list`
+  prevents an unclosed `<ref>` from over-matching to an unrelated
+  `</sup>`/`</small>` further in the text.
+- `entries_from_page`: accepts double-space (`===  {{Wortart…`) and
+  Italian-style headers with a lemma before the template
+  (`=== ombrello {{Wortart…`). Recovers ~30 entries on pages like
+  `bimbo`, `ombrello`, `civetta`, `Portus Cale`.
+- `Parser.find_paragraph`: tolerates trailing whitespace
+  (`{{Aussprache}} \n`, `{{Aussprache}}\t\n`) and templates with a
+  parameter (`{{Herkunft|fehlt}}`) — ~600 pages got their sections
+  detected for the first time.
+- `Parser.find_paragraph`: strips `<ref>` blocks (multi-line and
+  self-closing) before locating the section so a `\n{{…}}` inside a
+  citation can no longer terminate the section capture early. All
+  callers (IPA, Rhymes, Hyphenation, Meanings, Etymology) benefit.
+
+### Added
+- `pos` parser POS_MAP additions: `Bauwerksname`, `Göttername`,
+  `Wiederholungszahlwort`, `Bruchzahlwort`,
+  `Vervielfältigungszahlwort`, `Hiragana`, `Katakana`, `Kausaladverb`,
+  `Pseudopartizip`. Recovers POS subtype info for ~260 pages.
+- Shared helpers in `wiktionary_de_parser.parser`:
+  - `strip_refs(text)` — remove `<ref …>…</ref>` and `<ref …/>` blocks.
+  - `extract_first_positional_value(template)` — return the first
+    non-empty positional parameter of a template, ignoring named
+    parameters.
+  - `resolve_positional_params(template)` — resolve MediaWiki positional
+    semantics (bare params get the next free index, `|N=value` sets the
+    explicit position, later assignments win on collision).
+  - `WORTART_TEMPLATE_NAME_RE` constant shared across
+    `entries_from_page`, `parse_pos`, `parse_language`.
+
+### Removed
+- `parse_ipa.WANTED_TABLE_NAMES` constant (was declared but unused; the
+  flexion parser has its own active copy).
+
 ## [0.14.2] - 2026-05-22
 ### Fixed
 - `etymology` parser: `"zusammengesetzt aus X und dem Suffix [[-Y]]"` is now

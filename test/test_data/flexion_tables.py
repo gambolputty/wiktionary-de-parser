@@ -180,4 +180,115 @@ tables = [
             "Akkusativ Singular": "Alf",
         },
     ),
+    # Bug D — table with nested templates (e.g. {{Per-Deutschlandradio|…}}
+    # inside |Bild=). With the old regex-based find_table the result was
+    # truncated at the first inner `}`. All Kasus-fields must survive now.
+    (
+        """{{Deutsch Substantiv Übersicht
+|Genus=f
+|Nominativ Singular=Hand
+|Nominativ Plural=Hände
+|Genitiv Singular=Hand
+|Genitiv Plural=Hände
+|Dativ Singular=Hand
+|Dativ Plural=Händen
+|Akkusativ Singular=Hand
+|Akkusativ Plural=Hände
+|Bild=Mosaic of Christ.jpg|mini|1|{{Per-Deutschlandradio|Online|Beispieltext|Autor|Titel|Tag|Monat|Jahr|Zugriff|Kommentar}}
+}}""",
+        {
+            "Genus": "f",
+            "Nominativ Singular": "Hand",
+            "Nominativ Plural": "Hände",
+            "Genitiv Singular": "Hand",
+            "Genitiv Plural": "Hände",
+            "Dativ Singular": "Hand",
+            "Dativ Plural": "Händen",
+            "Akkusativ Singular": "Hand",
+            "Akkusativ Plural": "Hände",
+        },
+    ),
+    # F1 — nested {{Per-Deutsche Welle|Autor=…|Titel=…}} inside |Bild=
+    # caption must NOT leak its named params as table fields.
+    (
+        """{{Deutsch Substantiv Übersicht
+|Genus=f
+|Nominativ Singular=Geothermie
+|Genitiv Singular=Geothermie
+|Dativ Singular=Geothermie
+|Akkusativ Singular=Geothermie
+|Bild 1=Erdwaermesondenbohrung01.JPG|mini|1|„Bohrung"<ref name="dw_01" >{{Per-Deutsche Welle | Online=https://p.dw.com/p/46SBc | Autor=Jan D. Walter | Titel=Energiewende | Tag=04 | Monat=02 | Jahr=2022 | Zugriff=2022-08-14 }}</ref>
+}}""",
+        {
+            "Genus": "f",
+            "Nominativ Singular": "Geothermie",
+            "Genitiv Singular": "Geothermie",
+            "Dativ Singular": "Geothermie",
+            "Akkusativ Singular": "Geothermie",
+        },
+    ),
+    # F2 — broken Übersicht with only numeric keys (Kyoto wikitext)
+    # produces None instead of {'3': "''Kyoto''", '2': '1'}.
+    (
+        """{{Deutsch Toponym Übersicht
+|Bild=Kyoto_city1.jpg|3=''Kyoto''|2=1
+}}""",
+        None,
+    ),
+    # Code-review finding 4 — multi-line `<ref>` inside a cell value.
+    # Without DOTALL on the tag-stripper the ref body and the trailing
+    # `</ref>` leaked into the cell text.
+    (
+        """{{Deutsch Substantiv Übersicht
+|Genus=f
+|Nominativ Singular=Hand<ref>source line 1
+source line 2</ref>
+|Nominativ Plural=Hände
+|Genitiv Singular=Hand
+|Genitiv Plural=Hände
+|Dativ Singular=Hand
+|Dativ Plural=Händen
+|Akkusativ Singular=Hand
+|Akkusativ Plural=Hände
+}}""",
+        {
+            "Genus": "f",
+            "Nominativ Singular": "Hand",
+            "Nominativ Plural": "Hände",
+            "Genitiv Singular": "Hand",
+            "Genitiv Plural": "Hände",
+            "Dativ Singular": "Hand",
+            "Dativ Plural": "Händen",
+            "Akkusativ Singular": "Hand",
+            "Akkusativ Plural": "Hände",
+        },
+    ),
+    # Code-review #2 finding 4 — same over-match issue as in wiki_list:
+    # a self-closing `<ref name="x"/>` paired with a later unrelated
+    # `</sup>` would delete cell content between them. The backreference
+    # in `<(\w+)…</\1>` requires the closer to match the opener.
+    (
+        """{{Deutsch Substantiv Übersicht
+|Genus=m
+|Nominativ Singular=Test<ref name="x"/><sup>1</sup>
+|Nominativ Plural=Tests
+|Genitiv Singular=Tests
+|Genitiv Plural=Tests
+|Dativ Singular=Test
+|Dativ Plural=Tests
+|Akkusativ Singular=Test
+|Akkusativ Plural=Tests
+}}""",
+        {
+            "Genus": "m",
+            "Nominativ Singular": "Test",
+            "Nominativ Plural": "Tests",
+            "Genitiv Singular": "Tests",
+            "Genitiv Plural": "Tests",
+            "Dativ Singular": "Test",
+            "Dativ Plural": "Tests",
+            "Akkusativ Singular": "Test",
+            "Akkusativ Plural": "Tests",
+        },
+    ),
 ]

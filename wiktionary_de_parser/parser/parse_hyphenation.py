@@ -33,6 +33,13 @@ class ParseHyphenation(Parser):
         if not paragraph:
             return
 
+        # Affix markers on the lemma — "auto-" (prefix), "-ow" (suffix),
+        # "-s-" (fugenelement). The hyphens are semantic markers, not
+        # syllable separators. Re-attach them after splitting so callers
+        # can still tell an affix entry from a regular lemma.
+        has_prefix_marker = name.endswith("-")
+        has_suffix_marker = name.startswith("-")
+
         # remove false mid dot at the beginning that breaks the parser (":·nutz·lo·se")
         paragraph = paragraph.lstrip(":·")
 
@@ -67,13 +74,32 @@ class ParseHyphenation(Parser):
         # remove everything after actual_index
         clean_string = paragraph[start_index:end_index]
 
-        # Remove comma and dot
-        clean_string = re.sub(r"[.,]", "", clean_string)
+        # Strip stray template syntax left over by the char-walk when the
+        # lemma sits inside a wrapper template like {{Polytonisch|ἡ}}.
+        clean_string = re.sub(r"[{}|]", "", clean_string)
+        # Replace "comma + whitespace" with whitespace so it acts as a word
+        # separator ("gesagt, getan" → two words). Standalone commas inside
+        # the lemma (chemical names: "1,2,3-Propan") and standalone dots
+        # ("Web 2.0") are preserved.
+        clean_string = re.sub(r"\s*,\s+", " ", clean_string)
+        # The char-walk has an off-by-one for single-char lemmas that pulls
+        # the next char in ("A," for the lemma "A"). Strip dangling
+        # punctuation rather than rewriting the walk — but only what the
+        # lemma itself doesn't end with, so abbreviations like "Mr.", "etc."
+        # keep their trailing dot.
+        trailing = "".join(c for c in ",.;:" if not name.endswith(c))
+        if trailing:
+            clean_string = clean_string.rstrip(trailing)
 
-        # split syllables, remove empty strings (ugly side effect of re.split)
-        result = list(filter(None, re.split(r" |·|-", clean_string)))
+        # Split syllables. Use \s so trailing newlines don't end up glued
+        # to the final syllable.
+        result = list(filter(None, re.split(r"\s|·|-", clean_string)))
 
         if result:
+            if has_suffix_marker:
+                result[0] = "-" + result[0]
+            if has_prefix_marker:
+                result[-1] = result[-1] + "-"
             return result
 
     @classmethod

@@ -1,5 +1,7 @@
 import re
 
+import mwparserfromhell
+
 from wiktionary_de_parser.models import ParseFlexionResult
 from wiktionary_de_parser.parser import Parser
 
@@ -22,42 +24,69 @@ class ParseFlexion(Parser):
 
     @staticmethod
     def find_table(text):
-        re_string = "({{(" + "|".join(WANTED_TABLE_NAMES) + ")[^}]+}})"
-        match_table = re.search(re_string, text)
+        """Locate the first Übersicht-table template in the wikitext.
 
-        if not match_table:
-            return
-
-        return match_table.group(1)
+        Uses brace-balanced parsing so nested templates inside table cells
+        (e.g. `|Genus={{m}}`, `|Bild=…{{Per-Deutschlandradio|…}}`) don't
+        truncate the result.
+        """
+        parsed = mwparserfromhell.parse(text)
+        for tmpl in parsed.filter_templates():
+            if str(tmpl.name).strip() in WANTED_TABLE_NAMES:
+                return str(tmpl)
+        return None
 
     @staticmethod
     def parse_table_values(table_string):
-        table_values = re.findall(
-            r"(?:\|([^=\n]+)=([^\n|}]+))+?", table_string, re.MULTILINE
-        )
+        # Walk the parsed template instead of regex-matching |key=value pairs.
+        # Regex would also catch |key=val pairs sitting *inside* a nested
+        # template like {{Per-Deutsche Welle|Autor=...|Titel=...}} embedded in
+        # the |Bild= caption, producing junk fields ("Autor", "Titel", ...).
+        parsed = mwparserfromhell.parse(table_string)
+        top_templates = parsed.filter_templates(recursive=False)
+        if not top_templates:
+            return None
+        table_tmpl = top_templates[0]
 
-        if not table_values:
-            return
-
-        # normalize values
         result = {}
-        for key, text in table_values:
-            if key.startswith("Bild"):
+        for param in table_tmpl.params:
+            # Skip positional params — they show up when an editor writes
+            # `|Bild=foo.jpg|mini|1|caption` (mini/1/caption are positional).
+            if not param.showkey:
                 continue
 
+            key = str(param.name).strip()
+
+            # Drop noise keys: empty, numeric (broken Übersicht with |3=…|2=…),
+            # image fields, and Flexion/Konjugation links that aren't values.
+            if not key or key.isdigit():
+                continue
+            if key.startswith("Bild"):
+                continue
             if key in ("Flexion", "Weitere Konjugationen"):
                 continue
 
-            # clean text
+            # Clean text: strip comments, refs, &nbsp;. DOTALL so a multi-line
+            # `<ref>line1\nline2</ref>` inside a cell value is removed in full
+            # rather than leaving the ref body and a stray newline behind.
+            # The paired form requires the closing tag name to match the
+            # opening one (\\1), otherwise a self-closing `<ref name="x"/>`
+            # would greedily pair with a later unrelated `</sup>` and delete
+            # everything between.
+            text = str(param.value).strip()
+            text = text.replace("&nbsp;", " ")
+            text = re.sub(
+                r"<(\w+)[^>]*>.*?</\1>|<[^>]+/>|<[^>]+>",
+                " ",
+                text,
+                flags=re.DOTALL,
+            )
             text = text.strip()
-            text = text.replace("&nbsp", " ")
-            text = re.sub(r"<[^>]+>", " ", text)  # strip comments, <ref>-tags etc.
 
-            # genus
+            # Genus normalization. Plural-only words sometimes carry "0" or
+            # other placeholder values — drop them.
+            # https://de.wiktionary.org/wiki/Wiktionary:Teestube/Archiv/2015/11#Genus_in_der_Flexionstabelle_bei_Pluralw%C3%B6rtern
             if key in ["Genus", "Genus 1", "Genus 2", "Genus 3", "Genus 4"]:
-                # the Genus of plural words is set to 0 (or other value)
-                # reference: https://de.wiktionary.org/wiki/Wiktionary:Teestube/Archiv/2015/11#Genus_in_der_Flexionstabelle_bei_Pluralw%C3%B6rtern
-                # -> normalize
                 text = text.lower()
                 if text not in ["f", "m", "n"]:
                     continue
@@ -67,8 +96,7 @@ class ParseFlexion(Parser):
 
             result[key] = text
 
-        if result.keys():
-            return result
+        return result or None
 
     @classmethod
     def parse(cls, wikitext: str):

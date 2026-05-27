@@ -5,42 +5,49 @@ from mwparserfromhell.nodes.text import Text
 from mwparserfromhell.wikicode import Wikicode
 
 from wiktionary_de_parser.models import ParseIpaResult
-from wiktionary_de_parser.parser import Parser
+from wiktionary_de_parser.parser import (
+    Parser,
+    extract_first_positional_value as _extract_ipa,
+)
 
-WANTED_TABLE_NAMES = [
-    "Deutsch Adjektiv Übersicht",
-    "Deutsch Adverb Übersicht",
-    "Deutsch Eigenname Übersicht",
-    "Deutsch Nachname Übersicht",
-    "Deutsch Pronomen Übersicht",
-    "Deutsch Substantiv Übersicht",
-    "Deutsch Substantiv Übersicht -sch",
-    "Deutsch adjektivisch Übersicht",
-    "Deutsch Toponym Übersicht",
-    "Deutsch Verb Übersicht",
-]
+# Text nodes whose stripped value equals one of these are accepted as
+# a separator between two consecutive {{Lautschrift}} templates.
+# Tolerant by design: handles ", ", ",  ", ",", "; " etc. uniformly.
+LAUTSCHRIFT_SEPARATORS = {",", ";"}
+
+# Both Lautschrift and Lautschrift? (unverified) carry IPA. The walker
+# treats whichever one is not the current target as ignorable rather than
+# as a chain-terminating "other template" — otherwise an interleaved
+# {{Lautschrift?}} would silently drop trailing verified Lautschrift values.
+IPA_TEMPLATE_NAMES = {"Lautschrift", "Lautschrift?"}
 
 
 class ParseIpa(Parser):
     name = "ipa"
 
     @staticmethod
-    def parse_ipa_strings(parsed_paragraph: Wikicode):
+    def parse_ipa_strings(
+        parsed_paragraph: Wikicode, template_name: str = "Lautschrift"
+    ):
         """
-        Parse IPA-strings inside "{{Lautschrift}}"-template
+        Parse IPA-strings inside `{{<template_name>}}`-templates.
 
-        Only allow the first list of comma separated {{Lautschrift}}-templates.
-        Stop parsing when other node types follow (ignore inflected forms, regional slang, Austrian/Swiss dialect etc.)
+        Only the first list of comma-separated templates that directly
+        follows an {{IPA}} template is collected. Regional, dialectal or
+        grammatically inflected variants are intentionally skipped — they
+        introduce non-separator text or non-matching templates that stop
+        the walk.
 
-        For example, only the first {{Lautschrift}}-template is parsed here:
-            :{{IPA}} {{Lautschrift|ˈdʏsəlˌdɔʁfɐ}}, ''regional:'' {{Lautschrift|ˈdʏsəlˌdɔχfɔʶ}}
-            :{{IPA}} {{Lautschrift|veːk}}, ''norddeutsch:'' {{Lautschrift|veːç}}, ''mitteldeutsch:'' {{Lautschrift|veːɕ}},
-            :{{IPA}} {{Lautschrift|ˈçeːmɪʃ}}, ''[[süddeutsch]], [[österreichisch]], [[schweizerisch]]'' {{Lautschrift|ˈkeːmɪʃ}}, ''[[norddeutsch]]'' {{Lautschrift|ˈʃeːmɪʃ}}
-        But all templates are parsed in this example:
-            :{{IPA}} {{Lautschrift|ˈkøːnɪç}}, {{Lautschrift|ˈkøːnɪk}}
-            :{{IPA}} {{Lautschrift|ʃtipuˈliːʁən}}, {{Lautschrift|stipuˈliːʁən}}
-        Only the first two templates are parsed in this example:
-            :{{IPA}} {{Lautschrift|kʁɪˈtiːk}}, {{Lautschrift|kʁiˈtiːk}}, ''mitteldeutsch, süddeutsch, österreichisch, schweizerisch vorwiegend:'' {{Lautschrift|-ˈtɪk}}<ref>Nach: {{Lit-Duden: Aussprachewörterbuch|A=7}}, Stichwort: ''Kritik''.</ref>
+        Examples (the templates marked with ★ are kept):
+
+            :{{IPA}} ★{{Lautschrift|ˈkøːnɪç}}, ★{{Lautschrift|ˈkøːnɪk}}
+
+            :{{IPA}} ★{{Lautschrift|ˈdʏsəlˌdɔʁfɐ}}, ''regional:'' {{Lautschrift|ˈdʏsəlˌdɔχfɔʶ}}
+
+            :{{IPA}} ★{{Lautschrift|kʁɪˈtiːk}}, ★{{Lautschrift|kʁiˈtiːk}}, ''mitteldeutsch …:'' {{Lautschrift|-ˈtɪk}}
+
+        `template_name` lets us re-run the same walk against `{{Lautschrift?}}`
+        as a fallback when no verified Lautschrift exists.
 
         Reference: https://de.wiktionary.org/wiki/Hilfe:Aussprache
         """
@@ -49,58 +56,76 @@ class ParseIpa(Parser):
         found_ipa_tmpl = False
 
         for node in parsed_paragraph.nodes:
-            # IPA-template must be present to start parsing Lautschrift-template
-            if found_ipa_tmpl is False:
-                if isinstance(node, Template) and node.name == "IPA":
+            # 1. The {{IPA}} template must come first. mwparserfromhell keeps
+            #    template-name whitespace (`{{ IPA }}` → name == ' IPA '),
+            #    so always compare against the stripped form.
+            if not found_ipa_tmpl:
+                if (
+                    isinstance(node, Template)
+                    and str(node.name).strip() == "IPA"
+                ):
                     found_ipa_tmpl = True
-
-            # allow "Lautschrift"-templates to follow
-            elif (
-                isinstance(node, Template)
-                and node.name == "Lautschrift"
-                and node.params
-            ):
-                ipa_text = str(node.params[0]).replace("…", "").strip()
-
-                if ipa_text and ipa_text not in found_ipa:
-                    found_ipa.append(ipa_text)
-
-            # allow commas between "Lautschrift"-template to follow
-            elif isinstance(node, Text) and node.value == ", ":
                 continue
 
-            # allow "<ref>"-tags to follow
-            elif isinstance(node, Tag) and node.tag == "ref":
-                continue
+            # 2. Target Lautschrift template: extract first non-empty
+            #    positional param. Named params (spr=de, lang=pt, …) and
+            #    empty slots are skipped. A non-target IPA template
+            #    ({{Lautschrift?}} during the verified pass, {{Lautschrift}}
+            #    during the fallback pass) is tolerated as a no-op so it
+            #    doesn't terminate the chain.
+            if isinstance(node, Template):
+                node_name = str(node.name).strip()
+                if node_name == template_name:
+                    ipa_text = _extract_ipa(node)
+                    if ipa_text and ipa_text not in found_ipa:
+                        found_ipa.append(ipa_text)
+                    continue
+                if node_name in IPA_TEMPLATE_NAMES:
+                    continue
 
-            else:
-                # skip if no IPA-string has been found yet
+            # 3. Plain text. Pure whitespace is neutral. Comma/semicolon
+            #    (with arbitrary surrounding whitespace) acts as a separator
+            #    between two target templates. Anything else stops the walk
+            #    once we've collected at least one IPA.
+            if isinstance(node, Text):
+                stripped = node.value.strip()
+                if not stripped:
+                    continue
+                if stripped in LAUTSCHRIFT_SEPARATORS:
+                    continue
                 if not found_ipa:
                     continue
-                # break if another not supported node follows
-                else:
-                    break
+                break
 
-        if found_ipa:
-            return found_ipa
+            # 4. <ref> tags are footnote references — they may appear
+            #    between or after templates and never end the chain.
+            if isinstance(node, Tag) and node.tag == "ref":
+                continue
+
+            # 5. Any other node (regional marker template, italic span,
+            #    a non-matching Lautschrift?, …): ignore if we haven't
+            #    collected anything yet, otherwise stop.
+            if not found_ipa:
+                continue
+            break
+
+        return found_ipa or None
 
     @classmethod
     def parse(cls, wikitext: str):
         parsed_paragraph = mwparserfromhell.parse(wikitext)
-        result = None
-
-        if parsed_paragraph:
-            ipa = cls.parse_ipa_strings(parsed_paragraph)
-            if ipa:
-                result = ipa
-
+        if not parsed_paragraph:
+            return None
+        result = cls.parse_ipa_strings(parsed_paragraph, "Lautschrift")
+        # Fallback: some entries only have {{Lautschrift?}} ("unverified
+        # pronunciation"). Pick those up when no verified Lautschrift
+        # was found in the same paragraph.
+        if result is None:
+            result = cls.parse_ipa_strings(parsed_paragraph, "Lautschrift?")
         return result
 
     def run(self) -> ParseIpaResult:
         paragraph = self.find_paragraph("Aussprache", self.entry.wikitext)
-        result = None
-
-        if paragraph:
-            result = self.parse(paragraph)
-
-        return result
+        if not paragraph:
+            return None
+        return self.parse(paragraph)

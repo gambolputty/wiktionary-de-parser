@@ -9,7 +9,10 @@ from wiktionary_de_parser.models import (
     WiktionaryPage,
     WiktionaryPageEntry,
 )
-from wiktionary_de_parser.parser import Parser
+from wiktionary_de_parser.parser import (
+    WORTART_TEMPLATE_NAME_RE,
+    Parser,
+)
 
 
 class WiktionaryParser:
@@ -64,8 +67,22 @@ class WiktionaryParser:
         if not page.wikitext:
             return
 
+        # Wortart-headers usually look like `=== {{Wortart|<POS>|<Lang>}} ===`.
+        # Two real-world deviations the regex needs to tolerate:
+        #  - Double space: `===  {{Wortart|Substantiv|Französisch}}  ===`
+        #    (seen e.g. on `bimbo`, `Portus Cale`, `ad circ.`, several
+        #     Latin phrases).
+        #  - Lemma prefix before the template: `=== ombrello
+        #    {{Wortart|Substantiv|Italienisch}} ===` (Italian-style entries
+        #    like `ombrello`, `civetta`, `meringa`, `stupefatto`, …).
+        # `[^\n]*?` non-greedily eats any header text between `=== ` and
+        # `{{Wortart`, so all three shapes are captured.
         entries: list[str] = re.findall(
-            r"(=== {{Wortart(?:[\w\W](?!^===? ))+)", page.wikitext, re.MULTILINE
+            r"(=== [^\n]*?"
+            + WORTART_TEMPLATE_NAME_RE
+            + r"(?:[\w\W](?!^===? ))+)",
+            page.wikitext,
+            re.MULTILINE,
         )
 
         for index, entry in enumerate(entries):

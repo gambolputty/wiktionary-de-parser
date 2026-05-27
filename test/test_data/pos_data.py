@@ -236,4 +236,71 @@ pos_test_data = [
 """,
         {"Pronomen": ["Personalpronomen"]},
     ),
+    # Bug C — substantiviertes Adjektiv via {{Deutsch Substantiv Übersicht -sch}}
+    (
+        """
+== Niederländisch ({{Sprache|Deutsch}}) ==
+=== {{Wortart|Substantiv|Deutsch}}, {{n}} ===
+
+{{Deutsch Substantiv Übersicht -sch}}
+
+{{Worttrennung}}
+:Nie·der·län·disch
+""",
+        {"Substantiv": []},
+    ),
+    # POS_MAP additions — Substantiv subtypes
+    (
+        """
+=== {{Wortart|Substantiv|Deutsch}}, {{m}}, {{Wortart|Bauwerksname|Deutsch}} ===
+""",
+        {"Substantiv": ["Bauwerksname"]},
+    ),
+    (
+        """
+=== {{Wortart|Substantiv|Deutsch}}, {{m}}, {{Wortart|Göttername|Deutsch}} ===
+""",
+        {"Substantiv": ["Göttername"]},
+    ),
+    # POS_MAP additions — Numerale subtype
+    (
+        """
+=== {{Wortart|Adverb|Deutsch}}, {{Wortart|Wiederholungszahlwort|Deutsch}} ===
+""",
+        {"Adverb": [], "Numerale": ["Wiederholungszahlwort"]},
+    ),
+    # POS_MAP additions — Symbol subtype
+    (
+        """
+=== {{Wortart|Symbol|Japanisch}}, {{Wortart|Hiragana|Japanisch}} ===
+""",
+        {"Symbol": ["Hiragana"]},
+    ),
+    # Code-review finding 1 — Italian-style headers with the lemma before
+    # the Wortart template must still yield a POS.
+    (
+        """
+== ombrello ({{Sprache|Italienisch}}) ==
+=== ombrello {{Wortart|Substantiv|Italienisch}}, {{m}} ===
+""",
+        {"Substantiv": []},
+    ),
+    # Code-review finding 1 — double-space header variant.
+    (
+        """
+== bimbo ({{Sprache|Französisch}}) ==
+===  {{Wortart|Substantiv|Französisch}}, {{f}}  ===
+""",
+        {"Substantiv": []},
+    ),
+    # Named-param-first Wortart — POS must come from the first POSITIONAL
+    # parameter, not from `spr=de` which is a named param. The old regex-
+    # based extraction grabbed `spr=de` as the POS, silently losing the
+    # entry's actual part of speech.
+    (
+        """
+=== {{Wortart|spr=de|Substantiv}}, {{m}} ===
+""",
+        {"Substantiv": []},
+    ),
 ]

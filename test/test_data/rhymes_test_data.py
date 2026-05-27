@@ -46,4 +46,32 @@ rhymes_test_data = [
         """,
         ["eːlə"],
     ),
+    # Semicolon separator between Reim templates (rare but appears).
+    (
+        """
+{{Aussprache}}
+:{{IPA}} {{Lautschrift|abc}}
+:{{Reime}} {{Reim|aːfeː|Deutsch}}; {{Reim|eː|Deutsch}}
+        """,
+        ["aːfeː", "eː"],
+    ),
+    # Double-space after comma.
+    (
+        """
+{{Aussprache}}
+:{{IPA}} {{Lautschrift|abc}}
+:{{Reime}} {{Reim|aːfeː|Deutsch}},  {{Reim|eː|Deutsch}}
+        """,
+        ["aːfeː", "eː"],
+    ),
+    # Code-review finding 7 — whitespace tolerance also for {{ Reime }}
+    # and {{ Reim }} template names.
+    (
+        """
+{{Aussprache}}
+:{{IPA}} {{Lautschrift|abc}}
+:{{ Reime }} {{ Reim |aːfeː|Deutsch}}
+        """,
+        ["aːfeː"],
+    ),
 ]

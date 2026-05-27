@@ -117,4 +117,112 @@ ipa_test_data = [
         """,
         ["ɪɡˈzaːmpl"],
     ),
+    # ── Bug A — whitespace-tolerant separator ─────────────────────────
+    # Double-space after comma (the real "Kaffee" pattern from the dump).
+    (
+        """
+{{Aussprache}}
+:{{IPA}} {{Lautschrift|ˈkafe}},  {{Lautschrift|ˈkafeː}}, ''auch, österreichisch nur:'' {{Lautschrift|kaˈfeː}}
+:{{Hörbeispiele}} {{Audio|De-Kaffee.ogg}}
+:{{Reime}} {{Reim|afeː|Deutsch}}
+        """,
+        ["ˈkafe", "ˈkafeː"],
+    ),
+    # Semicolon separator (e.g. "New Orleans").
+    (
+        """
+{{Aussprache}}
+:{{IPA}} {{Lautschrift|njuː ɔːˈliːnz}}, {{Lautschrift|njuː ˈɔːliənz}}; {{Lautschrift|njuː ɔːʁˈlɪnz}}
+        """,
+        ["njuː ɔːˈliːnz", "njuː ˈɔːliənz", "njuː ɔːʁˈlɪnz"],
+    ),
+    # Comma without trailing space.
+    (
+        """
+{{Aussprache}}
+:{{IPA}} {{Lautschrift|ˈabc}},{{Lautschrift|ˈxyz}}
+        """,
+        ["ˈabc", "ˈxyz"],
+    ),
+    # ── Bug B — named params don't leak into the IPA value ────────────
+    # Stub: spr=de + empty positional → no IPA at all.
+    (
+        """
+{{Aussprache}}
+:{{IPA}} {{Lautschrift|spr=de|}}
+:{{Hörbeispiele}} {{Audio|}}
+        """,
+        None,
+    ),
+    # spr=de BEFORE positional IPA → must return the real IPA, not "spr=de".
+    (
+        """
+{{Aussprache}}
+:{{IPA}} {{Lautschrift|spr=de|fɛɐ̯ˈveːən}}
+:{{Hörbeispiele}} {{Audio|}}
+        """,
+        ["fɛɐ̯ˈveːən"],
+    ),
+    # Named lang= variant: lang=pt followed by positional.
+    (
+        """
+{{Aussprache}}
+:{{IPA}} {{Lautschrift|ˈsɛ.tʃi|lang=pt}}
+        """,
+        ["ˈsɛ.tʃi"],
+    ),
+    # Multiple positional params (slash notation): take the first non-empty.
+    (
+        """
+{{Aussprache}}
+:{{IPA}} {{Lautschrift|ɐ.sɐj.ˈtaɾ/|/ɐ.sej.ˈtaɾ}}
+        """,
+        ["ɐ.sɐj.ˈtaɾ/"],
+    ),
+    # IPA_BUG2 — HTML tags inside Lautschrift values (Wiktionary uses
+    # <sup>…</sup> for typographic IPA variants). Must be stripped.
+    (
+        """
+{{Aussprache}}
+:{{IPA}} {{Lautschrift|ˈɛl<sup>ə</sup>f}}
+        """,
+        ["ˈɛləf"],
+    ),
+    # Lautschrift? fallback — when the entry only has the "unverified"
+    # variant, pick that up rather than returning None.
+    (
+        """
+{{Aussprache}}
+:{{IPA}} {{Lautschrift?|bəˈtʁiːpsvɪʁtʃaft͡sˌleːʁə}}
+        """,
+        ["bəˈtʁiːpsvɪʁtʃaft͡sˌleːʁə"],
+    ),
+    # Mixed — verified Lautschrift wins, Lautschrift? is ignored.
+    (
+        """
+{{Aussprache}}
+:{{IPA}} {{Lautschrift|vɪnˈt͡sɛntɪʃ}}, {{Lautschrift?|ˈvɪnsəntɪʃ}}
+        """,
+        ["vɪnˈt͡sɛntɪʃ"],
+    ),
+    # Code-review finding 6 — interleaved Lautschrift? between two verified
+    # Lautschrift values must not terminate the chain. Old behavior dropped
+    # everything after the first Lautschrift?; expected is ['a', 'c'].
+    (
+        """
+{{Aussprache}}
+:{{IPA}} {{Lautschrift|a}}, {{Lautschrift?|b}}, {{Lautschrift|c}}
+        """,
+        ["a", "c"],
+    ),
+    # Code-review finding 7 — mwparserfromhell preserves whitespace inside
+    # template names. `{{ IPA }}` (spaces) must still be recognised as the
+    # section trigger.
+    (
+        """
+{{Aussprache}}
+:{{ IPA }} {{Lautschrift|foo}}
+        """,
+        ["foo"],
+    ),
 ]

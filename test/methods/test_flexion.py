@@ -10,6 +10,10 @@ class TestFlexionParsing:
     def test_parsing_table_values(self, test_input, expected):
         parse_result = ParseFlexion.parse(test_input)
 
+        if expected is None:
+            assert parse_result is None
+            return
+
         assert parse_result is not None
         assert len(parse_result.keys()) == len(expected.keys())
 

@@ -1,18 +1,25 @@
 import re
 
+import mwparserfromhell
+
 from wiktionary_de_parser.config import PACKAGE_PATH
 from wiktionary_de_parser.models import Language, ParseLanuageResult
-from wiktionary_de_parser.parser import Parser
+from wiktionary_de_parser.parser import (
+    WORTART_TEMPLATE_NAME_RE,
+    Parser,
+    resolve_positional_params,
+)
 
 # https://de.wiktionary.org/wiki/Hilfe:Sprachcodes
 LANG_CODES = {}
 with open(
     PACKAGE_PATH.joinpath("assets/sprachcodes_iso639-1.txt"), encoding="utf-8"
 ) as f:
-    lines = f.read().split("\n")
-    for line in lines:
-        x = line.split(",")
-        LANG_CODES[x[0]] = x[1]
+    for line in f:
+        parts = line.strip().split(",")
+        if len(parts) < 2 or not parts[0]:
+            continue
+        LANG_CODES[parts[0]] = parts[1]
 
 
 class ParseLanguage(Parser):
@@ -20,14 +27,30 @@ class ParseLanguage(Parser):
 
     @staticmethod
     def parse_language(text: str):
-        match_lang = re.search(r"=== ?{{Wortart\|[^}|]+\|([^}|]+)(?:\|[^}|]+)*}}", text)
+        # The language is the *second* positional parameter of the first
+        # {{Wortart|<POS>|<Lang>}} template on the Wortart-header line.
+        # Editors sometimes mix in a named parameter ({{Wortart|Substantiv|
+        # spr=en}}) — those must not be treated as the language.
+        # Tolerate the same header shapes that WiktionaryParser.entries_from_page
+        # accepts: double space (`===  {{Wortart…`) and lemma prefix
+        # (`=== ombrello {{Wortart…`, Italian-style entries).
+        match_line = re.search(
+            r"=== [^\n]*?(" + WORTART_TEMPLATE_NAME_RE + r"\|[^\n]+)", text
+        )
+        if not match_line:
+            return None
 
-        if not match_lang:
-            return
-
-        lang_name: str = match_lang.group(1).strip()
-
-        return lang_name
+        parsed = mwparserfromhell.parse(match_line.group(1))
+        for tmpl in parsed.filter_templates():
+            tmpl_name = str(tmpl.name).strip()
+            if tmpl_name not in ("Wortart", "Wortart-Test"):
+                continue
+            positional_map = resolve_positional_params(tmpl)
+            if 2 not in positional_map:
+                return None
+            lang = str(positional_map[2].value).strip()
+            return lang or None
+        return None
 
     @classmethod
     def parse(cls, wikitext: str):

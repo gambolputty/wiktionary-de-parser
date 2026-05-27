@@ -1,7 +1,7 @@
 import wikitextparser as wtp
 
 from wiktionary_de_parser.models import MeaningDict, ParseMeaningsResults
-from wiktionary_de_parser.parser import Parser
+from wiktionary_de_parser.parser import Parser, strip_refs
 from wiktionary_de_parser.utils.meanings.wiki_list import (
     WikiList,
     WikiListItem,
@@ -76,6 +76,9 @@ class ParseMeanings(Parser):
 
     @classmethod
     def parse(cls, wikitext: str):
+        # Defensive strip for direct callers — find_paragraph already
+        # strips refs, so this is a no-op when called via run().
+        wikitext = strip_refs(wikitext)
         parsed_paragraph = wtp.parse(wikitext)
         result = None
 
@@ -88,12 +91,9 @@ class ParseMeanings(Parser):
 
     def run(self) -> ParseMeaningsResults:
         paragraph = self.find_paragraph("Bedeutungen", self.entry.wikitext)
-        result = None
-
-        if paragraph:
-            result = self.parse(paragraph)
-
-        return result
+        if not paragraph:
+            return None
+        return self.parse(paragraph)
 
 
 def format_meaning_dict(meaning_dict: MeaningDict, level: int = 0) -> str:

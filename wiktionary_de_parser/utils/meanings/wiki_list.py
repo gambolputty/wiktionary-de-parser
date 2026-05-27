@@ -12,7 +12,12 @@ LEADING_DASH_PATTERN = re.compile(r"^— ")
 NUMBERED_LIST_PATTERN = re.compile(r"^\[(?:\d+(?:\.\d+)*[a-z]?|[a-z])\] ")
 PAREN_MATCH_PATTERN = re.compile(r"^\s*\(([^)]{2,50})\)\s*(.+)")
 TAG_GROUP_PATTERN = re.compile(r"([^,()]+(?:\([^)]+\))?)")
-HTML_TAG_PATTERN = re.compile(r"<[^>]+>.*?</[^>]+>|<[^>]+/>")
+# Multi-line tag bodies are real (e.g. `<ref>line1\nline2</ref>` on
+# `omnis cellula e cellula`, `Landschaftsschutz`, several Cuneiform entries).
+# The backreference `\1` requires the closing tag to match the opening one,
+# so an unclosed `<ref>` cannot over-match to the next unrelated `</…>` and
+# swallow content in between.
+HTML_TAG_PATTERN = re.compile(r"<(\w+)[^>]*>.*?</\1>|<[^>]+/>", re.DOTALL)
 TAG_PAREN_PATTERN = re.compile(r"^(.+?)\s*\(([^)]+)\)$")
 
 

@@ -202,4 +202,112 @@ hyphenation_data = [
         """,
         ["zie", "hen"],
     ),
+    # ── Affix markers — the trailing/leading hyphen on the lemma is a
+    # semantic marker (prefix / suffix / fugenelement) and must survive
+    # the syllable split.
+    (
+        "auto-",
+        """
+{{Worttrennung}}
+:au·to-
+        """,
+        ["au", "to-"],
+    ),
+    (
+        "-ow",
+        """
+{{Worttrennung}}
+:-ow
+        """,
+        ["-ow"],
+    ),
+    (
+        "stief-",
+        """
+{{Worttrennung}}
+:stief-
+        """,
+        ["stief-"],
+    ),
+    (
+        "-s-",
+        """
+{{Worttrennung}}
+:-s-
+        """,
+        ["-s-"],
+    ),
+    # ── Hyphenated compounds — hyphen acts as a syllable boundary for
+    # mono-syllabic components (no mid-dot needed). Output must remain
+    # the flat list it was before the affix fix.
+    (
+        "E-Mail",
+        """
+{{Worttrennung}}
+:E-Mail, {{Pl.}} E-Mails
+        """,
+        ["E", "Mail"],
+    ),
+    (
+        "Audio-Designer",
+        """
+{{Worttrennung}}
+:Au·dio-De·sig·ner
+        """,
+        ["Au", "dio", "De", "sig", "ner"],
+    ),
+    # H_BUG1 — lemma wrapped in a wikitext template ({{Polytonisch|ἡ}}).
+    # Off-by-one in the char-walk used to include the trailing `}` in the
+    # syllable; the bracket-strip in re.sub fixes it.
+    (
+        "ἡ",
+        """
+{{Worttrennung}}
+:{{Polytonisch|ἡ}}
+        """,
+        ["ἡ"],
+    ),
+    # HYPH_BUG2 — minimal worttrennung followed by newline.
+    (
+        "A",
+        """{{Worttrennung}}
+:A
+""",
+        ["A"],
+    ),
+    # HYPH_BUG3 — chemical names with commas inside the lemma.
+    # The comma is part of the lemma, not a word separator.
+    (
+        "1,2,3-Propentricarbonsäure",
+        """{{Worttrennung}}
+:1,2,3-Pro·pen·tri·car·bon·säu·re
+""",
+        ["1,2,3", "Pro", "pen", "tri", "car", "bon", "säu", "re"],
+    ),
+    # Web 2.0 — dot between digits, part of the lemma.
+    (
+        "Web 2.0",
+        """{{Worttrennung}}
+:Web 2.0
+""",
+        ["Web", "2.0"],
+    ),
+    # Code-review #2 finding 6 — abbreviations that end with a dot must
+    # keep their trailing dot. `rstrip(",.;:")` used to strip it blindly
+    # even when the lemma itself ended with the dot. Now only chars not
+    # in the lemma's own suffix are stripped.
+    (
+        "Mr.",
+        """{{Worttrennung}}
+:Mr.
+""",
+        ["Mr."],
+    ),
+    (
+        "etc.",
+        """{{Worttrennung}}
+:etc.
+""",
+        ["etc."],
+    ),
 ]

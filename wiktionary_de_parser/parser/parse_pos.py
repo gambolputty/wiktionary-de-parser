@@ -1,8 +1,14 @@
 import itertools
 import re
 
+import mwparserfromhell
+
 from wiktionary_de_parser.models import ParsePosResult
-from wiktionary_de_parser.parser import Parser
+from wiktionary_de_parser.parser import (
+    WORTART_TEMPLATE_NAME_RE,
+    Parser,
+    resolve_positional_params,
+)
 
 DEBUG = False
 
@@ -24,6 +30,10 @@ DEKLINIERTE_FORM_POS_MAP = {
     "Numerales": ("Numerale", None),
 }
 
+_DEKLINIERTE_FORM_POS_RE = re.compile(
+    r"des?\s+(" + "|".join(DEKLINIERTE_FORM_POS_MAP.keys()) + r")\b"
+)
+
 POS_MAP = {
     "Abkürzung": ["Kurzwort"],
     "Adjektiv": [
@@ -35,6 +45,7 @@ POS_MAP = {
         "Superlativ",
         "Gerundivum",
         "Dekliniertes Gerundivum",
+        "Pseudopartizip",
     ],
     "Adposition": [
         "Postposition",
@@ -46,6 +57,7 @@ POS_MAP = {
         "Gradpartikel",
         "Interrogativadverb",
         "Konjunktionaladverb",
+        "Kausaladverb",
         "Lokaladverb",
         "Modalpartikel",
         "Negationspartikel",
@@ -70,6 +82,9 @@ POS_MAP = {
     "Numerale": [
         "Kardinalzahl",
         "Ordinalzahl",
+        "Bruchzahlwort",
+        "Vervielfältigungszahlwort",
+        "Wiederholungszahlwort",
     ],
     "Partikel": [
         "Interjektion",
@@ -103,6 +118,8 @@ POS_MAP = {
         "Patronym",
         "Eigenname",
         "Straßenname",
+        "Bauwerksname",
+        "Göttername",
         "Zahlklassifikator",
         "Singularetantum",
         "Pluraletantum",
@@ -114,6 +131,8 @@ POS_MAP = {
         "Buchstabe",
         "Zahlzeichen",
         "Schriftzeichen",
+        "Hiragana",
+        "Katakana",
     ],
     "Verb": [
         "Konjugierte Form",
@@ -144,7 +163,6 @@ class ParsePos(Parser):
 
         if (
             "{{Deutsch adjektivisch Übersicht" in text
-            or "{{Deutsch Substantiv Übersicht - sch" in text
             or "{{Deutsch Substantiv Übersicht" in text
             or "{{Deutsch Toponym Übersicht" in text
         ):
@@ -218,11 +236,15 @@ class ParsePos(Parser):
         We extract "Substantivs" and map it to "Substantiv".
         """
         # Look for the pattern "des/der <POS-genitive>"
-        # Account for optional empty lines after the template
+        # Terminate at the next top-level template ({{Grundformverweis...,
+        # {{Lemmaverweis..., {{Synonyme}}, …) or end of wikitext. The lookahead
+        # accepts both \n\n{{ (blank line before next section) and \n{{
+        # (next section directly on the next line — used by Lemmaverweis
+        # variant entries).
         match = re.search(
-            r'{{Grammatische Merkmale}}\s*(.*?)(?:\n\n{{|{{Grundformverweis|$)',
+            r"{{Grammatische Merkmale}}\s*(.*?)(?=\n{{|$)",
             wikitext,
-            re.DOTALL
+            re.DOTALL,
         )
 
         if not match:
@@ -234,10 +256,7 @@ class ParsePos(Parser):
             return None
 
         # Extract all POS mentions in genitive form
-        pos_matches = re.findall(
-            r'des?\s+(' + '|'.join(DEKLINIERTE_FORM_POS_MAP.keys()) + r')\b',
-            features_text
-        )
+        pos_matches = _DEKLINIERTE_FORM_POS_RE.findall(features_text)
 
         if not pos_matches:
             return None
@@ -257,36 +276,42 @@ class ParsePos(Parser):
 
     @classmethod
     def parse(cls, wikitext: str):
-        match_line = re.search(r"(=== ?{{Wortart(?:-Test)?\|[^\n]+)", wikitext)
-        result = None
+        # Same tolerance as WiktionaryParser.entries_from_page: double space and
+        # lemma-prefix headers (Italian-style `=== ombrello {{Wortart…`) must
+        # not silently lose POS.
+        match_line = re.search(
+            r"(=== [^\n]*?" + WORTART_TEMPLATE_NAME_RE + r"\|[^\n]+)",
+            wikitext,
+        )
+        if not match_line:
+            return None
 
-        if match_line:
-            # can have multiple POS values
-            line = match_line.group(1)
-            pos_names = re.findall(
-                r"{{Wortart(?:-Test)?\|([^}|]+)(?:\|[^}|]+)*}}", line
-            )
+        # Resolve each Wortart template via MediaWiki positional semantics
+        # rather than a regex pluck — otherwise `{{Wortart|spr=de|Substantiv}}`
+        # would yield POS "spr=de" (named param leaking as first positional).
+        parsed_line = mwparserfromhell.parse(match_line.group(1))
+        pos_names: list[str] = []
+        for tmpl in parsed_line.filter_templates():
+            if str(tmpl.name).strip() not in ("Wortart", "Wortart-Test"):
+                continue
+            positional_map = resolve_positional_params(tmpl)
+            param = positional_map.get(1)
+            if param is None:
+                continue
+            pos = str(param.value).strip()
+            if pos:
+                pos_names.append(pos)
 
-            if pos_names:
-                # strip
-                pos_names = [name.strip() for name in pos_names]
+        if not pos_names:
+            return None
 
-                # Special handling for "Deklinierte Form"
-                # Extract the actual POS from grammatical features
-                if "Deklinierte Form" in pos_names:
-                    deklinierte_pos = cls.extract_pos_from_deklinierte_form(
-                        wikitext
-                    )
-                    if deklinierte_pos:
-                        return deklinierte_pos
+        if "Deklinierte Form" in pos_names:
+            deklinierte_pos = cls.extract_pos_from_deklinierte_form(wikitext)
+            if deklinierte_pos:
+                return deklinierte_pos
 
-                # find in map
-                pos_normalized = cls.find_pos(pos_names, wikitext)
-
-                if pos_normalized.keys():
-                    result = pos_normalized
-
-        return result
+        pos_normalized = cls.find_pos(pos_names, wikitext)
+        return pos_normalized or None
 
     def run(self) -> ParsePosResult:
         return self.parse(self.entry.wikitext)
