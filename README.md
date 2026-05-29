@@ -1,125 +1,134 @@
 # wiktionary-de-parser
 
-A Python module to extract data from German Wiktionary XML files (for Python 3.11+).
+A Python library (3.13+) that extracts structured data from
+German Wiktionary XML dumps: IPA, hyphenation, inflection tables,
+part-of-speech tags, lemma references, rhymes, and meanings.
 
 ## Features
 
-- Extracts _IPA transcriptions_, _hyphenation_, _language_, _part of speech_ information (basic), _genus_ and _flexion tables_ of a word.
-- Yields per entry, not per page (a page can have multiple entries/ words can have different meanings)
+- Streams compressed XML dumps memory-efficiently.
+- Yields one structured entry per language and part of speech (a single
+  Wiktionary page often holds several).
+- Optional `multiprocessing` mode for full-dump throughput.
 
 ## Installation
 
-`pip install wiktionary-de-parser`
+```bash
+pip install wiktionary-de-parser
+```
 
-Or with [Poetry](https://python-poetry.org/):
-
-`poetry add wiktionary-de-parser`
+The project uses [uv](https://docs.astral.sh/uv/) for development; any
+standard `pip`/PyPI install works for consumers.
 
 ## Usage
 
-### Loading the XML dump file
+### Locating the dump file
+
 ```python
-from wiktionary_de_parser import WiktionaryParser
-from wiktionary_de_parser.dump_processor import WiktionaryDump
+from wiktionary_de_parser import WiktionaryDump
 
-# To download the dump file, specify the directory where the
-# dump file should be stored.
-dump = WiktionaryDump(dump_dir_path="directory-of-dump-file")
-
-# This will download "dewiktionary-latest-pages-articles-multistream.xml.bz2" to
-# the directory specified in `dump_dir_path`.
-dump.download_dump()
-
-# Alternatively you can specify a different dump file to download.
+# Either point at an existing local file.
 dump = WiktionaryDump(
-    dump_dir_path="directory-of-dump-file",
-    dump_download_url="url-to-dump-file.xml.bz2",
+    dump_file_path="path/to/dewiktionary-latest-pages-articles-multistream.xml.bz2"
 )
-dump.download_dump()
 
-# If you already have the dump file locally, specify the path to the file.
-dump = WiktionaryDump(dump_file_path="path-to-dump-file.xml.bz2")
+# Or download into a directory on first call.
+dump = WiktionaryDump(dump_dir_path="dumps/")
 dump.download_dump()
 ```
 
-### Parsing the dump file
-```python
-from pprint import pprint
-from wiktionary_de_parser import WiktionaryParser
+### Parsing entries (serial)
 
-# ... (see above)
+```python
+from wiktionary_de_parser import WiktionaryParser
 
 parser = WiktionaryParser()
 
 for page in dump.pages():
-    # Skip redirects
-    if page.redirect_to:
+    if page.redirect_to or not page.wikitext:
         continue
-
-    if page.name == "Abend":
-        # Parse all entries for "Abend"
-        for entry in parser.entries_from_page(page):
-            results = parser.parse_entry(entry)
-            pprint(results)
-        break
+    for entry in parser.entries(page):
+        parsed = parser.parse(entry)
+        if parsed.page_name == "Abend":
+            print(parsed)
 ```
 
-## Output
-All page entries for "Abend":
+### Parsing entries (parallel)
+
+For full-dump runs use `iter_parsed`. XML iteration stays on the main
+process while parsing is sharded over a worker pool.
 
 ```python
-ParsedWiktionaryPageEntry(
-    name="Abend",
-    hyphenation=["Abend"],
-    flexion={
-        "Genus": "m",
-        "Nominativ Singular": "Abend",
-        "Nominativ Plural": "Abende",
-        "Genitiv Singular": "Abends",
-        "Genitiv Plural": "Abende",
-        "Dativ Singular": "Abend",
-        "Dativ Plural": "Abenden",
-        "Akkusativ Singular": "Abend",
-        "Akkusativ Plural": "Abende",
+for parsed in dump.iter_parsed(workers=15):
+    ...  # ParsedEntry instances yielded across all workers
+```
+
+`workers` defaults to `os.cpu_count() - 1`. Pass `workers=1` to skip
+multiprocessing entirely (useful with `pdb`).
+
+## Output schema
+
+```python
+ParsedEntry(
+    page_name="Abend",
+    page_id=2742,
+    entry_index=0,
+    language="Deutsch",
+    language_code="de",
+    lemma="Abend",
+    reference=None,                          # LemmaReference if the page is an inflected/variant form
+    pos=[PosTag(pos="Substantiv", subtypes=())],
+    inflection={
+        "gender": "m",
+        "nominative_singular": "Abend",
+        "nominative_plural": "Abende",
+        "genitive_singular": "Abends",
+        "genitive_plural": "Abende",
+        "dative_singular": "Abend",
+        "dative_plural": "Abenden",
+        "accusative_singular": "Abend",
+        "accusative_plural": "Abende",
     },
     ipa=["ˈaːbn̩t", "ˈaːbm̩t"],
-    language=Language(lang="Deutsch", lang_code="de"),
-    lemma=Lemma(lemma="Abend", reference_type=<ReferenceType.NONE: 'none'>),
-    pos={"Substantiv": []},
-    rhymes=["aːbn̩t"],
-)
-ParsedWiktionaryPageEntry(
-    name="Abend",
     hyphenation=["Abend"],
-    flexion=None,
-    ipa=["ˈaːbn̩t"],
-    language=Language(lang="Deutsch", lang_code="de"),
-    lemma=Lemma(lemma="Abend", reference_type=<ReferenceType.NONE: 'none'>),
-    pos={"Substantiv": ["Nachname"]},
     rhymes=["aːbn̩t"],
+    meanings=[Meaning(text="…", tags=["Astronomie"], raw_tags=[])],
 )
-ParsedWiktionaryPageEntry(
-    name="Abend",
-    hyphenation=["Abend"],
-    flexion=None,
-    ipa=["ˈaːbn̩t", "ˈaːbm̩t"],
-    language=Language(lang="Deutsch", lang_code="de"),
-    lemma=Lemma(lemma="Abend", reference_type=<ReferenceType.NONE: 'none'>),
-    pos={"Substantiv": ["Toponym"]},
-    rhymes=["aːbn̩t"],
-)
+```
 
+All result containers are `@dataclass(slots=True)`. The full schema
+lives in [`wiktionary_de_parser/models.py`](wiktionary_de_parser/models.py).
+
+### Inflection keys
+
+Inflection-table parameter names are token-translated to English
+lowercase + underscore: `"Nominativ Singular"` → `"nominative_singular"`,
+`"Präsens_er, sie, es"` → `"present_3sg"`. Unknown tokens are kept
+verbatim (lowercased).
+
+### Lemma references
+
+If the entry is an inflected form or alternative spelling, `lemma`
+holds the canonical target and `reference` records the type:
+
+```python
+# "gehörte" → "gehören"
+parsed.lemma == "gehören"
+parsed.reference == LemmaReference(target="gehören", type=ReferenceType.INFLECTED)
+
+# "Geografie" → "Geographie"
+parsed.reference == LemmaReference(target="Geographie", type=ReferenceType.VARIANT)
 ```
 
 ## Development
-This project uses [Poetry](https://python-poetry.org/).
 
-1. Install [Poetry](https://python-poetry.org/).
-2. Clone this repository
-3. Run `poetry install` inside of the project folder to install dependencies.
-4. There is a `notebook.ipynb` to test the parser.
-5. Run `poetry run pytest` to run tests.
+```bash
+uv sync                 # install dependencies
+uv run pytest           # run the test suite
+uv run ruff format
+uv run ruff check
+```
 
 ## License
 
-[MIT](https://github.com/gambolputty/wiktionary-de-parser/blob/master/LICENSE.md) © Gregor Weichbrodt
+[MIT](LICENSE.txt) © Gregor Weichbrodt

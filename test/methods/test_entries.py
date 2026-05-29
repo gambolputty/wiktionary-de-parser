@@ -1,4 +1,4 @@
-"""Tests for WiktionaryParser.entries_from_page header-shape tolerance."""
+"""Tests for WiktionaryParser.entries() header-shape tolerance."""
 
 import pytest
 
@@ -21,7 +21,7 @@ def test_standard_german_header(wp):
 
 text
 """
-    entries = list(wp.entries_from_page(make_page(wt, "Hallo")))
+    entries = list(wp.entries(make_page(wt, "Hallo")))
     assert len(entries) == 1
 
 
@@ -43,7 +43,7 @@ text fr
 
 text it
 """
-    entries = list(wp.entries_from_page(make_page(wt, "bimbo")))
+    entries = list(wp.entries(make_page(wt, "bimbo")))
     assert len(entries) == 3
     assert "Französisch" in entries[1].wikitext
 
@@ -56,7 +56,7 @@ def test_lemma_prefix_header(wp):
 
 text
 """
-    entries = list(wp.entries_from_page(make_page(wt, "ombrello")))
+    entries = list(wp.entries(make_page(wt, "ombrello")))
     assert len(entries) == 1
     assert "Italienisch" in entries[0].wikitext
 
@@ -72,12 +72,12 @@ text a
 
 text b
 """
-    entries = list(wp.entries_from_page(make_page(wt, "Foo")))
+    entries = list(wp.entries(make_page(wt, "Foo")))
     assert len(entries) == 2
 
 
 def test_empty_wikitext(wp):
-    entries = list(wp.entries_from_page(make_page("", "Empty")))
+    entries = list(wp.entries(make_page("", "Empty")))
     assert entries == []
 
 
@@ -88,5 +88,5 @@ def test_no_wortart_header(wp):
 
 Just prose, no Wortart template.
 """
-    entries = list(wp.entries_from_page(make_page(wt, "Foo")))
+    entries = list(wp.entries(make_page(wt, "Foo")))
     assert entries == []

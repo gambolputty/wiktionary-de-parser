@@ -4,6 +4,63 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.0] - 2026-05-28
+### Breaking changes
+- Requires Python 3.13+ (was 3.11+).
+- New output schema (`ParsedEntry`, `PosTag`, `LemmaReference`,
+  `Meaning`). All result types are now `@dataclass(slots=True)` instead
+  of Pydantic models — no per-entry validation overhead. `pydantic` is
+  no longer a dependency.
+- `flexion` → `inflection`. Keys are token-translated to English
+  lowercase + underscore (`"Nominativ Singular"` → `"nominative_singular"`,
+  `"Präsens_er, sie, es"` → `"present_3sg"`).
+- `pos` is now `list[PosTag]` instead of `dict[str, list[str]]`. POS
+  values (`"Substantiv"`, `"Toponym"`, …) stay in the original German
+  Wiktionary vocabulary.
+- `lemma` is always a plain string; the optional `reference` field
+  carries the form-reference template's target. `ReferenceType.NONE`
+  removed — absence is just `reference is None`.
+- Public API: `parser.entries_from_page(page)` → `parser.entries(page)`,
+  `parser.parse_entry(entry, include_meanings=…)` → `parser.parse(entry)`.
+  Meanings are always parsed.
+- Module layout: `dump_processor/` removed (now `dump.py`),
+  `parser/` directory of `ParseXxx` classes replaced by `parsers/`
+  package with plain `parse(entry)` functions.
+- Typo fix: `Lanuage` → `Language`.
+
+### Added
+- `WiktionaryDump.iter_parsed(workers=N)` for parallel processing via
+  `multiprocessing.Pool`. Defaults to `os.cpu_count() - 1`.
+- Dump decompression uses a `bzcat`/`lbzcat` subprocess when available,
+  falling back to `bz2.open`.
+- Dump XML is parsed namespace-agnostically (`{*}` wildcard), so a
+  future MediaWiki export schema bump (0.11 → 0.12 …) won't silently
+  yield zero pages.
+
+### Fixed
+- `inflection`: a `|Bild=…|caption` positional containing `=` made
+  mwparserfromhell read the caption fragment as a named param, leaking a
+  junk key (e.g. `polytrop`). Keys are now validated against a plain-text
+  charclass.
+- `find_sections`: a non-section template on its own line before a real
+  section (`{{Wort des Jahres}}`, `{{erweitern}}`, inflection helpers)
+  could swallow that section. Only known section headings are recognised
+  now. Commented-out (`<!-- … -->`) sections and tables are no longer
+  parsed.
+- `hyphenation`: no longer falls back to parsing arbitrary input when
+  the `{{Worttrennung}}` section is absent.
+
+### Performance
+On 10 000 pages from `dewiktionary-latest`:
+- single-process throughput: 60 → ~1 240 pages/s (≈ 20×)
+- parallel (15 workers):     60 → ~5 600 pages/s (≈ 90×)
+
+Driven by: shared `mwparserfromhell.parse()` results across feature
+parsers (was ≈6 parses per entry, now 2), brace-balanced template
+slicing in `inflection` (no full-entry parse), a cheap prefilter in
+`lemma`, linear-scan entry splitter (was quadratic), and removal of the
+importlib-based parser discovery.
+
 ## [0.15.0] - 2026-05-27
 ### Fixed
 - `ipa` parser: tolerate `, `, `,  `, `; `, `,` as separators between

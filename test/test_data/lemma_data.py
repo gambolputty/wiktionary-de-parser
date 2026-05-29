@@ -74,7 +74,7 @@ lemma_data = [
     # No reference template (standalone lemma)
     (
         "== Hund ({{Sprache|Deutsch}}) ==\n=== {{Wortart|Substantiv|Deutsch}} ===",
-        {"reference_type": ReferenceType.NONE, "lemma": "Untitled"},
+        {"reference_type": None, "lemma": "Untitled"},
     ),
     # LEMMA_BUG1 — first positional param is a nested {{linkZiel|<lang>|<target>}}
     # template. The target lemma is the inner template's last positional param.
@@ -119,7 +119,7 @@ lemma_data = [
     # name, not the marker.
     (
         "{{Alte Schreibweise||Reform 1996}}",
-        {"reference_type": ReferenceType.NONE, "lemma": "Untitled"},
+        {"reference_type": None, "lemma": "Untitled"},
     ),
     # Code-review finding 10 — `|2=Wrong|Real`: the bare `Real` occupies
     # position 1 (counter increments past the explicit `|2=`), so Real

@@ -4,97 +4,105 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A Python library that extracts linguistic data (IPA, hyphenation, flexion, POS, etc.) from German Wiktionary XML dumps. The parser processes compressed XML dumps and yields structured data per entry using Pydantic models.
+A Python library that extracts linguistic data (IPA, hyphenation,
+inflection, POS, lemma references, rhymes, meanings) from German
+Wiktionary XML dumps. Streams compressed XML, yields one structured
+entry per Wortart section.
 
 ## Key Commands
 
-### Development Setup
-- `poetry install` - Install all dependencies
-- `poetry shell` - Activate virtual environment
+### Development setup
+- `uv sync` — install dependencies (project uses uv, not poetry)
 
 ### Testing
-- `poetry run pytest` - Run all tests
-- `poetry run pytest test/methods/test_<module>.py` - Run specific test module
-- `poetry run pytest test/methods/test_<module>.py::test_function_name` - Run specific test
+- `uv run pytest`
+- `uv run pytest test/methods/test_<module>.py`
+- `uv run pytest test/methods/test_<module>.py::TestClass::test_function`
 
-### Code Formatting & Linting
-- `poetry run ruff format` - Format code with Ruff
-- `poetry run ruff check` - Check code for linting issues
-- `poetry run ruff check --fix` - Auto-fix linting issues
-
-### Build & Distribution
-- `poetry build` - Build distribution packages
-- `poetry publish` - Publish to PyPI (requires credentials)
+### Linting & formatting
+- `uv run ruff format`
+- `uv run ruff check`
+- `uv run ruff check --fix`
 
 ## Architecture
 
-### Core Components
+### Core modules
+- `wiktionary_de_parser/__init__.py` — public API re-exports.
+- `wiktionary_de_parser/parser.py` — `WiktionaryParser` with
+  `entries(page)` and `parse(entry)` methods. Stateless; splits page
+  wikitext into entry slices and runs every feature parser.
+- `wiktionary_de_parser/dump.py` — `WiktionaryDump`: download,
+  decompress (bzcat subprocess preferred over `bz2.open`), iterate
+  pages via `lxml.iterparse`. `iter_parsed(workers=N)` shards parsing
+  across a multiprocessing pool.
+- `wiktionary_de_parser/entry.py` — `WiktionaryEntry` with cached
+  lookups (sections, header line, parsed pronunciation/header Wikicode).
+  Shared cache means each `mwparserfromhell.parse()` runs at most once
+  per entry per "view".
+- `wiktionary_de_parser/models.py` — `@dataclass(slots=True)` types:
+  `ParsedEntry`, `PosTag`, `LemmaReference`, `Meaning`, `WiktionaryPage`,
+  `ReferenceType`. No Pydantic.
+- `wiktionary_de_parser/_wikitext.py` — shared regex/template helpers:
+  `strip_refs`, `find_sections`, `resolve_positional_params`,
+  `extract_first_positional_value`, `slice_balanced_template`.
 
-**WiktionaryParser** (`wiktionary_de_parser/__init__.py`)
-- Main entry point for parsing
-- Dynamically discovers and instantiates all Parser subclasses from `parser/` directory
-- Splits pages into entries (one page can contain multiple word entries)
-- Orchestrates parsing by running all parser modules on each entry
+### Feature parsers (`wiktionary_de_parser/parsers/`)
+Each module exposes a `parse(entry)` function:
+- `language.py` — language name and ISO 639 code from the Wortart
+  header.
+- `pos.py` — POS list with subtypes; handles `Deklinierte Form` (POS
+  lives in `{{Grammatische Merkmale}}` body) and Übersicht-derived POS
+  signals.
+- `ipa.py` — IPA from `{{Lautschrift}}` chain after `{{IPA}}`; falls
+  back to `{{Lautschrift?}}` when no verified Lautschrift exists.
+- `rhymes.py` — same walker as IPA, applied to `{{Reim}}` after
+  `{{Reime}}`. Shares the pre-parsed Aussprache Wikicode with IPA.
+- `hyphenation.py` — char-walk over the Worttrennung body, retains
+  affix markers, tolerates wrappers like `{{Polytonisch|…}}`.
+- `inflection.py` — locates the first `{{Deutsch … Übersicht}}` by
+  regex + brace-balanced cut, then parses only that slice. Keys are
+  token-translated to English (`Nominativ Singular` → `nominative_singular`).
+- `lemma.py` — top-level form references (`Grundformverweis`,
+  `Lemmaverweis`, `Alte Schreibweise`), gated by a cheap string
+  prefilter so entries without a reference skip parsing entirely.
+- `meanings.py` — hierarchical senses from the Bedeutungen list. Uses
+  `wikitextparser` for `WikiList` traversal (the one place where
+  mwparserfromhell isn't a clean fit).
 
-**WiktionaryDump** (`wiktionary_de_parser/dump_processor/__init__.py`)
-- Handles downloading and decompressing German Wiktionary XML dumps
-- Provides iterator over pages using lxml's `iterparse` for memory efficiency
-- Uses `bzcat`/`lbzcat` subprocess for decompression
-- Filters to namespace 0 (main namespace)
+### Data flow
+1. `WiktionaryDump.pages()` yields `WiktionaryPage` from compressed XML.
+2. `WiktionaryParser.entries(page)` slices the page wikitext at
+   `=== {{Wortart…}} ===` boundaries.
+3. `WiktionaryParser.parse(entry)` runs every parser, returns
+   `ParsedEntry`.
 
-**Parser Base Class** (`wiktionary_de_parser/parser/__init__.py`)
-- Abstract base for all feature-specific parsers
-- Each parser extracts one type of data (IPA, flexion, POS, etc.)
-- Parsers are auto-discovered via directory scanning in `WiktionaryParser.__init__`
+For full-dump runs use `WiktionaryDump.iter_parsed(workers=N)` —
+parsing is sharded across a process pool while XML iteration stays on
+the main process.
 
-**Parser Modules** (`wiktionary_de_parser/parser/parse_*.py`)
-- `parse_ipa.py` - Extracts IPA pronunciation
-- `parse_hyphenation.py` - Extracts word hyphenation
-- `parse_flexion.py` - Extracts declension/conjugation tables
-- `parse_pos.py` - Extracts part of speech information
-- `parse_language.py` - Extracts language and language code
-- `parse_lemma.py` - Extracts lemma and inflection status
-- `parse_rhymes.py` - Extracts rhyme information
-- `parse_meanings.py` - Extracts word meanings (optional, disabled by default)
+### Testing structure
+- `test/methods/` — unit tests per parser module.
+- `test/test_data/` — fixtures (real wikitext snippets, not mocks).
 
-Each parser subclass must:
-- Inherit from `Parser`
-- Set `self.name` attribute
-- Implement `run()` method returning parsed data
+Edge cases are documented inline in each parser. The tests pin
+behaviour against specific Wiktionary pages that previously broke the
+parser.
 
-**Data Models** (`wiktionary_de_parser/models.py`)
-- `WiktionaryPage` - Represents a raw page from XML dump
-- `WiktionaryPageEntry` - Represents one entry within a page (pages can have multiple entries)
-- `ParsedWiktionaryPageEntry` - Final structured output with all extracted features
-- `Language`, `Lemma` - Nested data structures
-- Type aliases for parser return values (`ParseIpaResult`, `ParseFlexionResult`, etc.)
+## Important details
 
-### Data Flow
+- Python 3.13+ required.
+- `lxml` for streaming XML, `mwparserfromhell` for templates,
+  `wikitextparser` for the meanings list traversal only.
+- Dump XML is parsed namespace-agnostically (`{*}` wildcard), so a future
+  MediaWiki export schema bump (0.11 → 0.12 …) won't silently break it.
+- Entry-splitter tolerates: double space (`===  {{Wortart…`),
+  lemma-prefix headers (`=== ombrello {{Wortart…`).
+- `find_sections` strips refs and HTML comments first so `\n{{Lit-…}}`
+  inside a citation can't truncate a section body and a commented-out
+  section isn't parsed. Only `KNOWN_SECTIONS` headings are recognised.
+- Default dump URL:
+  `https://dumps.wikimedia.org/dewiktionary/latest/dewiktionary-latest-pages-articles-multistream.xml.bz2`
 
-1. `WiktionaryDump.pages()` yields `WiktionaryPage` objects from compressed XML
-2. `WiktionaryParser.entries_from_page()` splits pages into `WiktionaryPageEntry` objects using regex on wikitext
-3. `WiktionaryParser.parse_entry()` runs all parser modules on an entry
-4. Each parser extracts its feature from the wikitext
-5. Results combined into `ParsedWiktionaryPageEntry` Pydantic model
-
-### Testing Structure
-
-Tests are organized in `test/`:
-- `test/methods/` - Unit tests for each parser module
-- `test/test_data/` - Test data for each parser module
-
-Tests use real wikitext snippets, not mocks, to verify complete functionality.
-
-## Important Details
-
-- Python 3.11+ required
-- Uses `lxml` for XML parsing (memory-efficient streaming)
-- Uses `wikitextparser` and `mwparserfromhell` for wikitext processing
-- Regex pattern for splitting entries: `r"(=== {{Wortart(?:[\w\W](?!^===? ))+)"`
-- Entry splitting occurs at `==` and `===` boundaries in wikitext
-- Default dump URL: `https://dumps.wikimedia.org/dewiktionary/latest/dewiktionary-latest-pages-articles-multistream.xml.bz2`
-
-## Notebook Development
-
-- `notebooks/notebook.ipynb` exists for interactive testing
-- Use `poetry run jupyter notebook` to launch Jupyter
+## Notebook
+- `notebooks/demo.ipynb` — concise usage demo
+- `uv run jupyter notebook` to launch

@@ -1,92 +1,91 @@
+"""Public data models for parsed Wiktionary entries."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
 from enum import Enum
 
-from pydantic import BaseModel
-from typing_extensions import TypedDict
 
+@dataclass(slots=True)
+class WiktionaryPage:
+    """A raw page yielded by the dump iterator. `wikitext` is None for
+    redirect pages (`redirect_to` is set instead)."""
 
-class WiktionaryPage(BaseModel):
     page_id: int
     name: str
-    wikitext: str | None
+    wikitext: str | None = None
     redirect_to: str | None = None
 
 
-class WiktionaryPageEntry(BaseModel):
-    page: WiktionaryPage
-    index: int
-    wikitext: str
-
-
-class Language(BaseModel):
-    lang: str | None
-    lang_code: str | None
-
-
 class ReferenceType(str, Enum):
-    """
-    Type of lemma reference in German Wiktionary.
+    """Form-reference templates that point one entry at another lemma.
 
-    Reference types distinguish different ways a word entry points to another:
-    - NONE: Standalone lemma, no reference to another word
-    - INFLECTED: Inflected/declined form ({{Grundformverweis}})
-      Examples: "gehörte" → "gehören" (verb conjugation),
-                "Häuser" → "Haus" (noun declension)
-    - VARIANT: Alternative form or variant ({{Lemmaverweis}})
-      Examples: "milde" → "mild" (pronunciation variant),
-                "Geografie" → "Geographie" (alternative spelling),
-                "Kücken" → "Küken" (regional variant)
-
-    References:
-    - https://de.wiktionary.org/wiki/Vorlage:Grundformverweis
-    - https://de.wiktionary.org/wiki/Vorlage:Lemmaverweis
+    INFLECTED — Grundformverweis: declined or conjugated form
+                e.g. ``gehörte`` → ``gehören``
+    VARIANT   — Lemmaverweis / Alte Schreibweise: alternative spelling
+                or pronunciation variant
+                e.g. ``Geografie`` → ``Geographie``
     """
 
-    NONE = "none"
     INFLECTED = "inflected"
     VARIANT = "variant"
 
 
-class Lemma(BaseModel):
-    """
-    Lemma information for a Wiktionary entry.
+@dataclass(slots=True, frozen=True)
+class LemmaReference:
+    """Pointer from an inflected/variant entry to its canonical lemma."""
 
-    Attributes:
-        lemma: The canonical form of the word. If the entry contains a
-               reference template (Grundformverweis or Lemmaverweis), this
-               points to the target lemma. Otherwise, it's the page name.
-        reference_type: Type of reference (NONE, INFLECTED, or VARIANT)
+    target: str
+    type: ReferenceType
+
+
+@dataclass(slots=True, frozen=True)
+class PosTag:
+    """A part-of-speech tag with optional subtypes.
+
+    Values stay in the original German Wiktionary vocabulary
+    (``Substantiv``, ``Toponym``, …) — only the surrounding structure
+    is in English.
     """
 
+    pos: str
+    subtypes: tuple[str, ...] = ()
+
+
+@dataclass(slots=True)
+class ParsedEntry:
+    """One word entry extracted from a Wiktionary page.
+
+    A page can contain multiple entries (one per language and POS), so
+    ``page_name`` is repeated across entries and ``entry_index`` records
+    the position on the page.
+    """
+
+    page_name: str
+    page_id: int
+    entry_index: int
+    language: str | None
+    language_code: str | None
     lemma: str
-    reference_type: ReferenceType = ReferenceType.NONE
+    reference: LemmaReference | None
+    pos: list[PosTag] = field(default_factory=list)
+    inflection: dict[str, str] | None = None
+    ipa: list[str] | None = None
+    hyphenation: list[str] | None = None
+    rhymes: list[str] | None = None
+    meanings: list[Meaning] | None = None
 
 
-ParseFlexionResult = dict | None
-ParseIpaResult = list[str] | None
-ParseLanuageResult = Language
-ParseLemmaResult = Lemma
-ParsePosResult = dict[str, list[str]] | None
-ParseRhymesResult = list[str] | None
-ParseHyphenationResult = list[str] | None
+@dataclass(slots=True)
+class Meaning:
+    """A single sense/meaning of a word.
 
+    ``tags`` are extracted from ``{{K}}`` templates (canonical), ``raw_tags``
+    are leading parenthetical / colon-tagged labels in the body text.
+    ``sublist`` carries nested meanings.
+    """
 
-class MeaningDict(TypedDict, total=False):
-    text: str
-    tags: list[str]
-    raw_tags: list[str]
-    sublist: list["MeaningDict"]
-
-
-ParseMeaningsResults = list[MeaningDict] | None
-
-
-class ParsedWiktionaryPageEntry(BaseModel):
-    name: str
-    hyphenation: ParseHyphenationResult
-    flexion: ParseFlexionResult
-    ipa: ParseIpaResult
-    language: ParseLanuageResult
-    lemma: ParseLemmaResult
-    pos: ParsePosResult
-    rhymes: ParseRhymesResult
-    meanings: ParseMeaningsResults | None = None
+    text: str = ""
+    tags: list[str] = field(default_factory=list)
+    raw_tags: list[str] = field(default_factory=list)
+    sublist: list[Meaning] | None = None

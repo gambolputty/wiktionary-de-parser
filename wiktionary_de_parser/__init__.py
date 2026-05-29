@@ -1,115 +1,41 @@
-import importlib.util
-import inspect
-import re
-from pathlib import Path
-from typing import Type
+"""Public API for the German Wiktionary parser.
 
+Typical usage::
+
+    from wiktionary_de_parser import WiktionaryParser, WiktionaryDump
+
+    dump = WiktionaryDump(dump_file_path="…/dewiktionary-latest.xml.bz2")
+    parser = WiktionaryParser()
+    for page in dump.pages():
+        if page.redirect_to or not page.wikitext:
+            continue
+        for entry in parser.entries(page):
+            parsed = parser.parse(entry)
+            ...
+
+For parallel processing, use ``WiktionaryDump.iter_parsed(workers=N)``.
+"""
+
+from wiktionary_de_parser.dump import WiktionaryDump
+from wiktionary_de_parser.entry import WiktionaryEntry
 from wiktionary_de_parser.models import (
-    ParsedWiktionaryPageEntry,
+    LemmaReference,
+    Meaning,
+    ParsedEntry,
+    PosTag,
+    ReferenceType,
     WiktionaryPage,
-    WiktionaryPageEntry,
 )
-from wiktionary_de_parser.parser import (
-    WORTART_TEMPLATE_NAME_RE,
-    Parser,
-)
+from wiktionary_de_parser.parser import WiktionaryParser
 
-
-class WiktionaryParser:
-    parser_classes: list[Type[Parser]]
-
-    def __init__(self):
-        self.parser_classes = self.find_parser_classes()
-
-    @staticmethod
-    def find_parser_classes():
-        path = Path(__file__).parent / "parser"
-        parent_class = Parser
-        classes: list[Type[Parser]] = []
-
-        for child in path.iterdir():
-            if (
-                child.is_file()
-                and child.name.endswith(".py")
-                and child.name != "__init__.py"
-            ):
-                module_name = child.stem  # Entfernen Sie die .py-Endung
-                spec = importlib.util.spec_from_file_location(
-                    module_name, child
-                )
-
-                if not spec or not spec.loader:
-                    raise Exception(f"Could not load {child}")
-
-                module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(module)
-
-                for _, obj in inspect.getmembers(module):
-                    if (
-                        inspect.isclass(obj)
-                        and issubclass(obj, parent_class)
-                        and (obj != parent_class)
-                    ):
-                        classes.append(obj)
-
-        return classes
-
-    def entries_from_page(self, page: WiktionaryPage):
-        """
-        Split page into entries. One page can have multiple word entries, for example:
-            - https://de.wiktionary.org/wiki/instrument
-
-        New entries begin at "==" and "===" (sometimes there is no "==")
-        Compare:
-            - https://de.wiktionary.org/wiki/instrument
-            - https://de.wiktionary.org/wiki/Becken
-        """
-        if not page.wikitext:
-            return
-
-        # Wortart-headers usually look like `=== {{Wortart|<POS>|<Lang>}} ===`.
-        # Two real-world deviations the regex needs to tolerate:
-        #  - Double space: `===  {{Wortart|Substantiv|Französisch}}  ===`
-        #    (seen e.g. on `bimbo`, `Portus Cale`, `ad circ.`, several
-        #     Latin phrases).
-        #  - Lemma prefix before the template: `=== ombrello
-        #    {{Wortart|Substantiv|Italienisch}} ===` (Italian-style entries
-        #    like `ombrello`, `civetta`, `meringa`, `stupefatto`, …).
-        # `[^\n]*?` non-greedily eats any header text between `=== ` and
-        # `{{Wortart`, so all three shapes are captured.
-        entries: list[str] = re.findall(
-            r"(=== [^\n]*?"
-            + WORTART_TEMPLATE_NAME_RE
-            + r"(?:[\w\W](?!^===? ))+)",
-            page.wikitext,
-            re.MULTILINE,
-        )
-
-        for index, entry in enumerate(entries):
-            yield WiktionaryPageEntry(
-                page=page,
-                index=index,
-                wikitext=entry,
-            )
-
-    def parse_entry(
-        self,
-        wiktionary_entry: WiktionaryPageEntry,
-        include_meanings: bool = False,
-    ):
-        """
-        Parses an entry of a page.
-        """
-
-        # Instantiate all subclasses and run them
-        results = {
-            instance.name: instance.run()
-            for subclass in self.parser_classes
-            if (instance := subclass(wiktionary_entry))
-            and (include_meanings or instance.name != "meanings")
-        }
-
-        # Add the page name
-        results["name"] = wiktionary_entry.page.name
-
-        return ParsedWiktionaryPageEntry(**results)
+__all__ = [
+    "LemmaReference",
+    "Meaning",
+    "ParsedEntry",
+    "PosTag",
+    "ReferenceType",
+    "WiktionaryDump",
+    "WiktionaryEntry",
+    "WiktionaryPage",
+    "WiktionaryParser",
+]

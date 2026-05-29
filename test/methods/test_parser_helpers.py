@@ -1,15 +1,15 @@
-"""Direct unit tests for the helpers in wiktionary_de_parser.parser.__init__.
+"""Direct unit tests for the shared wikitext helpers.
 
-These helpers (resolve_positional_params, extract_first_positional_value,
-strip_refs) are shared across multiple parsers and so far were only
-covered indirectly through parse_lemma / parse_language / parse_pos /
-parse_ipa / parse_rhymes tests. The tests here pin their invariants
+These helpers (``resolve_positional_params``,
+``extract_first_positional_value``, ``strip_refs``) are used across
+multiple feature parsers and were previously only covered indirectly
+through the per-parser tests. The tests here pin their invariants
 directly so a future refactor cannot quietly change semantics.
 """
 
 import mwparserfromhell
 
-from wiktionary_de_parser.parser import (
+from wiktionary_de_parser._wikitext import (
     extract_first_positional_value,
     resolve_positional_params,
     strip_refs,
